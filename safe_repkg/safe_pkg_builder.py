@@ -26,6 +26,10 @@ class SafePkgBuilder:
                   self._safe_path + '/' + os.path.basename(self._stand_path) +
                   '/old_main.py')
 
+    # TODO add template writing method to write package_name.py
+    # TODO separate into two submodules: builder and driver
+    # TODO use pkgutils to properlly access .template file
+
     def rebuild_safe_main(self):
         with open('safe_main.py.template', 'r') as f:
             template_text = f.read()
