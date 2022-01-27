@@ -27,7 +27,7 @@ class SafePkgBuilder:
                   '/old_main.py')
 
     def rebuild_safe_main(self):
-        with open('../driver/safe_main.py.template', 'r') as f:
+        with open('safe_main.py.template', 'r') as f:
             template_text = f.read()
 
         template = string.Template(template_text)
