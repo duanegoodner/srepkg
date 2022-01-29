@@ -1,1 +1,1 @@
-package name = $inner_package_name
+hpkg_src = '$hpkg_path'
