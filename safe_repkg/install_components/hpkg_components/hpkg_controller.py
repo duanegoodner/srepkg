@@ -26,23 +26,19 @@ class HpkgController:
         return self
 
     def upgrade_pip(self):
-        print([self._paths.venv_py, '-m', self._paths.venv_pip, 'install',
-               '--upgrade', 'pip'])
-        call([self._paths.venv_py, '-m', 'pip', 'install',
-              '--upgrade', 'pip'])
+        subprocess.call([self._paths.venv_py, '-m', 'pip', 'install',
+                         '--upgrade', 'pip'])
         return self
 
     def install_utilities(self, *utility_packages):
-        call([self._paths.venv_pip, 'install', *utility_packages])
+        subprocess.call([self._paths.venv_pip, 'install', *utility_packages])
         return self
 
     def install_inner_pkg(self):
-        print(self._paths.safe_src)
-        call([self._paths.venv_pip, 'install', '.'])
+        subprocess.call([self._paths.venv_pip, 'install', '.'])
         return self
 
     def remove_unwanted_dir(self, dir_path):
-        print(dir_path)
         try:
             shutil.rmtree(dir_path)
         except (OSError, FileNotFoundError) as e:

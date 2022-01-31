@@ -68,10 +68,14 @@ class HpkgBuilder:
                      'safe_main.py',
                      self._h_path / self._pkg_name / '__main__.py')
 
+    def build_hpkg(self):
+        self.copy_package()
+        self.move_orig_safe_main()
+        self.write_pkg_name()
+        self.copy_safe_main()
+
 
 test_builder = HpkgBuilder(Path('/Users/duane/dproj/xiangqigame'),
                            Path('/Users/duane/dproj/hpkgs/xiangqigame'))
-test_builder.copy_package()
-test_builder.move_orig_safe_main()
-test_builder.write_pkg_name()
-test_builder.copy_safe_main()
+
+test_builder.build_hpkg()
