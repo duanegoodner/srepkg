@@ -1,7 +1,6 @@
-import os
 from pathlib import Path
 import string
-from shutil import copytree, ignore_patterns, copy2
+import shutil
 
 
 class HpkgBuilder:
@@ -11,36 +10,34 @@ class HpkgBuilder:
         self._orig_path = orig_path
         self._h_path = h_path
         self._pkg_name = orig_path.name
+
+        install_components = \
+            Path(__file__).parent.absolute() / 'install_components'
+
         self._build_src = {
-            'hpkg_components': Path(__file__).parent.absolute().joinpath(
-                'install_components', 'hpkg_components'),
-            'driver': Path(__file__).parent.absolute().joinpath(
-                'install_components', 'hpkg_driver.py'),
-            'main': Path(__file__).parent.absolute().joinpath(
-                'install_components', 'safe_main.py'),
-            'name_template': Path(__file__).parent.absolute().joinpath(
-                'install_components', 'pkg_name.py.template')
+            'hpkg_components': install_components / 'hpkg_components',
+            'driver': install_components / 'hpkg_driver.py',
+            'main': install_components / 'safe_main.py',
+            'name_template': install_components / 'pkg_name.py.template'
         }
         self._build_dest = {
-            'hpkg_components': self._h_path.joinpath('hpkg_components'),
-            'driver': self._h_path.joinpath(
-                'hpkg_' + str(self._pkg_name) + '.py'),
-            'main': self._h_path.joinpath(self._pkg_name, '__main__.py'),
-            'old_main': self._h_path.joinpath(self._pkg_name, 'old_main.py'),
-
+            'hpkg_components': self._h_path / 'hpkg_components',
+            'driver': self._h_path / ('hpkg_' + str(self._pkg_name) + '.py'),
+            'main': self._h_path / self._pkg_name / '__main__.py',
+            'old_main': self._h_path / self._pkg_name / 'old_main.py'
         }
 
     def copy_package(self):
 
         try:
-            copytree(
-                self._orig_path, self._h_path, ignore=ignore_patterns(
+            shutil.copytree(
+                self._orig_path, self._h_path, ignore=shutil.ignore_patterns(
                     *self._ignore_types))
 
-            copytree(self._build_src['hpkg_components'],
-                     self._build_dest['hpkg_components'])
+            shutil.copytree(self._build_src['hpkg_components'],
+                            self._build_dest['hpkg_components'])
 
-            copy2(self._build_src['driver'], self._build_dest['driver'])
+            shutil.copy2(self._build_src['driver'], self._build_dest['driver'])
 
         except OSError:
             print("Error when attempting to copy")
@@ -67,9 +64,9 @@ class HpkgBuilder:
             f.write(result)
 
     def copy_safe_main(self):
-        copy2(Path(__file__).parent.absolute() / 'install_components' /
-              'safe_main.py',
-              self._h_path / self._pkg_name / '__main__.py')
+        shutil.copy2(Path(__file__).parent.absolute() / 'install_components' /
+                     'safe_main.py',
+                     self._h_path / self._pkg_name / '__main__.py')
 
 
 test_builder = HpkgBuilder(Path('/Users/duane/dproj/xiangqigame'),

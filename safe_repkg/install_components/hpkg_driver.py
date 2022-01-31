@@ -1,6 +1,7 @@
 import argparse
-from hpkg_components import hpkg_installer
+from pathlib import Path
 from hpkg_components.hpkg_header import hpkg_src
+from hpkg_components.hpkg_controller import HpkgController
 
 
 def main():
@@ -9,8 +10,8 @@ def main():
     parser.add_argument('pkg_args', nargs='*')
     args = parser.parse_args()
 
-    hpkg_controller = hpkg_installer.install(hpkg_src)
-    hpkg_controller.upgrade_pip().install_utilities('wheel')\
+    hpkg_controller = HpkgController.for_env_builder(Path(hpkg_src))
+    hpkg_controller.build_venv().upgrade_pip().install_utilities('wheel')\
         .install_inner_pkg().post_install_cleanup()
 
     hpkg_controller.run_inner_pkg(*args.pkg_args)
