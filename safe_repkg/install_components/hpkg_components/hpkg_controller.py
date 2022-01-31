@@ -35,6 +35,7 @@ class HpkgController:
         return self
 
     def remove_unwanted_dir(self, dir_path):
+        print(dir_path)
         try:
             shutil.rmtree(dir_path)
         except (OSError, FileNotFoundError) as e:
@@ -43,8 +44,7 @@ class HpkgController:
 
     def post_install_cleanup(self):
         for base_name in self._junk_dirs:
-            self.remove_unwanted_dir(os.path.dirname(self._paths.safe_src)
-                                     + base_name )
+            self.remove_unwanted_dir(self._paths.safe_src + base_name)
         return self
 
     def run_inner_pkg(self, *pkg_args):
