@@ -76,6 +76,6 @@ class HpkgBuilder:
 
 
 test_builder = HpkgBuilder(Path('/Users/duane/dproj/xiangqigame'),
-                           Path('/Users/duane/dproj/hpkgs/xiangqigame'))
+                           Path('/Users/duane/dproj/hhpkgs/xiangqigame'))
 
 test_builder.build_hpkg()
