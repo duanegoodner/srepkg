@@ -32,20 +32,39 @@ class HpkgBuilder:
 
         try:
             shutil.copytree(
-                self._orig_path.parent.absolute(), self._h_path, ignore=shutil.ignore_patterns(
-                    *self._ignore_types))
-
+                self._orig_path.parent.absolute(), self._h_path,
+                ignore=shutil.ignore_patterns(*self._ignore_types))
+        except (OSError, FileNotFoundError, FileExistsError, Exception) as e_1:
+            print('Error when attempting to copy original package '
+                  'to new location.')
+            exit(1)
+        try:
             shutil.copytree(self._build_src['hpkg_components'],
                             self._build_dest['hpkg_components'])
+        except (OSError, FileNotFoundError, FileExistsError, Exception) as e_2:
+            print('Error when attempting to copy hpkg_components.')
+            exit(1)
 
+        try:
             shutil.copy2(self._build_src['driver'], self._build_dest['driver'])
 
-        except OSError:
-            print("Error when attempting to copy")
+        except (OSError, FileNotFoundError, FileExistsError, Exception) as e_3:
+            print("Error when attempting to copy hpkg_driver.")
             exit(1)
 
     def move_orig_safe_main(self):
-        self._build_dest['main'].rename(self._build_dest['old_main'])
+        try:
+            self._build_dest['main'].rename(self._build_dest['old_main'])
+        except FileNotFoundError:
+            print('__main__ not found in copy of original package.')
+            exit(1)
+        except FileExistsError:
+            print('It appears that the original module has a file named '
+                  'old_main.py. The hpkg_builder needs that file name.')
+            exit(1)
+        except (OSError, Exception) as e4:
+            print('Error when trying to rename __main__.py to old_main.py')
+            exit(1)
 
     def write_pkg_name(self):
 
@@ -74,10 +93,3 @@ class HpkgBuilder:
         self.move_orig_safe_main()
         self.write_pkg_name()
         self.copy_safe_main()
-
-
-# test_builder = HpkgBuilder(Path('/Users/duane/dproj/xiangqigame/xiangqigame'),
-#                            Path('/Users/duane/hpackaged_pkgs/xiangqigame_safe'))
-#
-# test_builder.build_hpkg()
-
