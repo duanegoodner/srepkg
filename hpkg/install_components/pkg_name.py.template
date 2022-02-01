@@ -1,1 +1,1 @@
-hpkg_src = '$hpkg_path'
+pkg_name = '$pkg_name'

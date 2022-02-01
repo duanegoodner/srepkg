@@ -47,11 +47,11 @@ class HpkgController:
 
     def post_install_cleanup(self):
         for base_name in self._remove_patterns:
-            self.remove_unwanted_dir(self._paths.safe_src / base_name)
+            self.remove_unwanted_dir(Path(__file__).parent.absolute() / base_name)
         return self
 
     def run_inner_pkg(self, *pkg_args):
         subprocess.call([self._paths.venv_py, '-m', self._pkg_name,
-                         '--called_by_safe_pkg', self._paths.safe_src,
+                         '--called_by_safe_pkg', self._paths.venv_pkg,
                          *pkg_args])
         return self

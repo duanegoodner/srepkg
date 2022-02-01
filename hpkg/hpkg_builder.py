@@ -1,6 +1,7 @@
 from pathlib import Path
 import string
 import shutil
+import pkgutil
 
 
 class HpkgBuilder:
@@ -48,13 +49,13 @@ class HpkgBuilder:
 
     def write_pkg_name(self):
 
-        with (self._build_src['name_template']).open(mode='r') as f:
-            template_text = f.read()
+        template_text = pkgutil.get_data(
+            'hpkg.install_components', 'pkg_name.py.template').decode()
 
         template = string.Template(template_text)
 
         substitutions = {
-            'hpkg_path': self._h_path
+            'pkg_name': self._orig_path.name
         }
 
         result = template.substitute(substitutions)
@@ -75,7 +76,8 @@ class HpkgBuilder:
         self.copy_safe_main()
 
 
-test_builder = HpkgBuilder(Path('/Users/duane/dproj/xiangqigame'),
-                           Path('/Users/duane/dproj/hhpkgs/xiangqigame'))
+# test_builder = HpkgBuilder(Path('/Users/duane/dproj/xiangqigame'),
+#                            Path('/Users/duane/dproj/hhpkgs/xiangqigame_safe'))
+#
+# test_builder.build_hpkg()
 
-test_builder.build_hpkg()
