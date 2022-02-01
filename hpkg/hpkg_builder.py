@@ -23,7 +23,7 @@ class HpkgBuilder:
         }
         self._build_dest = {
             'hpkg_components': self._h_path / 'hpkg_components',
-            'driver': self._h_path / ('hpkg_' + str(self._pkg_name) + '.py'),
+            'driver': self._h_path / (str(self._pkg_name) + '_hpkg.py'),
             'main': self._h_path / self._pkg_name / '__main__.py',
             'old_main': self._h_path / self._pkg_name / 'old_main.py'
         }
