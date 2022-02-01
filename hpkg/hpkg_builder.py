@@ -32,7 +32,7 @@ class HpkgBuilder:
 
         try:
             shutil.copytree(
-                self._orig_path, self._h_path, ignore=shutil.ignore_patterns(
+                self._orig_path.parent.absolute(), self._h_path, ignore=shutil.ignore_patterns(
                     *self._ignore_types))
 
             shutil.copytree(self._build_src['hpkg_components'],
@@ -76,8 +76,8 @@ class HpkgBuilder:
         self.copy_safe_main()
 
 
-# test_builder = HpkgBuilder(Path('/Users/duane/dproj/xiangqigame'),
-#                            Path('/Users/duane/dproj/hhpkgs/xiangqigame_safe'))
+# test_builder = HpkgBuilder(Path('/Users/duane/dproj/xiangqigame/xiangqigame'),
+#                            Path('/Users/duane/hpackaged_pkgs/xiangqigame_safe'))
 #
 # test_builder.build_hpkg()
 
