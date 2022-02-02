@@ -1,26 +1,45 @@
+"""
+Contains the HpkgBuilder class that creates a copy of the original package and
+wraps the copied package with a file structure that forces it to run as a Hpkg.
+"""
+
+from typing import NamedTuple
 from pathlib import Path
 import string
 import shutil
 import pkgutil
 
 
-class HpkgBuilder:
+class CopyPaths(NamedTuple):
+    source: Path
+    dest: Path
 
+
+class HpkgBuilder:
+    """
+    Hpkg encapsulates the file paths and methods for creating a Hpkg version
+    of an existing package.
+    """
+
+    # file patterns that are not copied into the hpkg
     _ignore_types = ['*.git', '*.gitignore', '*.idea', '*__pycache__']
+    install_components = Path(__file__).parent.absolute() / 'install_components'
 
     def __init__(self, orig_path: Path, h_path: Path):
+        """
+        Construct a new HpkgBuilder
+        :param orig_path: a Path object referencing the original package
+        :param h_path: a Path object for location of the copied Hpkg version
+        """
         self._orig_path = orig_path
         self._h_path = h_path
         self._pkg_name = orig_path.name
 
-        install_components = \
-            Path(__file__).parent.parent.absolute() / 'install_components'
-
         self._build_src = {
-            'hpkg_components': install_components / 'hpkg_components',
-            'driver': install_components / 'hpkg_driver.py',
-            'main': install_components / 'safe_main.py',
-            'name_template': install_components / 'pkg_name.py.template'
+            'hpkg_components': self.install_components / 'hpkg_components',
+            'driver': self.install_components / 'hpkg_driver.py',
+            'main': self.install_components / 'safe_main.py',
+            'name_template': self.install_components / 'pkg_name.py.template'
         }
         self._build_dest = {
             'hpkg_components': self._h_path / 'hpkg_components',
@@ -98,4 +117,3 @@ class HpkgBuilder:
 #                            Path('/Users/duane/hpackaged_pkgs/xiangqigame_hpkg'))
 #
 # test_builder.build_hpkg()
-

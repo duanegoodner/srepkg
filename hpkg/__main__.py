@@ -1,5 +1,5 @@
-from hpkg.builder.hpkg_builder import HpkgBuilder
-import hpkg.input.hpkg_input as hpkg_input
+from hpkg.hpkg_builder import HpkgBuilder
+import hpkg.hpkg_input as hpkg_input
 
 
 def main():
