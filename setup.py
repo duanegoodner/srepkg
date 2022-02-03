@@ -5,8 +5,7 @@ import setuptools
 setup(
     name='hpkg',
     version='0.0.1',
-    description='Builds "helmeted" packages that are force to run in separate '
-                'env',
+    description='Copies and repackages apps with an isolation layer',
     url='#',
     author='duanegoodner',
     install_requires=[],
