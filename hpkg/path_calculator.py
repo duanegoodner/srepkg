@@ -12,8 +12,10 @@ class SrcPaths(NamedTuple):
     orig_pkg: Path
     name_template: Path
     hpkg_components: Path
-    driver: Path
-    main: Path
+    main_outer: Path
+    main_inner: Path
+    setup_template: Path
+    init: Path
 
 
 class DestPaths(NamedTuple):
@@ -21,9 +23,12 @@ class DestPaths(NamedTuple):
     root: Path
     header: Path
     hpkg_components: Path
-    driver: Path
-    main: Path
+    main_outer: Path
+    main_inner: Path
     old_main: Path
+    setup: Path
+    init: Path
+
 
 
 def paths_builder(orig_pkg_path: Path, dest_path: Path):
@@ -37,22 +42,27 @@ def paths_builder(orig_pkg_path: Path, dest_path: Path):
     h_src_root = Path(__file__).parent.absolute()
     install_components = h_src_root / 'install_components'
     pkg_name = orig_pkg_path.name
+    h_pkg_name = pkg_name + '_hpkg'
 
     src_paths = SrcPaths(
         orig_pkg=orig_pkg_path.parent.absolute(),
+        init=install_components / 'dest_init.py',
         name_template=install_components / 'pkg_name.py.template',
         hpkg_components=install_components / 'hpkg_components',
-        driver=install_components / 'hpkg_driver.py',
-        main=install_components / 'safe_main.py'
+        main_outer=install_components / 'main_outer.py',
+        main_inner=install_components / 'main_inner.py',
+        setup_template=install_components / 'setup.py.template'
     )
 
     h_paths = DestPaths(
         root=dest_path,
-        header=dest_path / 'hpkg_components' / 'hpkg_header.py',
-        hpkg_components=dest_path / 'hpkg_components',
-        driver=dest_path / (str(pkg_name) + '_hpkg.py'),
-        main=dest_path / pkg_name / '__main__.py',
-        old_main=dest_path / pkg_name / 'old_main.py'
+        setup=dest_path / 'setup.py',
+        init=dest_path / h_pkg_name / '__init__.py',
+        header=dest_path / h_pkg_name / 'hpkg_components' / 'hpkg_header.py',
+        hpkg_components=dest_path / h_pkg_name / 'hpkg_components',
+        main_outer=dest_path / h_pkg_name / (str(pkg_name) + '__main__.py'),
+        main_inner=dest_path / h_pkg_name / pkg_name / '__main__.py',
+        old_main=dest_path / h_pkg_name / pkg_name / 'old_main.py'
     )
 
     return src_paths, h_paths
