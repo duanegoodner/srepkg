@@ -3,7 +3,7 @@ from typing import NamedTuple
 from pathlib import Path
 
 
-class HpkgPaths(NamedTuple):
+class HpkgControlPaths(NamedTuple):
     safe_src: Path
     venv_pkg: Path
     venv_py: Path

@@ -1,3 +1,9 @@
+"""
+Provides an entry point for running an H-packaged app from command line. Will
+be renamed to <orig_package_name>_hpkg.py upon copying. Note that this file
+needs to be run as a script, not as a package.
+"""
+
 import argparse
 from pathlib import Path
 from hpkg_components.hpkg_header import pkg_name

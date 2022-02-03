@@ -2,12 +2,12 @@ import shutil
 import subprocess
 import venv
 from pathlib import Path
-from .hpkg_paths import HpkgPaths
+from .hpkg_control_paths import HpkgControlPaths
 
 
 class HpkgController:
 
-    def __init__(self, safe_pkg_paths: HpkgPaths):
+    def __init__(self, safe_pkg_paths: HpkgControlPaths):
         self._paths = safe_pkg_paths
         self._pkg_name = self._paths.safe_src.name
         self._remove_patterns = [
@@ -17,7 +17,7 @@ class HpkgController:
 
     @classmethod
     def for_env_builder(cls, safe_src: Path):
-        return cls(HpkgPaths.for_env_builder(safe_src))
+        return cls(HpkgControlPaths.for_env_builder(safe_src))
 
     def build_venv(self):
         env_builder = venv.EnvBuilder(with_pip=True)

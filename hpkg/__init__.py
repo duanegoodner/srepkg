@@ -2,8 +2,9 @@
 Hpkg ("helmeted" package)
 =========================
 
+Builds a "H-packaged" version of an existing application.
 
-Provides
-    1.  Repackaging of an existing application into a form that automatically
-        creates (and runs in) a separate virtual environment upon execution.
+When the H-packaged version is launched, it automatically creates, loads
+dependencies into, and runs in its own new virtual env. The active environment
+used to launch the H-packaged application remains active and unchanged.
 """

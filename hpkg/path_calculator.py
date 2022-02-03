@@ -1,8 +1,14 @@
+"""
+Contains classes and function for determining source and destination paths
+of directories and files copied/built when creating a Hpkg.
+"""
+
 from pathlib import Path
 from typing import NamedTuple
 
 
 class SrcPaths(NamedTuple):
+    """Named tuple of paths to be copied from during hpkg build"""
     orig_pkg: Path
     name_template: Path
     hpkg_components: Path
@@ -11,6 +17,7 @@ class SrcPaths(NamedTuple):
 
 
 class DestPaths(NamedTuple):
+    """Named tuple of paths where files are copied to during hpkg build"""
     root: Path
     header: Path
     hpkg_components: Path
@@ -20,6 +27,13 @@ class DestPaths(NamedTuple):
 
 
 def paths_builder(orig_pkg_path: Path, dest_path: Path):
+    """
+    Determines SrcPaths and DestPaths (each containing multiple paths) based on
+    single path of original package and single path of hpkg destination.
+    :param orig_pkg_path: Path object referencing original package
+    :param dest_path: Path object of folder where hpkg will be built
+    :return: (SrcPaths, DestPaths) tuple
+    """
     h_src_root = Path(__file__).parent.absolute()
     install_components = h_src_root / 'install_components'
     pkg_name = orig_pkg_path.name
