@@ -1,0 +1,11 @@
+from distutils.core import setup
+import setuptools
+
+
+setup(
+    name='$pkg_name_hpkg',
+    description='Repackaged by srepkg to ensure app runs in isolated env',
+    install_requires=[],
+    packages=setuptools.find_packages(),
+    zip_safe=False
+)

@@ -52,7 +52,8 @@ def convert_to_path_objs(args):
     if args.hpkg_path:
         dest_path = Path(args.hpkg_path)
     else:
-        dest_path = Path(os.path.expanduser('~')) / 'hpackaged_pkgs' / \
+        dest_path = Path(os.path.expanduser('~')) / 'hpackaged_pkgs_test' / \
+                    (orig_pkg_path.name + '_hpkg_container') / \
                     (orig_pkg_path.name + '_hpkg')
 
     check_paths(orig_pkg_path, dest_path)

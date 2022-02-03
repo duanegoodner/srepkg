@@ -6,8 +6,8 @@ needs to be run as a script, not as a package.
 
 import argparse
 from pathlib import Path
-from hpkg_components.hpkg_header import pkg_name
-from hpkg_components.hpkg_controller import HpkgController
+from xiangqigame_hpkg.hpkg_components.hpkg_header import pkg_name
+from xiangqigame_hpkg.hpkg_components.hpkg_controller import HpkgController
 
 
 def main():

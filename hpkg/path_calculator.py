@@ -56,13 +56,13 @@ def paths_builder(orig_pkg_path: Path, dest_path: Path):
 
     h_paths = DestPaths(
         root=dest_path,
-        setup=dest_path / 'setup.py',
-        init=dest_path / h_pkg_name / '__init__.py',
-        header=dest_path / h_pkg_name / 'hpkg_components' / 'hpkg_header.py',
-        hpkg_components=dest_path / h_pkg_name / 'hpkg_components',
-        main_outer=dest_path / h_pkg_name / (str(pkg_name) + '__main__.py'),
-        main_inner=dest_path / h_pkg_name / pkg_name / '__main__.py',
-        old_main=dest_path / h_pkg_name / pkg_name / 'old_main.py'
+        setup=dest_path.parent / 'setup.py',
+        init=dest_path / '__init__.py',
+        header=dest_path / 'hpkg_components' / 'hpkg_header.py',
+        hpkg_components=dest_path / 'hpkg_components',
+        main_outer=dest_path / '__main__.py',
+        main_inner=dest_path / pkg_name / '__main__.py',
+        old_main=dest_path / pkg_name / 'old_main.py'
     )
 
     return src_paths, h_paths

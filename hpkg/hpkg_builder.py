@@ -49,30 +49,52 @@ class HpkgBuilder:
             print('Error when attempting to copy hpkg_components.')
             exit(1)
 
-        try:
-            shutil.copy2(self._src_paths.driver, self._h_paths.driver)
-        except (OSError, FileNotFoundError, FileExistsError, Exception) as e_3:
-            print("Error when attempting to copy hpkg_driver.")
-            exit(1)
+        # try:
+        #     shutil.copy2(self._src_paths.driver, self._h_paths.driver)
+        # except (OSError, FileNotFoundError, FileExistsError, Exception) as e_3:
+        #     print("Error when attempting to copy hpkg_driver.")
+        #     exit(1)
 
-    def write_pkg_name(self):
+    def write_pkg_name_header(self):
         """Writes the original package name to a header file in H-pkg folder"""
 
-        template_text = pkgutil.get_data(
+        header_template_text = pkgutil.get_data(
             'hpkg.install_components', 'pkg_name.py.template').decode()
-        template = string.Template(template_text)
+        header_template = string.Template(header_template_text)
         substitutions = {
             'pkg_name': self._src_paths.orig_pkg.name
         }
-        result = template.substitute(substitutions)
+        header_result = header_template.substitute(substitutions)
         with Path(self._h_paths.header).open(mode='w') as f:
-            f.write(result)
+            f.write(header_result)
+
+    def write_pkg_name_setup(self):
+        setup_template_text = pkgutil.get_data(
+            'hpkg.install_components', 'setup.py.template').decode()
+        setup_template = string.Template(setup_template_text)
+        substitutions = {
+            'pkg_name_hpkg': self._src_paths.orig_pkg.name + '_hpkg'
+        }
+        setup_result = setup_template.substitute(substitutions)
+        with Path(self._h_paths.setup).open(mode='w') as f:
+            f.write(setup_result)
+
+    # def write_pkg_name_generic(self, template_path: Path, dest_path: Path):
+    #     template_text = pkgutil.get_data(
+    #         'hpkg.install_components', template_path.name).decode()
+    #     template = string.Template(template_text)
+    #     substitutions = {
+    #         'pkg_name': self._src_paths.orig_pkg.name
+    #     }
+    #     result = template.substitute(substitutions)
+    #     with dest_path.open(mode='w') as f:
+    #         f.write(result)
 
     def move_orig_safe_main(self):
         """Renames __main__.py in the H-package to old_main.py"""
 
         try:
-            self._h_paths.main.rename(self._h_paths.old_main)
+            self._h_paths.main_inner.rename(self._h_paths.old_main)
         except FileNotFoundError:
             print('__main__ not found in copy of original package.')
             exit(1)
@@ -84,20 +106,41 @@ class HpkgBuilder:
             print('Error when trying to rename __main__.py to old_main.py')
             exit(1)
 
-    def copy_safe_main(self):
+    def copy_outer_main(self):
         """Copies H-pkg specific version of __main__.py to hpkg folder"""
-        shutil.copy2(self._src_paths.main, self._h_paths.main)
+        shutil.copy2(self._src_paths.main_outer, self._h_paths.main_outer)
+
+    def copy_inner_main(self):
+        """Copies H-pkg specific version of __main__.py to hpkg folder"""
+        shutil.copy2(self._src_paths.main_inner, self._h_paths.main_inner)
+
+    def copy_hpkg_init(self):
+        shutil.copy2(self._src_paths.init, self._h_paths.init)
+
+    def view_paths(self):
+
+        for src_path in self._src_paths:
+            print(src_path)
+        print()
+        for dest_path in self._h_paths:
+            print(dest_path)
+
 
     def build_hpkg(self):
         """Build the hpkg then prints paths of original pkg, hpkg, and hpkg
         executable to terminal"""
         self.copy_package()
         self.copy_hpkg_components()
+        self.view_paths()
         self.move_orig_safe_main()
-        self.write_pkg_name()
-        self.copy_safe_main()
+
+        self.write_pkg_name_header()
+        self.write_pkg_name_setup()
+
+        self.copy_outer_main()
+        self.copy_inner_main()
+        self.copy_hpkg_init()
+
         print(f'H-package built from: {self._src_paths.orig_pkg}\n'
-              f'H-package saved in: {self._h_paths.root}\n'
-              f'Run {self._h_paths.driver} as a script to start the '
-              f'H-packaged app.')
+              f'H-package saved in: {self._h_paths.root}\n')
 
