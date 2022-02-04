@@ -26,7 +26,8 @@ class DestPaths(NamedTuple):
     main_outer: Path
     main_inner: Path
     old_main: Path
-    setup: Path
+    setup_outer: Path
+    setup_inner: Path
     init: Path
 
 
@@ -56,12 +57,13 @@ def paths_builder(orig_pkg_path: Path, dest_path: Path):
 
     h_paths = DestPaths(
         root=dest_path,
-        setup=dest_path.parent / 'setup.py',
+        setup_outer=dest_path.parent / 'setup.py',
         init=dest_path / '__init__.py',
         header=dest_path / 'hpkg_components' / 'hpkg_header.py',
         hpkg_components=dest_path / 'hpkg_components',
         main_outer=dest_path / '__main__.py',
         main_inner=dest_path / pkg_name / '__main__.py',
+        setup_inner=dest_path / 'setup.py',
         old_main=dest_path / pkg_name / 'old_main.py'
     )
 

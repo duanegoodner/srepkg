@@ -35,8 +35,12 @@ class HpkgController:
         return self
 
     def install_inner_pkg(self):
+        (self._paths.safe_src.parent / 'setup_off.py').rename(
+            self._paths.safe_src.parent / 'setup.py')
         subprocess.call([self._paths.venv_pip, 'install',
                          self._paths.safe_src.parent / '.'])
+        (self._paths.safe_src.parent / 'setup.py').rename(
+            self._paths.safe_src.parent / 'setup_off.py')
         return self
 
     def remove_unwanted_dir(self, dir_path):

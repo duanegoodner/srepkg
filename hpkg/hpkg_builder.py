@@ -76,7 +76,7 @@ class HpkgBuilder:
             'pkg_name_hpkg': self._src_paths.orig_pkg.name + '_hpkg'
         }
         setup_result = setup_template.substitute(substitutions)
-        with Path(self._h_paths.setup).open(mode='w') as f:
+        with Path(self._h_paths.setup_outer).open(mode='w') as f:
             f.write(setup_result)
 
     def write_outer_main_imports(self):
@@ -133,6 +133,10 @@ class HpkgBuilder:
     def copy_hpkg_init(self):
         shutil.copy2(self._src_paths.init, self._h_paths.init)
 
+    def inner_setup_off(self):
+        self._h_paths.setup_inner.rename(self._h_paths.setup_inner.parent /
+                                         'setup_off.py')
+
     def view_paths(self):
 
         for src_path in self._src_paths:
@@ -156,6 +160,7 @@ class HpkgBuilder:
         self.write_outer_main_imports()
         self.copy_inner_main()
         self.copy_hpkg_init()
+        self.inner_setup_off()
 
         print(f'H-package built from: {self._src_paths.orig_pkg}\n'
               f'H-package saved in: {self._h_paths.root}\n')
