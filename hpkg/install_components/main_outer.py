@@ -17,7 +17,7 @@ def main():
     args = parser.parse_args()
 
     hpkg_controller = HpkgController.for_env_builder(
-        Path(__file__).parent.absolute() / (pkg_name + '_container') / pkg_name)
+        Path(__file__).parent.absolute() / pkg_name)
     hpkg_controller.build_venv().upgrade_pip().install_utilities('wheel')\
         .install_inner_pkg().post_install_cleanup()
 

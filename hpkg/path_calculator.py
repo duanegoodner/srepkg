@@ -20,10 +20,9 @@ class SrcPaths(NamedTuple):
 
 class DestPaths(NamedTuple):
     """Named tuple of paths where files are copied to during hpkg build"""
-    hpkg: Path
+    root: Path
     header: Path
     hpkg_components: Path
-    inner_pkg: Path
     main_outer: Path
     main_inner: Path
     old_main: Path
@@ -56,15 +55,14 @@ def paths_builder(orig_pkg_path: Path, dest_path: Path):
     )
 
     h_paths = DestPaths(
-        hpkg=dest_path,
+        root=dest_path,
         setup=dest_path.parent / 'setup.py',
-        inner_pkg=dest_path / (pkg_name + '_container'),
         init=dest_path / '__init__.py',
         header=dest_path / 'hpkg_components' / 'hpkg_header.py',
         hpkg_components=dest_path / 'hpkg_components',
         main_outer=dest_path / '__main__.py',
-        main_inner=dest_path / (pkg_name + '_container') / pkg_name / '__main__.py',
-        old_main=dest_path / (pkg_name + '_container') / pkg_name / 'old_main.py'
+        main_inner=dest_path / pkg_name / '__main__.py',
+        old_main=dest_path / pkg_name / 'old_main.py'
     )
 
     return src_paths, h_paths
