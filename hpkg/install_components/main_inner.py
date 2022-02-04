@@ -6,11 +6,7 @@ __main__.py when copied.
 import argparse
 import subprocess
 import sys
-from pathlib import Path
-# from hpkg_components.hpkg_header import pkg_name
-
-
-pkg_name = Path(__file__).parent.absolute().name
+from hpkg_components.hpkg_header import pkg_name
 
 
 def main():

@@ -1,4 +1,3 @@
-import os
 import shutil
 import subprocess
 import venv
@@ -36,10 +35,8 @@ class HpkgController:
         return self
 
     def install_inner_pkg(self):
-        print('self._paths.safe_src', self._paths.safe_src)
-        print('*******************', str(self._paths.safe_src.parent) + '.')
-        os.chdir(self._paths.safe_src.parent)
-        subprocess.call([self._paths.venv_pip, 'install', '.'])
+        subprocess.call([self._paths.venv_pip, 'install',
+                         self._paths.safe_src.parent / '.'])
         return self
 
     def remove_unwanted_dir(self, dir_path):

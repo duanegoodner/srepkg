@@ -143,11 +143,8 @@ class HpkgBuilder:
         """Copies H-pkg specific version of __main__.py to hpkg folder"""
         shutil.copy2(self._src_paths.main_inner, self._h_paths.main_inner)
 
-    def copy_init_outer(self):
-        shutil.copy2(self._src_paths.init_outer, self._h_paths.init_outer)
-
-    def copy_init_inner(self):
-        shutil.copy2(self._src_paths.main_inner, self._h_paths.init_inner)
+    def copy_hpkg_init(self):
+        shutil.copy2(self._src_paths.init, self._h_paths.init)
 
     def view_paths(self):
 
@@ -171,11 +168,9 @@ class HpkgBuilder:
 
         self.write_outer_main_imports()
 
-        # self.write_inner_main_import()
-        self.copy_inner_main()
+        self.write_inner_main_import()
 
-        self.copy_init_outer()
-        self.copy_init_inner()
+        self.copy_hpkg_init()
 
 
 
