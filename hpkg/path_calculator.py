@@ -15,7 +15,8 @@ class SrcPaths(NamedTuple):
     main_outer: Path
     main_inner: Path
     setup_template: Path
-    init: Path
+    init_outer: Path
+    init_inner: Path
 
 
 class DestPaths(NamedTuple):
@@ -28,7 +29,8 @@ class DestPaths(NamedTuple):
     main_inner: Path
     old_main: Path
     setup: Path
-    init: Path
+    init_outer: Path
+    init_inner: Path
 
 
 
@@ -47,7 +49,8 @@ def paths_builder(orig_pkg_path: Path, dest_path: Path):
 
     src_paths = SrcPaths(
         orig_pkg=orig_pkg_path.parent.absolute(),
-        init=install_components / 'dest_init.py',
+        init_outer=install_components / 'init_outer.py',
+        init_inner=install_components / 'init_inner.py',
         name_template=install_components / 'pkg_name.py.template',
         hpkg_components=install_components / 'hpkg_components',
         main_outer=install_components / 'main_outer.py.template',
@@ -59,7 +62,8 @@ def paths_builder(orig_pkg_path: Path, dest_path: Path):
         hpkg=dest_path,
         setup=dest_path.parent / 'setup.py',
         inner_pkg=dest_path / (pkg_name + '_container'),
-        init=dest_path / '__init__.py',
+        init_outer=dest_path / '__init__.py',
+        init_inner=dest_path / (pkg_name + '_container') / '__init__.py',
         header=dest_path / 'hpkg_components' / 'hpkg_header.py',
         hpkg_components=dest_path / 'hpkg_components',
         main_outer=dest_path / '__main__.py',
