@@ -49,7 +49,7 @@ def paths_builder(orig_pkg_path: Path, dest_path: Path):
         init=install_components / 'dest_init.py',
         name_template=install_components / 'pkg_name.py.template',
         hpkg_components=install_components / 'hpkg_components',
-        main_outer=install_components / 'main_outer.py',
+        main_outer=install_components / 'main_outer.py.template',
         main_inner=install_components / 'main_inner.py',
         setup_template=install_components / 'setup.py.template'
     )

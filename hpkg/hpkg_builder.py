@@ -79,6 +79,22 @@ class HpkgBuilder:
         with Path(self._h_paths.setup).open(mode='w') as f:
             f.write(setup_result)
 
+    def write_outer_main_imports(self):
+        main_outer_template_text = pkgutil.get_data(
+            'hpkg.install_components', 'main_outer.py.template').decode()
+        main_outer_template = string.Template(main_outer_template_text)
+        substitutions = {
+            'header_import_path':
+                self._src_paths.orig_pkg.name +
+                '_hpkg.hpkg_components.hpkg_header',
+            'controller_import_path':
+                self._src_paths.orig_pkg.name +
+                '_hpkg.hpkg_components.hpkg_controller'
+        }
+        main_outer_result = main_outer_template.substitute(substitutions)
+        with Path(self._h_paths.main_outer).open(mode='w') as f:
+            f.write(main_outer_result)
+
     # def write_pkg_name_generic(self, template_path: Path, dest_path: Path):
     #     template_text = pkgutil.get_data(
     #         'hpkg.install_components', template_path.name).decode()
@@ -125,7 +141,6 @@ class HpkgBuilder:
         for dest_path in self._h_paths:
             print(dest_path)
 
-
     def build_hpkg(self):
         """Build the hpkg then prints paths of original pkg, hpkg, and hpkg
         executable to terminal"""
@@ -137,10 +152,10 @@ class HpkgBuilder:
         self.write_pkg_name_header()
         self.write_pkg_name_setup()
 
-        self.copy_outer_main()
+        # self.copy_outer_main()
+        self.write_outer_main_imports()
         self.copy_inner_main()
         self.copy_hpkg_init()
 
         print(f'H-package built from: {self._src_paths.orig_pkg}\n'
               f'H-package saved in: {self._h_paths.root}\n')
-
