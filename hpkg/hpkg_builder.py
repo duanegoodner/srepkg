@@ -33,7 +33,7 @@ class HpkgBuilder:
         """Copies original package to H-package directory"""
 
         try:
-            shutil.copytree(self._src_paths.orig_pkg, self._h_paths.root,
+            shutil.copytree(self._src_paths.orig_pkg, self._h_paths.inner_pkg,
                             ignore=shutil.ignore_patterns(*self._ignore_types))
         except (OSError, FileNotFoundError, FileExistsError, Exception) as e_1:
             print('Error when attempting to copy original package '
@@ -95,6 +95,19 @@ class HpkgBuilder:
         with Path(self._h_paths.main_outer).open(mode='w') as f:
             f.write(main_outer_result)
 
+    def write_inner_main_import(self):
+        main_inner_template_text = pkgutil.get_data(
+            'hpkg.install_components', 'main_inner.py.template').decode()
+        main_inner_template = string.Template(main_inner_template_text)
+        substitutions = {
+            'header_import_path':
+                self._src_paths.orig_pkg.name +
+                '_hpkg.hpkg_components.hpkg_header'
+        }
+        main_inner_result = main_inner_template.substitute(substitutions)
+        with Path(self._h_paths.main_inner).open(mode='w') as f:
+            f.write(main_inner_result)
+
     # def write_pkg_name_generic(self, template_path: Path, dest_path: Path):
     #     template_text = pkgutil.get_data(
     #         'hpkg.install_components', template_path.name).decode()
@@ -144,18 +157,22 @@ class HpkgBuilder:
     def build_hpkg(self):
         """Build the hpkg then prints paths of original pkg, hpkg, and hpkg
         executable to terminal"""
+        self.view_paths()
+
         self.copy_package()
         self.copy_hpkg_components()
-        self.view_paths()
         self.move_orig_safe_main()
 
         self.write_pkg_name_header()
         self.write_pkg_name_setup()
 
-        # self.copy_outer_main()
         self.write_outer_main_imports()
-        self.copy_inner_main()
+
+        self.write_inner_main_import()
+
         self.copy_hpkg_init()
 
+
+
         print(f'H-package built from: {self._src_paths.orig_pkg}\n'
-              f'H-package saved in: {self._h_paths.root}\n')
+              f'H-package saved in: {self._h_paths.hpkg.parent}\n')
