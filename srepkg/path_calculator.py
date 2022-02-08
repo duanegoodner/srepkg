@@ -1,6 +1,6 @@
 """
-Contains classes and function for determining source and destination paths
-of directories and files copied/built when creating a Hpkg.
+Validates and calculates source and destination paths used when building a new
+sre-package from an existing package.
 """
 
 from pathlib import Path
@@ -10,10 +10,11 @@ import os
 
 def validate_root_paths(orig_pkg_path: Path, dest_path: Path):
     """
-    Confirms that original package path exists, destination path does not yet
-    exist, and that the (proposed) hpkg path is not a sub-path of the original.
+    Confirms that original package path exists, no file exists at destination,
+    and that the destination path is not a sub-path of the original.
+
     :param orig_pkg_path: Path object referencing original package
-    :param dest_path: Path object
+    :param dest_path: Path object referencing root of repackaged app.
     """
 
     if not orig_pkg_path.exists():
@@ -31,6 +32,13 @@ def validate_root_paths(orig_pkg_path: Path, dest_path: Path):
 
 
 def calc_root_paths_from(args) -> tuple[Path, Path]:
+    """
+    Converts args (typically obtained from command line + argparse) into
+    Path objects referencing orig package and srepackage root paths.
+
+    :param args: Namespace with arguments parsed from command line input
+    """
+
     orig_pkg_path = Path(args.orig_pkg_path)
     if args.hpkg_path:
         dest_path = Path(args.hpkg_path)
@@ -44,9 +52,8 @@ def calc_root_paths_from(args) -> tuple[Path, Path]:
     return orig_pkg_path, dest_path
 
 
-
 class BuildSrcPaths(NamedTuple):
-    """Named tuple of paths to be copied from during hpkg build"""
+    """Named tuple of paths to be copied from during srepkg build"""
     orig_pkg: Path
     name_template: Path
     hpkg_components: Path
@@ -57,7 +64,7 @@ class BuildSrcPaths(NamedTuple):
 
 
 class BuildDestPaths(NamedTuple):
-    """Named tuple of paths where files are copied to during hpkg build"""
+    """Named tuple of paths where files are copied to during srepkg build"""
     root: Path
     header: Path
     hpkg_components: Path
@@ -69,12 +76,14 @@ class BuildDestPaths(NamedTuple):
     init: Path
 
 
-def create_builder_paths(orig_pkg_path: Path, dest_path: Path):
+def create_builder_paths(orig_pkg_path: Path, dest_path: Path) ->\
+        tuple[BuildSrcPaths, BuildDestPaths]:
     """
-    Determines BuildSrcPaths and BuildDestPaths (each containing multiple paths) based on
-    single path of original package and single path of hpkg destination.
+    Determines BuildSrcPaths and BuildDestPaths (each containing multiple paths)
+    from root paths of original package and srepkg destination.
+
     :param orig_pkg_path: Path object referencing original package
-    :param dest_path: Path object of folder where hpkg will be built
+    :param dest_path: Path object referencing folder where srepkg will be built
     :return: (BuildSrcPaths, BuildDestPaths) tuple
     """
     h_src_root = Path(__file__).parent.absolute()

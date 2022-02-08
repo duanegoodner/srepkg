@@ -4,9 +4,19 @@ wraps the copied package with a file structure that forces it to run as a Hpkg.
 """
 
 from pathlib import Path
+import string
+import pkgutil
 import shutil
 import srepkg.path_calculator as pcalc
-from srepkg.utilities import write_file_from_template
+
+
+def write_file_from_template(template_name: str, dest_path: Path, subs: dict):
+    template_text = pkgutil.get_data(
+        'srepkg.install_components', template_name).decode()
+    template = string.Template(template_text)
+    result = template.substitute(subs)
+    with dest_path.open(mode='w') as output_file:
+        output_file.write(result)
 
 
 class HpkgBuilder:
@@ -17,8 +27,6 @@ class HpkgBuilder:
 
     # file patterns that are not copied into the hpkg
     _ignore_types = ['*.git', '*.gitignore', '*.idea', '*__pycache__']
-
-    install_components = Path(__file__).parent.absolute() / 'install_components'
 
     def __init__(self, src_paths: pcalc.BuildSrcPaths, h_paths: pcalc.BuildDestPaths):
         """
