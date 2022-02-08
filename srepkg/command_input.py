@@ -16,7 +16,7 @@ def get_args():
     """
     parser = argparse.ArgumentParser()
     parser.add_argument('orig_pkg_path')
-    parser.add_argument('hpkg_path', nargs='?')
+    parser.add_argument('srepkg_path', nargs='?')
     return parser.parse_args()
 
 

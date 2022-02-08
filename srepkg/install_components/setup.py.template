@@ -1,3 +1,9 @@
+"""
+setup.py file to enable installation of SRE-packaged app.
+"""
+
+
+
 from distutils.core import setup
 import setuptools
 

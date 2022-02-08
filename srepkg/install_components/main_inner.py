@@ -1,5 +1,5 @@
 """
-Entry point to the module being rebuilt as a Hpkg. File gets renamed to
+Entry point to the sre-packaged app. File gets renamed to
 __main__.py when copied.
 """
 
