@@ -3,7 +3,7 @@ import setuptools
 
 
 setup(
-    name='hpkg',
+    name='srepkg',
     version='0.0.1',
     description='Copies and repackages apps with an isolation layer',
     url='#',

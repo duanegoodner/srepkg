@@ -7,7 +7,7 @@ from pathlib import Path
 import string
 import shutil
 import pkgutil
-import hpkg.path_calculator as pcalc
+import srepkg.path_calculator as pcalc
 
 
 class HpkgBuilder:
@@ -59,7 +59,7 @@ class HpkgBuilder:
         """Writes the original package name to a header file in H-pkg folder"""
 
         header_template_text = pkgutil.get_data(
-            'hpkg.install_components', 'pkg_name.py.template').decode()
+            'srepkg.install_components', 'pkg_name.py.template').decode()
         header_template = string.Template(header_template_text)
         substitutions = {
             'pkg_name': self._src_paths.orig_pkg.name
@@ -70,10 +70,10 @@ class HpkgBuilder:
 
     def write_pkg_name_setup(self):
         setup_template_text = pkgutil.get_data(
-            'hpkg.install_components', 'setup.py.template').decode()
+            'srepkg.install_components', 'setup.py.template').decode()
         setup_template = string.Template(setup_template_text)
         substitutions = {
-            'pkg_name_hpkg': self._src_paths.orig_pkg.name + '_hpkg'
+            'pkg_name_srepkg': self._src_paths.orig_pkg.name + 'srepkg'
         }
         setup_result = setup_template.substitute(substitutions)
         with Path(self._h_paths.setup_outer).open(mode='w') as f:
@@ -81,15 +81,15 @@ class HpkgBuilder:
 
     def write_outer_main_imports(self):
         main_outer_template_text = pkgutil.get_data(
-            'hpkg.install_components', 'main_outer.py.template').decode()
+            'srepkg.install_components', 'main_outer.py.template').decode()
         main_outer_template = string.Template(main_outer_template_text)
         substitutions = {
             'header_import_path':
                 self._src_paths.orig_pkg.name +
-                '_hpkg.hpkg_components.hpkg_header',
+                'srepkg.srepkg_components.srepkg_header',
             'controller_import_path':
                 self._src_paths.orig_pkg.name +
-                '_hpkg.hpkg_components.hpkg_controller'
+                'srepkg.srepkg_components.srepkg_controller'
         }
         main_outer_result = main_outer_template.substitute(substitutions)
         with Path(self._h_paths.main_outer).open(mode='w') as f:
@@ -150,7 +150,7 @@ class HpkgBuilder:
         executable to terminal"""
         self.copy_package()
         self.copy_hpkg_components()
-        self.view_paths()
+        # self.view_paths()
         self.move_orig_safe_main()
 
         self.write_pkg_name_header()

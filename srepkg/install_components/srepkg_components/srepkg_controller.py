@@ -2,7 +2,7 @@ import shutil
 import subprocess
 import venv
 from pathlib import Path
-from .hpkg_control_paths import HpkgControlPaths
+from .srepkg_control_paths import HpkgControlPaths
 
 
 class HpkgController:

@@ -31,7 +31,6 @@ class DestPaths(NamedTuple):
     init: Path
 
 
-
 def paths_builder(orig_pkg_path: Path, dest_path: Path):
     """
     Determines SrcPaths and DestPaths (each containing multiple paths) based on
@@ -43,13 +42,12 @@ def paths_builder(orig_pkg_path: Path, dest_path: Path):
     h_src_root = Path(__file__).parent.absolute()
     install_components = h_src_root / 'install_components'
     pkg_name = orig_pkg_path.name
-    h_pkg_name = pkg_name + '_hpkg'
 
     src_paths = SrcPaths(
         orig_pkg=orig_pkg_path.parent.absolute(),
         init=install_components / 'dest_init.py',
         name_template=install_components / 'pkg_name.py.template',
-        hpkg_components=install_components / 'hpkg_components',
+        hpkg_components=install_components / 'srepkg_components',
         main_outer=install_components / 'main_outer.py.template',
         main_inner=install_components / 'main_inner.py',
         setup_template=install_components / 'setup.py.template'
@@ -59,8 +57,8 @@ def paths_builder(orig_pkg_path: Path, dest_path: Path):
         root=dest_path,
         setup_outer=dest_path.parent / 'setup.py',
         init=dest_path / '__init__.py',
-        header=dest_path / 'hpkg_components' / 'hpkg_header.py',
-        hpkg_components=dest_path / 'hpkg_components',
+        header=dest_path / 'srepkg_components' / 'srepkg_header.py',
+        hpkg_components=dest_path / 'srepkg_components',
         main_outer=dest_path / '__main__.py',
         main_inner=dest_path / pkg_name / '__main__.py',
         setup_inner=dest_path / 'setup.py',

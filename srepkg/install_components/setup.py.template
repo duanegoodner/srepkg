@@ -3,8 +3,8 @@ import setuptools
 
 
 setup(
-    name='$pkg_name_hpkg',
-    description='Repackaged by srepkg to ensure app runs in isolated env',
+    name='$pkg_name_srepkg',
+    description='Repackaged by fsrpkg to ensure app runs in isolated env',
     install_requires=[],
     packages=setuptools.find_packages(),
     package_data={"": ["*.*"]},
