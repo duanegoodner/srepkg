@@ -4,10 +4,9 @@ wraps the copied package with a file structure that forces it to run as a Hpkg.
 """
 
 from pathlib import Path
-import string
 import shutil
-import pkgutil
 import srepkg.path_calculator as pcalc
+from srepkg.utilities import write_file_from_template
 
 
 class HpkgBuilder:
@@ -18,6 +17,7 @@ class HpkgBuilder:
 
     # file patterns that are not copied into the hpkg
     _ignore_types = ['*.git', '*.gitignore', '*.idea', '*__pycache__']
+
     install_components = Path(__file__).parent.absolute() / 'install_components'
 
     def __init__(self, src_paths: pcalc.SrcPaths, h_paths: pcalc.DestPaths):
@@ -29,7 +29,26 @@ class HpkgBuilder:
         self._src_paths = src_paths
         self._h_paths = h_paths
 
-    def copy_package(self):
+    @property
+    def setup_subs(self):
+        return {'pkg_name_srepkg': self._src_paths.orig_pkg.name + 'srepkg'}
+
+    @property
+    def header_subs(self):
+        return {'pkg_name': self._src_paths.orig_pkg.name}
+
+    @property
+    def main_outer_subs(self):
+        return {
+            'header_import_path':
+                self._src_paths.orig_pkg.name +
+                'srepkg.srepkg_components.srepkg_header',
+            'controller_import_path':
+                self._src_paths.orig_pkg.name +
+                'srepkg.srepkg_components.srepkg_controller'
+        }
+
+    def copy_inner_package(self):
         """Copies original package to H-package directory"""
 
         try:
@@ -49,63 +68,6 @@ class HpkgBuilder:
             print('Error when attempting to copy hpkg_components.')
             exit(1)
 
-        # try:
-        #     shutil.copy2(self._src_paths.driver, self._h_paths.driver)
-        # except (OSError, FileNotFoundError, FileExistsError, Exception) as e_3:
-        #     print("Error when attempting to copy hpkg_driver.")
-        #     exit(1)
-
-    def write_pkg_name_header(self):
-        """Writes the original package name to a header file in H-pkg folder"""
-
-        header_template_text = pkgutil.get_data(
-            'srepkg.install_components', 'pkg_name.py.template').decode()
-        header_template = string.Template(header_template_text)
-        substitutions = {
-            'pkg_name': self._src_paths.orig_pkg.name
-        }
-        header_result = header_template.substitute(substitutions)
-        with Path(self._h_paths.header).open(mode='w') as f:
-            f.write(header_result)
-
-    def write_pkg_name_setup(self):
-        setup_template_text = pkgutil.get_data(
-            'srepkg.install_components', 'setup.py.template').decode()
-        setup_template = string.Template(setup_template_text)
-        substitutions = {
-            'pkg_name_srepkg': self._src_paths.orig_pkg.name + 'srepkg'
-        }
-        setup_result = setup_template.substitute(substitutions)
-        with Path(self._h_paths.setup_outer).open(mode='w') as f:
-            f.write(setup_result)
-
-    def write_outer_main_imports(self):
-        main_outer_template_text = pkgutil.get_data(
-            'srepkg.install_components', 'main_outer.py.template').decode()
-        main_outer_template = string.Template(main_outer_template_text)
-        substitutions = {
-            'header_import_path':
-                self._src_paths.orig_pkg.name +
-                'srepkg.srepkg_components.srepkg_header',
-            'controller_import_path':
-                self._src_paths.orig_pkg.name +
-                'srepkg.srepkg_components.srepkg_controller'
-        }
-        main_outer_result = main_outer_template.substitute(substitutions)
-        with Path(self._h_paths.main_outer).open(mode='w') as f:
-            f.write(main_outer_result)
-
-    # def write_pkg_name_generic(self, template_path: Path, dest_path: Path):
-    #     template_text = pkgutil.get_data(
-    #         'hpkg.install_components', template_path.name).decode()
-    #     template = string.Template(template_text)
-    #     substitutions = {
-    #         'pkg_name': self._src_paths.orig_pkg.name
-    #     }
-    #     result = template.substitute(substitutions)
-    #     with dest_path.open(mode='w') as f:
-    #         f.write(result)
-
     def move_orig_safe_main(self):
         """Renames __main__.py in the H-package to old_main.py"""
 
@@ -122,45 +84,45 @@ class HpkgBuilder:
             print('Error when trying to rename __main__.py to old_main.py')
             exit(1)
 
-    def copy_outer_main(self):
-        """Copies H-pkg specific version of __main__.py to hpkg folder"""
-        shutil.copy2(self._src_paths.main_outer, self._h_paths.main_outer)
+    def simple_file_copy(self, paths_attr: str):
+        try:
+            shutil.copy2(getattr(self._src_paths, paths_attr),
+                         getattr(self._h_paths, paths_attr))
+        except FileNotFoundError:
+            print(f'Unable to find file when attempting to copy from'
+                  f'{str(getattr(self._src_paths, paths_attr))} to '
+                  f'{str(getattr(self._h_paths, paths_attr))}')
+        except FileExistsError:
+            print(f'File already exists at '
+                  f'{str(getattr(self._h_paths, paths_attr))}.')
+        except (OSError, Exception) as simple_copy_e:
+            print(f'Error when attempting to copy from'
+                  f'{str(getattr(self._src_paths, paths_attr))} to '
+                  f'{str(getattr(self._h_paths, paths_attr))}')
 
-    def copy_inner_main(self):
-        """Copies H-pkg specific version of __main__.py to hpkg folder"""
-        shutil.copy2(self._src_paths.main_inner, self._h_paths.main_inner)
-
-    def copy_hpkg_init(self):
-        shutil.copy2(self._src_paths.init, self._h_paths.init)
-
-    def inner_setup_off(self):
+    def modify_inner_pkg(self):
+        self.move_orig_safe_main()
+        self.simple_file_copy('main_inner')
         self._h_paths.setup_inner.rename(self._h_paths.setup_inner.parent /
                                          'setup_off.py')
 
-    def view_paths(self):
+    def add_srepkg_layer(self):
 
-        for src_path in self._src_paths:
-            print(src_path)
-        print()
-        for dest_path in self._h_paths:
-            print(dest_path)
+        self.copy_hpkg_components()
+        write_file_from_template('main_outer.py.template',
+                                 self._h_paths.main_outer, self.main_outer_subs)
+        write_file_from_template('pkg_name.py.template',
+                                 self._h_paths.header, self.header_subs)
+        write_file_from_template('setup.py.template', self._h_paths.setup_outer,
+                                 self.setup_subs)
+        self.simple_file_copy('init')
 
     def build_hpkg(self):
         """Build the hpkg then prints paths of original pkg, hpkg, and hpkg
         executable to terminal"""
-        self.copy_package()
-        self.copy_hpkg_components()
-        # self.view_paths()
-        self.move_orig_safe_main()
-
-        self.write_pkg_name_header()
-        self.write_pkg_name_setup()
-
-        # self.copy_outer_main()
-        self.write_outer_main_imports()
-        self.copy_inner_main()
-        self.copy_hpkg_init()
-        self.inner_setup_off()
+        self.copy_inner_package()
+        self.modify_inner_pkg()
+        self.add_srepkg_layer()
 
         print(f'H-package built from: {self._src_paths.orig_pkg}\n'
               f'H-package saved in: {self._h_paths.root}\n')
