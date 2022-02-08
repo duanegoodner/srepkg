@@ -23,8 +23,3 @@ class HpkgControlPaths(NamedTuple):
 
         return cls(safe_src=safe_src, venv_pkg=venv_pkg,
                    venv_py=venv_py, venv_pip=venv_pip)
-
-
-
-
-

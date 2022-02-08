@@ -9,15 +9,14 @@ class HpkgController:
 
     def __init__(self, safe_pkg_paths: HpkgControlPaths):
         self._paths = safe_pkg_paths
-        self._pkg_name = self._paths.safe_src.name
-        self._remove_patterns = [
-            '/build',
-            '/' + self._pkg_name + '.egg-info'
-        ]
 
     @classmethod
     def for_env_builder(cls, safe_src: Path):
         return cls(HpkgControlPaths.for_env_builder(safe_src))
+
+    @property
+    def pkg_name(self):
+        return self._paths.safe_src.name
 
     def build_venv(self):
         env_builder = venv.EnvBuilder(with_pip=True)
@@ -43,20 +42,8 @@ class HpkgController:
             self._paths.safe_src.parent / 'setup_off.py')
         return self
 
-    def remove_unwanted_dir(self, dir_path):
-        try:
-            shutil.rmtree(dir_path)
-        except (OSError, FileNotFoundError) as e:
-            pass
-        return self
-
-    def post_install_cleanup(self):
-        for base_name in self._remove_patterns:
-            self.remove_unwanted_dir(Path(__file__).parent.absolute() / base_name)
-        return self
-
     def run_inner_pkg(self, *pkg_args):
-        subprocess.call([self._paths.venv_py, '-m', self._pkg_name,
+        subprocess.call([self._paths.venv_py, '-m', self.pkg_name,
                          '--called_by_safe_pkg', self._paths.venv_pkg,
                          *pkg_args])
         return self
