@@ -20,11 +20,11 @@ class HpkgBuilder:
 
     install_components = Path(__file__).parent.absolute() / 'install_components'
 
-    def __init__(self, src_paths: pcalc.SrcPaths, h_paths: pcalc.DestPaths):
+    def __init__(self, src_paths: pcalc.BuildSrcPaths, h_paths: pcalc.BuildDestPaths):
         """
         Construct a new HpkgBuilder
-        :param src_paths: SrcPaths object built by path_calculator module
-        :param h_paths: DestPaths object built by path_calculator module
+        :param src_paths: BuildSrcPaths object built by path_calculator module
+        :param h_paths: BuildDestPaths object built by path_calculator module
         """
         self._src_paths = src_paths
         self._h_paths = h_paths

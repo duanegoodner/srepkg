@@ -1,10 +1,10 @@
 """
-Hpkg ("helmeted" package)
+Solo Re-Package (srepkg)
 =========================
 
-Builds a "H-packaged" version of an existing application.
-
-When the H-packaged version is launched, it automatically creates, loads
-dependencies into, and runs in its own new virtual env. The active environment
-used to launch the H-packaged application remains active and unchanged.
+Builds a re-packaged version of existing packaged application. When the
+re-packaged version of the app is launched, it automatically creates its own new
+virtual env and installs and runs the original package in the new env. The
+active environment used to launch the re-packaged application remains active and
+unchanged during and after installation and execution of the re-packaged app.
 """
