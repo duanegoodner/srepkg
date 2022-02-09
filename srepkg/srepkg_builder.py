@@ -51,7 +51,8 @@ class SrepkgBuilder:
     @property
     def setup_subs(self):
         """Substitution dictionary for writing SRE-package setup.py"""
-        return {'pkg_name_srepkg': self._src_paths.orig_pkg.name + 'srp'}
+        return {'pkg_name_srepkg': self._repkg_paths.root.name}
+        # return {'pkg_name_srepkg': self._src_paths.orig_pkg.name + 'srp'}
 
     @property
     def header_subs(self):
@@ -63,11 +64,11 @@ class SrepkgBuilder:
         """Substitution dictionary for writing SRE-package's __main___.py"""
         return {
             'header_import_path':
-                self._src_paths.orig_pkg.name +
-                'srp.srepkg_components.srepkg_header',
+                self._repkg_paths.root.name +
+                '.srepkg_components.srepkg_header',
             'controller_import_path':
-                self._src_paths.orig_pkg.name +
-                'srp.srepkg_components.srepkg_controller'
+                self._repkg_paths.root.name +
+                '.srepkg_components.srepkg_controller'
         }
 
     def copy_inner_package(self):
@@ -100,7 +101,7 @@ class SrepkgBuilder:
             print('It appears that the original module has a file named '
                   'old_main.py. The srepkg_builder needs that file name.')
             exit(1)
-        except (OSError, Exception) as e4:
+        except (OSError, Exception) as e_mvo:
             print('Error when trying to rename __main__.py to old_main.py')
             exit(1)
 
@@ -158,5 +159,5 @@ class SrepkgBuilder:
         self.modify_inner_pkg()
         self.add_srepkg_layer()
 
-        print(f'\nSRE-package built from: {self._src_paths.orig_pkg}\n'
-              f'SRE-package saved in: {self._repkg_paths.root}')
+        print(f'SRE-package built from: {self._src_paths.orig_pkg}\n'
+              f'SRE-package saved in: {self._repkg_paths.root}\n')

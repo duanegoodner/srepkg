@@ -24,12 +24,6 @@ def validate_root_paths(orig_pkg_path: Path, dest_path: Path):
     if dest_path.exists():
         print(str(dest_path), ' already exists.')
         exit(1)
-    if orig_pkg_path.is_relative_to(dest_path) or \
-            dest_path.is_relative_to(orig_pkg_path):
-        print('Building hpkg under the original package root will cause too '
-              'much confusion (at least in our opinion). Please choose'
-              'different hpkg location.')
-        exit(1)
 
 
 def calc_root_paths_from(args) -> tuple[Path, Path]:
@@ -42,12 +36,13 @@ def calc_root_paths_from(args) -> tuple[Path, Path]:
     """
 
     orig_pkg_path = Path(args.orig_pkg_path)
-    if args.srepkg_path:
-        dest_path = Path(args.srepkg_path)
+    if args.srepkg_name:
+        srepkg_name = args.srepkg_name
     else:
-        dest_path = Path(os.path.expanduser('~')) / 'srepkgs' / \
-                    (orig_pkg_path.name + '_srepkg_container') / \
-                    (orig_pkg_path.name + 'srp')
+        srepkg_name = orig_pkg_path.name + 'sr'
+
+    dest_path = Path.home() / 'srepkg_pkgs' / \
+        (orig_pkg_path.name + '_as_' + str(srepkg_name)) / srepkg_name
 
     validate_root_paths(orig_pkg_path, dest_path)
 
@@ -78,7 +73,7 @@ class BuilderDestPaths(NamedTuple):
     init: Path
 
 
-def create_builder_paths(orig_pkg_path: Path, dest_path: Path) ->\
+def create_builder_paths(orig_pkg_path: Path, dest_path: Path) -> \
         tuple[BuilderSrcPaths, BuilderDestPaths]:
     """
     Determines BuilderSrcPaths and BuilderDestPaths (each containing multiple

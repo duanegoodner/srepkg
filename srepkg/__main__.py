@@ -1,6 +1,6 @@
 """
 Entry point for the srepkg application. Command line syntax:
-$ python_interpreter_path srepkg -m orig_pkg_path [srepkg_path]
+$ python_interpreter_path srepkg -m orig_pkg_path [srepkg_name]
 """
 
 from srepkg.srepkg_builder import SrepkgBuilder
@@ -10,12 +10,16 @@ import srepkg.path_calculator as pc
 
 def main():
     """
-    Builds 'Solo Re-Packaged' (srepkg)  version of existing packaged app.
+    Builds 'Solo Re-Packaged' (srepkg) version of existing packaged app.
+    Command line syntax is:
+    $ python_interpreter_path srepkg -m orig_pkg_path [srepkg_name]
 
-    :param (from command line) orig_pkg_path = path of the package to be copied.
-    :param (optional, from command line) srepkg_path = path to location where
-    sre-packaged version will be built. Default value is:
-    ~/srepkgs/<orig_pkg_name>srepkg
+    Default value of srepkg_name is: <orig_pkg_name>sr
+    'orig_pkg_name' is the basename of orig_pkg_path (and the name of
+    the original package)
+
+    SRE-packaged version is saved in:
+     ~/srepkg_pkgs/<orig_pkg_name>_srepkg/<srepkg_name>
     """
     args = ci.get_args()
     orig_pkg_path, dest_path = pc.calc_root_paths_from(args)

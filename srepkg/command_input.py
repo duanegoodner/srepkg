@@ -10,13 +10,14 @@ def get_args():
     Collects and parses command line args.
 
     Expected command line syntax:
-    $ python_interpreter -m srepkg orig_pkg_path [srepkg_path]
+    $ python_interpreter -m srepkg orig_pkg_path [srepkg_name]
 
-    :return: Namespace with orig_pkg_path and (if provided) srepkg_path
+    :return: Namespace with orig_pkg_path and (if provided) srepkg_name
     """
     parser = argparse.ArgumentParser()
     parser.add_argument('orig_pkg_path')
-    parser.add_argument('srepkg_path', nargs='?')
+
+    parser.add_argument('srepkg_name', nargs='?')
     return parser.parse_args()
 
 

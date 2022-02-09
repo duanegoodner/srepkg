@@ -26,18 +26,19 @@ class HpkgController:
 
     def upgrade_pip(self):
         subprocess.call([self._paths.venv_py, '-m', 'pip', 'install',
-                         '--upgrade', 'pip'])
+                         '--upgrade', 'pip', '--quiet'])
         return self
 
     def install_utilities(self, *utility_packages):
-        subprocess.call([self._paths.venv_pip, 'install', *utility_packages])
+        subprocess.call([self._paths.venv_pip, 'install', *utility_packages,
+                         '--quiet'])
         return self
 
     def install_inner_pkg(self):
         (self._paths.safe_src.parent / 'setup_off.py').rename(
             self._paths.safe_src.parent / 'setup.py')
         subprocess.call([self._paths.venv_pip, 'install',
-                         self._paths.safe_src.parent / '.'])
+                         self._paths.safe_src.parent / '.', '--quiet'])
         (self._paths.safe_src.parent / 'setup.py').rename(
             self._paths.safe_src.parent / 'setup_off.py')
         return self
