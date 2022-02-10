@@ -1,5 +1,5 @@
-# Solo Repackage (srepkg)
+# Solo Repackage (srepkg) :package:
 
-:smirk:
+
 
 ## Description
