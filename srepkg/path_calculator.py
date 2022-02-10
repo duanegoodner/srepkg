@@ -26,7 +26,7 @@ def validate_root_paths(orig_pkg_path: Path, dest_path: Path):
         exit(1)
 
 
-def calc_root_paths_from(args) -> tuple[Path, Path]:
+def calc_root_paths_from(args):
     """
     Converts args (typically obtained from command line + argparse) into
     Path objects referencing orig package and srepackage root paths.
@@ -73,8 +73,7 @@ class BuilderDestPaths(NamedTuple):
     init: Path
 
 
-def create_builder_paths(orig_pkg_path: Path, dest_path: Path) -> \
-        tuple[BuilderSrcPaths, BuilderDestPaths]:
+def create_builder_paths(orig_pkg_path: Path, dest_path: Path):
     """
     Determines BuilderSrcPaths and BuilderDestPaths (each containing multiple
     paths) from root paths of original package and srepkg destination.
