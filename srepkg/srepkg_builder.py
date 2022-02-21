@@ -90,20 +90,20 @@ class SrepkgBuilder:
             print('Error when attempting to copy srepkg_components.')
             exit(1)
 
-    def move_orig_safe_main(self):
-        """Renames __main__.py in the SRE-package to old_main.py"""
-        try:
-            self._repkg_paths.main_inner.rename(self._repkg_paths.old_main)
-        except FileNotFoundError:
-            print('__main__ not found in copy of original package.')
-            exit(1)
-        except FileExistsError:
-            print('It appears that the original module has a file named '
-                  'old_main.py. The srepkg_builder needs that file name.')
-            exit(1)
-        except (OSError, Exception) as e_mvo:
-            print('Error when trying to rename __main__.py to old_main.py')
-            exit(1)
+    # def move_orig_safe_main(self):
+    #     """Renames __main__.py in the SRE-package to old_main.py"""
+    #     try:
+    #         self._repkg_paths.main_inner.rename(self._repkg_paths.old_main)
+    #     except FileNotFoundError:
+    #         print('__main__ not found in copy of original package.')
+    #         exit(1)
+    #     except FileExistsError:
+    #         print('It appears that the original module has a file named '
+    #               'old_main.py. The srepkg_builder needs that file name.')
+    #         exit(1)
+    #     except (OSError, Exception) as e_mvo:
+    #         print('Error when trying to rename __main__.py to old_main.py')
+    #         exit(1)
 
     def simple_file_copy(self, paths_attr: str):
         """Copies file from source to SRE-package based on attribute name
@@ -128,8 +128,8 @@ class SrepkgBuilder:
         Bundle of all methods that modify the inner (aka original) package
         inside the SRE-package.
         """
-        self.move_orig_safe_main()
-        self.simple_file_copy('main_inner')
+        # self.move_orig_safe_main()
+        # self.simple_file_copy('main_inner')
         self._repkg_paths.setup_inner.rename(
             self._repkg_paths.setup_inner.parent / 'setup_off.py')
 
@@ -140,14 +140,17 @@ class SrepkgBuilder:
         """
 
         self.copy_srepkg_components()
-        write_file_from_template('main_outer.py.template',
-                                 self._repkg_paths.main_outer,
-                                 self.main_outer_subs)
+        # write_file_from_template('main_outer.py.template',
+        #                          self._repkg_paths.main_outer,
+        #                          self.main_outer_subs)
         write_file_from_template('pkg_name.py.template',
                                  self._repkg_paths.header, self.header_subs)
-        write_file_from_template('setup.py.template',
-                                 self._repkg_paths.setup_outer,
-                                 self.setup_subs)
+
+        self.simple_file_copy('setup_outer')
+
+        # write_file_from_template('setup.py.template',
+        #                          self._repkg_paths.setup_outer,
+        #                          self.setup_subs)
         self.simple_file_copy('init')
 
     def build_srepkg(self):

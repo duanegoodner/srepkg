@@ -39,7 +39,7 @@ def calc_root_paths_from(args):
     if args.srepkg_name:
         srepkg_name = args.srepkg_name
     else:
-        srepkg_name = orig_pkg_path.name + 'sr'
+        srepkg_name = orig_pkg_path.name + 'srnew'
 
     dest_path = Path.home() / 'srepkg_pkgs' / \
         (orig_pkg_path.name + '_as_' + str(srepkg_name)) / srepkg_name
@@ -56,7 +56,7 @@ class BuilderSrcPaths(NamedTuple):
     srepkg_components: Path
     main_outer: Path
     main_inner: Path
-    setup_template: Path
+    setup_outer: Path
     init: Path
 
 
@@ -93,7 +93,7 @@ def create_builder_paths(orig_pkg_path: Path, dest_path: Path):
         srepkg_components=install_components / 'srepkg_components',
         main_outer=install_components / 'main_outer.py.template',
         main_inner=install_components / 'main_inner.py',
-        setup_template=install_components / 'setup.py.template'
+        setup_outer=install_components / 'setup.py'
     )
 
     h_paths = BuilderDestPaths(
