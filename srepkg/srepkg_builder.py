@@ -8,8 +8,13 @@ from pathlib import Path
 import string
 import pkgutil
 import shutil
+import configparser
 import srepkg.path_calculator as pcalc
+import srepkg.ep_console_script as epcs
+import srepkg.config_builder as cb
 
+
+# TODO modify copy order / folder structure to ensure no possible overwrite
 
 def write_file_from_template(template_name: str, dest_path: Path, subs: dict):
     """
@@ -49,27 +54,17 @@ class SrepkgBuilder:
         self._repkg_paths = repkg_paths
 
     @property
-    def setup_subs(self):
-        """Substitution dictionary for writing SRE-package setup.py"""
-        return {'pkg_name_srepkg': self._repkg_paths.root.name}
-        # return {'pkg_name_srepkg': self._src_paths.orig_pkg.name + 'srp'}
+    def src_paths(self):
+        return self._src_paths
+
+    @property
+    def repkg_paths(self):
+        return self._repkg_paths
 
     @property
     def header_subs(self):
         """Substitution dictionary for writing srepkg_header.py"""
         return {'pkg_name': self._src_paths.orig_pkg.name}
-
-    @property
-    def main_outer_subs(self):
-        """Substitution dictionary for writing SRE-package's __main___.py"""
-        return {
-            'header_import_path':
-                self._repkg_paths.root.name +
-                '.srepkg_components.srepkg_header',
-            'controller_import_path':
-                self._repkg_paths.root.name +
-                '.srepkg_components.srepkg_controller'
-        }
 
     def copy_inner_package(self):
         """Copies original package to SRE-package directory"""
@@ -90,20 +85,26 @@ class SrepkgBuilder:
             print('Error when attempting to copy srepkg_components.')
             exit(1)
 
-    # def move_orig_safe_main(self):
-    #     """Renames __main__.py in the SRE-package to old_main.py"""
-    #     try:
-    #         self._repkg_paths.main_inner.rename(self._repkg_paths.old_main)
-    #     except FileNotFoundError:
-    #         print('__main__ not found in copy of original package.')
-    #         exit(1)
-    #     except FileExistsError:
-    #         print('It appears that the original module has a file named '
-    #               'old_main.py. The srepkg_builder needs that file name.')
-    #         exit(1)
-    #     except (OSError, Exception) as e_mvo:
-    #         print('Error when trying to rename __main__.py to old_main.py')
-    #         exit(1)
+    def build_sr_cfg(self):
+        orig_config = configparser.ConfigParser()
+        orig_config.read(self._src_paths.orig_setup_cfg)
+
+        orig_config_ep_cs_list = \
+            orig_config['options.entry_points']['console_scripts'] \
+            .strip().splitlines()
+
+        sr_config_ep_cs_list = [
+            epcs.orig_to_sr_line(orig_line, str(self._repkg_paths.entry_points))
+            for orig_line in orig_config_ep_cs_list
+        ]
+
+        sr_config = configparser.ConfigParser()
+        sr_config.read(self._src_paths.setup_cfg_outer)
+        sr_config['options.entry_points']['console_scripts'] =\
+            '\n' + '\n'.join(sr_config_ep_cs_list)
+
+        with open(self._repkg_paths.setup_cfg_outer, 'w') as sr_configfile:
+            sr_config.write(sr_configfile)
 
     def simple_file_copy(self, paths_attr: str):
         """Copies file from source to SRE-package based on attribute name
@@ -130,8 +131,11 @@ class SrepkgBuilder:
         """
         # self.move_orig_safe_main()
         # self.simple_file_copy('main_inner')
-        self._repkg_paths.setup_inner.rename(
-            self._repkg_paths.setup_inner.parent / 'setup_off.py')
+        self._repkg_paths.setup_py_inner.rename(
+            self._repkg_paths.setup_py_inner.parent / 'setup_off.py')
+
+        self._repkg_paths.setup_cfg_inner.rename(
+            self._repkg_paths.setup_cfg_inner.parent / 'setup_off.cfg')
 
     def add_srepkg_layer(self):
         """
@@ -146,12 +150,9 @@ class SrepkgBuilder:
         write_file_from_template('pkg_name.py.template',
                                  self._repkg_paths.header, self.header_subs)
 
-        self.simple_file_copy('setup_outer')
-
-        # write_file_from_template('setup.py.template',
-        #                          self._repkg_paths.setup_outer,
-        #                          self.setup_subs)
+        self.simple_file_copy('setup_py_outer')
         self.simple_file_copy('init')
+        self.build_sr_cfg()
 
     def build_srepkg(self):
         """
@@ -160,7 +161,9 @@ class SrepkgBuilder:
         """
         self.copy_inner_package()
         self.modify_inner_pkg()
-        self.add_srepkg_layer()
+        self.build_sr_cfg()
+
+        # self.add_srepkg_layer()
 
         print(f'SRE-package built from: {self._src_paths.orig_pkg}\n'
               f'SRE-package saved in: {self._repkg_paths.root}\n')

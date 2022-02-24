@@ -52,11 +52,13 @@ def calc_root_paths_from(args):
 class BuilderSrcPaths(NamedTuple):
     """Named tuple of paths to be copied from during srepkg build"""
     orig_pkg: Path
+    orig_setup_cfg: Path
     name_template: Path
+    entry_template: Path
+    entry_point_template: Path
     srepkg_components: Path
-    main_outer: Path
-    main_inner: Path
-    setup_outer: Path
+    setup_py_outer: Path
+    setup_cfg_outer: Path
     init: Path
 
 
@@ -64,12 +66,13 @@ class BuilderDestPaths(NamedTuple):
     """Named tuple of paths where files are copied to during srepkg build"""
     root: Path
     header: Path
+    entry: Path
+    entry_points: Path
     srepkg_components: Path
-    main_outer: Path
-    main_inner: Path
-    old_main: Path
-    setup_outer: Path
-    setup_inner: Path
+    setup_cfg_outer: Path
+    setup_cfg_inner: Path
+    setup_py_outer: Path
+    setup_py_inner: Path
     init: Path
 
 
@@ -88,24 +91,27 @@ def create_builder_paths(orig_pkg_path: Path, dest_path: Path):
 
     src_paths = BuilderSrcPaths(
         orig_pkg=orig_pkg_path.parent.absolute(),
+        orig_setup_cfg=orig_pkg_path.parent / 'setup.cfg',
         init=install_components / 'srepkg_init.py',
         name_template=install_components / 'pkg_name.py.template',
+        entry_template=install_components / 'srepkg_entry.py.template',
+        entry_point_template=install_components / 'entry_point.py.template',
         srepkg_components=install_components / 'srepkg_components',
-        main_outer=install_components / 'main_outer.py.template',
-        main_inner=install_components / 'main_inner.py',
-        setup_outer=install_components / 'setup.py'
+        setup_py_outer=install_components / 'setup.py',
+        setup_cfg_outer=install_components / 'setup_template.cfg'
     )
 
     h_paths = BuilderDestPaths(
         root=dest_path,
-        setup_outer=dest_path.parent / 'setup.py',
+        setup_py_outer=dest_path.parent / 'setup.py',
         init=dest_path / '__init__.py',
         header=dest_path / 'srepkg_components' / 'srepkg_header.py',
+        entry=dest_path / 'srepkg_components' / 'srepkg_entry.py',
+        entry_points=dest_path / 'srepkg_entry_points',
         srepkg_components=dest_path / 'srepkg_components',
-        main_outer=dest_path / '__main__.py',
-        main_inner=dest_path / pkg_name / '__main__.py',
-        setup_inner=dest_path / 'setup.py',
-        old_main=dest_path / pkg_name / 'old_main.py'
+        setup_cfg_outer=dest_path.parent / 'setup.cfg',
+        setup_py_inner=dest_path / 'setup.py',
+        setup_cfg_inner=dest_path / 'setup.cfg'
     )
 
     return src_paths, h_paths

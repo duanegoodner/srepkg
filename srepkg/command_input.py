@@ -5,7 +5,7 @@ Module for collecting command line input.
 import argparse
 
 
-def get_args():
+def get_args(*args):
     """
     Collects and parses command line args.
 
@@ -18,7 +18,7 @@ def get_args():
     parser.add_argument('orig_pkg_path')
 
     parser.add_argument('srepkg_name', nargs='?')
-    return parser.parse_args()
+    return parser.parse_args(*args)
 
 
 

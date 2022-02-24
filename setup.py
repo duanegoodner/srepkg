@@ -11,7 +11,7 @@ setup(
     install_requires=[],
     author_email='dmgoodner@gmail.com',
     packages=setuptools.find_packages(),
-    package_data={"": ["*.template"]},
+    package_data={"": ["*.template", "*.cfg"]},
     include_package_data=True,
     zip_safe=False
 )

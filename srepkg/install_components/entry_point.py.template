@@ -1,0 +1,6 @@
+from $run_entry_funct_import_path import run_entry_funct
+
+entry_command = $entry_command
+
+def entry_funct():
+    run_entry_funct(entry_command)
