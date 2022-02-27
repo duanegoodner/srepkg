@@ -1,16 +1,16 @@
 import unittest
 import shutil
 import configparser
+from operator import attrgetter
 from pathlib import Path
 from srepkg.test.test_path_calculator import m_paths
 from srepkg.srepkg_builder import SrepkgBuilder
 from srepkg.test.persistent_locals import PersistentLocals
 import srepkg.ep_console_script as epcs
 
-
 my_orig_pkg = Path.home() / 'dproj' / 'my_project' / 'my_project'
-inner_pkg = Path.home() / 'srepkg_pkgs' /\
-                  (my_orig_pkg.name + '_as_' + my_orig_pkg.name + 'srnew')
+inner_pkg = Path.home() / 'srepkg_pkgs' / \
+            (my_orig_pkg.name + '_as_' + my_orig_pkg.name + 'srnew')
 srepkg_path = Path(__file__).parent.parent.absolute()
 
 
@@ -78,17 +78,14 @@ class TestSrepkgBuilder(unittest.TestCase):
 
         assert len(outer_config_cse_list) == len(orig_config_cse_list)
 
-        # TODO Sort cse_lists by particular key/name, and then compare
+        outer_config_cse_list.sort(key=attrgetter('command'))
+        orig_config_cse_list.sort(key=attrgetter('command'))
 
+        assert [entry.command for entry in outer_config_cse_list] ==\
+               [entry.command + '_sr' for entry in orig_config_cse_list]
 
+        # TODO add test for paths after creating cleaner way to get pathnames
 
-
-
-
-
-
-
-
-
-
+        assert [entry.funct for entry in outer_config_cse_list] ==\
+               [entry.funct for entry in orig_config_cse_list]
 
