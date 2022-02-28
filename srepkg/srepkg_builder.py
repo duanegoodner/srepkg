@@ -62,6 +62,10 @@ class SrepkgBuilder:
         return self._repkg_paths
 
     @property
+    def srepkg_name(self):
+        return self._repkg_paths.
+
+    @property
     def header_subs(self):
         """Substitution dictionary for writing srepkg_header.py"""
         return {'pkg_name': self._src_paths.orig_pkg.name}
@@ -69,7 +73,8 @@ class SrepkgBuilder:
     def copy_inner_package(self):
         """Copies original package to SRE-package directory"""
         try:
-            shutil.copytree(self._src_paths.orig_pkg, self._repkg_paths.root,
+            shutil.copytree(self._src_paths.orig_pkg_container,
+                            self._repkg_paths.root,
                             ignore=shutil.ignore_patterns(*self._ignore_types))
         except (OSError, FileNotFoundError, FileExistsError, Exception) as e_in:
             print('Error when attempting to copy original package '
