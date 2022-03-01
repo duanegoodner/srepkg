@@ -16,9 +16,12 @@ srepkg_path = Path(__file__).parent.parent.absolute()
 def m_paths(orig_pkg: Path):
     args = ci.get_args([str(orig_pkg)])
     my_orig_pkg_path, dest_path = pc.calc_root_paths_from(args)
+    pc.validate_root_paths(my_orig_pkg_path, dest_path)
+    pc.validate_orig_pkg(my_orig_pkg_path)
+    orig_pkg_info = pc.read_orig_pkg_info(my_orig_pkg_path)
     src_paths, h_paths = pc.create_builder_paths(my_orig_pkg_path, dest_path)
 
-    return src_paths, h_paths
+    return orig_pkg_info, src_paths, h_paths
 
 
 class TestPathCalc(unittest.TestCase):

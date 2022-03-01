@@ -5,7 +5,6 @@ from operator import attrgetter
 from pathlib import Path
 from srepkg.test.test_path_calculator import m_paths
 from srepkg.srepkg_builder import SrepkgBuilder
-from srepkg.test.persistent_locals import PersistentLocals
 import srepkg.ep_console_script as epcs
 
 my_orig_pkg = Path.home() / 'dproj' / 'my_project' / 'my_project'
@@ -19,8 +18,9 @@ class TestSrepkgBuilder(unittest.TestCase):
     def setUp(self) -> None:
         if inner_pkg.exists():
             shutil.rmtree(inner_pkg)
-        self.src_paths, self.h_paths = m_paths(my_orig_pkg)
-        self.srepkg_builder = SrepkgBuilder(self.src_paths, self.h_paths)
+        self.orig_pkg_info, self.src_paths, self.h_paths = m_paths(my_orig_pkg)
+        self.srepkg_builder = SrepkgBuilder(self.orig_pkg_info, self.src_paths,
+                                            self.h_paths)
 
     def test_srepkg_builder_paths(self):
         assert self.srepkg_builder._src_paths == self.src_paths
@@ -81,11 +81,13 @@ class TestSrepkgBuilder(unittest.TestCase):
         outer_config_cse_list.sort(key=attrgetter('command'))
         orig_config_cse_list.sort(key=attrgetter('command'))
 
-        assert [entry.command for entry in outer_config_cse_list] ==\
+        assert [entry.command for entry in outer_config_cse_list] == \
                [entry.command + '_sr' for entry in orig_config_cse_list]
 
-        # TODO add test for paths after creating cleaner way to get pathnames
+        assert [entry.module_path for entry in outer_config_cse_list] == \
+               [self.h_paths.inner_pkg_container.name +
+                '.' + self.h_paths.entry_points.name + '.' + orig_entry.funct
+                for orig_entry in orig_config_cse_list]
 
-        assert [entry.funct for entry in outer_config_cse_list] ==\
+        assert [entry.funct for entry in outer_config_cse_list] == \
                [entry.funct for entry in orig_config_cse_list]
-

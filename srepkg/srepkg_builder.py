@@ -42,7 +42,8 @@ class SrepkgBuilder:
     # file patterns that are not copied into the SRE-packaged app
     _ignore_types = ['*.git', '*.gitignore', '*.idea', '*__pycache__']
 
-    def __init__(self, src_paths: pcalc.BuilderSrcPaths,
+    def __init__(self, orig_pkg_info: pcalc.OrigPkgInfo,
+                 src_paths: pcalc.BuilderSrcPaths,
                  repkg_paths: pcalc.BuilderDestPaths):
         """
         Construct a new SrepkgBuilder
@@ -50,8 +51,13 @@ class SrepkgBuilder:
         :param repkg_paths: BuilderDestPaths object built by path_calculator
         module
         """
+        self._orig_pkg_info = orig_pkg_info
         self._src_paths = src_paths
         self._repkg_paths = repkg_paths
+
+    @property
+    def orig_pkg_info(self):
+        return self._orig_pkg_info
 
     @property
     def src_paths(self):
@@ -62,10 +68,6 @@ class SrepkgBuilder:
         return self._repkg_paths
 
     @property
-    def srepkg_name(self):
-        return self._repkg_paths.
-
-    @property
     def header_subs(self):
         """Substitution dictionary for writing srepkg_header.py"""
         return {'pkg_name': self._src_paths.orig_pkg.name}
@@ -73,7 +75,7 @@ class SrepkgBuilder:
     def copy_inner_package(self):
         """Copies original package to SRE-package directory"""
         try:
-            shutil.copytree(self._src_paths.orig_pkg_container,
+            shutil.copytree(self.orig_pkg_info.container_path,
                             self._repkg_paths.root,
                             ignore=shutil.ignore_patterns(*self._ignore_types))
         except (OSError, FileNotFoundError, FileExistsError, Exception) as e_in:
@@ -90,23 +92,26 @@ class SrepkgBuilder:
             print('Error when attempting to copy srepkg_components.')
             exit(1)
 
+    def orig_cse_to_sr_cse(self, orig_cse: epcs.CSEntry):
+        return epcs.CSEntry(
+            command=orig_cse.command + '_sr',
+            module_path=self.repkg_paths.inner_pkg_container.name + '.' +
+            self._repkg_paths.entry_points.name + '.' + orig_cse.funct,
+            funct=orig_cse.funct
+        )
+
     def build_sr_cfg(self):
-        orig_config = configparser.ConfigParser()
-        orig_config.read(self._src_paths.orig_setup_cfg)
-
-        orig_config_ep_cs_list = \
-            orig_config['options.entry_points']['console_scripts'] \
-            .strip().splitlines()
-
-        sr_config_ep_cs_list = [
-            epcs.orig_to_sr_line(orig_line, str(self._repkg_paths.entry_points))
-            for orig_line in orig_config_ep_cs_list
-        ]
-
         sr_config = configparser.ConfigParser()
         sr_config.read(self._src_paths.setup_cfg_outer)
-        sr_config['options.entry_points']['console_scripts'] =\
-            '\n' + '\n'.join(sr_config_ep_cs_list)
+        sr_config_ep_cs_list = [self.orig_cse_to_sr_cse(orig_cse) for orig_cse
+                                in self.orig_pkg_info.entry_pts]
+        sr_config_cs_lines = [epcs.build_cs_line(sr_cse) for sr_cse in
+                              sr_config_ep_cs_list]
+        sr_config['options.entry_points']['console_scripts'] = \
+            '\n' + '\n'.join(sr_config_cs_lines)
+
+        sr_config['metadata']['name'] =\
+            self.repkg_paths.inner_pkg_container.name
 
         with open(self._repkg_paths.setup_cfg_outer, 'w') as sr_configfile:
             sr_config.write(sr_configfile)

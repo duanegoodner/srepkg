@@ -1,7 +1,6 @@
 import configparser
 from typing import NamedTuple
 from pathlib import Path
-import srepkg.ep_console_script as epcs
 
 
 class CSEntry(NamedTuple):
@@ -48,7 +47,7 @@ def cfg_cs_list_to_cse_list(cfg_path: Path):
         print('Unable to obtain console script entries from .cfg file')
 
     try:
-        cse_list = [epcs.parse_cs_line(entry) for entry in ep_cs_list]
+        cse_list = [parse_cs_line(entry) for entry in ep_cs_list]
     except (TypeError, Exception):
         print('Unable to parse console script entries')
 

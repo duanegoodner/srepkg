@@ -15,7 +15,7 @@ def get_args(*args):
     :return: Namespace with orig_pkg_path and (if provided) srepkg_name
     """
     parser = argparse.ArgumentParser()
-    parser.add_argument('orig_pkg_path')
+    parser.add_argument('orig_pkg')
 
     parser.add_argument('srepkg_name', nargs='?')
     return parser.parse_args(*args)

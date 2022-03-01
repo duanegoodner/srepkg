@@ -6,7 +6,66 @@ package.
 import configparser
 from pathlib import Path
 from typing import NamedTuple, List
-import ep_console_script as epcs
+import srepkg.ep_console_script as epcs
+
+
+class OrigPkgInfo(NamedTuple):
+    pkg_name: str
+    container_path: Path
+    inner_pkg_path: Path
+    entry_pts: List[epcs.CSEntry]
+
+
+def validate_orig_pkg_path(orig_pkg: str) -> Path:
+    orig_pkg_path = Path(orig_pkg)
+
+    if not orig_pkg_path.exists():
+        print('Original package path not found.')
+        exit(1)
+
+    return orig_pkg_path
+
+
+def validate_setup_cfg(orig_pkg_path: Path):
+    setup_cfg_path = orig_pkg_path.parent.absolute() / 'setup.cfg'
+
+    if not setup_cfg_path.exists():
+        print('Original package setup.cfg file not found')
+        exit(1)
+
+
+def get_cfg_info(orig_pkg_path: Path):
+    pkg_name = ''
+
+    config = configparser.ConfigParser()
+
+    try:
+        config.read(orig_pkg_path.parent.absolute() / 'setup.cfg')
+    except (FileNotFoundError, KeyError, Exception):
+        print(f'Unable to read setup.cfg file')
+        exit(1)
+
+    try:
+        pkg_name = config['metadata']['name']
+    except (KeyError, Exception):
+        print('Unable to read package name')
+        exit(1)
+
+    cse_list = []
+    try:
+        ep_cs_list = config['options.entry_points']['console_scripts'] \
+            .strip().splitlines()
+        cse_list = [epcs.parse_cs_line(entry) for entry in ep_cs_list]
+    except (TypeError, Exception):
+        print('Unable to find any console script entry point for original'
+              'package')
+        exit(1)
+
+    return OrigPkgInfo(pkg_name=pkg_name, entry_pts=cse_list,
+                       inner_pkg_path=orig_pkg_path)
+
+
+
 
 
 def calc_root_paths_from(args):
@@ -18,7 +77,7 @@ def calc_root_paths_from(args):
     :return: tuple of Paths (orig_pkg_path, dest_path)
     """
 
-    orig_pkg_path = Path(args.orig_pkg_path)
+    orig_pkg_path = Path(args.orig_pkg)
     if args.srepkg_name:
         srepkg_name = args.srepkg_name
     else:
@@ -53,31 +112,25 @@ def validate_orig_pkg(orig_pkg_path: Path):
         exit(1)
 
 
-class OrigPkgInfo(NamedTuple):
-    pkg_name: str
-    container_path: Path
-    entry_pts: List[epcs.CSEntry]
-
-
 def read_orig_pkg_info(orig_pkg_path: Path):
     orig_config = configparser.ConfigParser()
     orig_config.read(orig_pkg_path.parent.absolute() / 'setup.cfg')
 
-    orig_pkg_name = ''
     try:
         orig_pkg_name = orig_config['metadata']['name']
     except (KeyError, Exception):
         print('Unable to obtain package name from original package setup.cfg.')
-        pass
 
-    try:
-        orig_pkg_name = orig_pkg_path.name
-        print('Obtained original package name from directory name.'
-              'Warning: If directory name does not match installed name, will'
-              'be unable to run inner package.')
-    except (FileNotFoundError, Exception):
-        print('Also unable to obtain original package name from directory name')
-        exit(1)
+        try:
+            orig_pkg_name = orig_pkg_path.name
+            print('Obtained original package name from directory name.'
+                  'Warning: If directory name does not match installed name,'
+                  'will be unable to run inner package.')
+        except (FileNotFoundError, Exception):
+            print(
+                'Also unable to obtain original package name from directory'
+                'name')
+            exit(1)
 
     cse_list = []
     try:
@@ -91,8 +144,8 @@ def read_orig_pkg_info(orig_pkg_path: Path):
 
     return OrigPkgInfo(pkg_name=orig_pkg_name,
                        container_path=orig_pkg_path.parent,
+                       inner_pkg_path=orig_pkg_path,
                        entry_pts=cse_list)
-
 
 
 class BuilderSrcPaths(NamedTuple):

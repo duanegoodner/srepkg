@@ -17,13 +17,15 @@ def main():
      ~/srepkg_pkgs/<orig_pkg_name>_srepkg/<srepkg_name>
     """
     args = ci.get_args()
+
+
     orig_pkg_path, dest_path = pc.calc_root_paths_from(args)
     pc.validate_root_paths(orig_pkg_path, dest_path)
     pc.validate_orig_pkg(orig_pkg_path)
     orig_pkg_info = pc.read_orig_pkg_info(orig_pkg_path)
 
     src_paths, h_paths = pc.create_builder_paths(orig_pkg_path, dest_path)
-    SrepkgBuilder(src_paths, h_paths).build_srepkg()
+    SrepkgBuilder(orig_pkg_info, src_paths, h_paths).build_srepkg()
 
 
 if __name__ == '__main__':
