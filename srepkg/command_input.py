@@ -19,10 +19,3 @@ def get_args(*args):
 
     parser.add_argument('srepkg_name', nargs='?')
     return parser.parse_args(*args)
-
-
-
-
-
-
-

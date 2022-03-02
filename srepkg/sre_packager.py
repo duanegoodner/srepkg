@@ -18,14 +18,18 @@ def main():
     """
     args = ci.get_args()
 
+    path_calculator = pc.PathCalculator(args)
+    path_calculator.validate_orig_pkg_path()
+    path_calculator.validate_setup_cfg()
+    orig_pkg_info = path_calculator.get_orig_cfg_info()
 
-    orig_pkg_path, dest_path = pc.calc_root_paths_from(args)
-    pc.validate_root_paths(orig_pkg_path, dest_path)
-    pc.validate_orig_pkg(orig_pkg_path)
-    orig_pkg_info = pc.read_orig_pkg_info(orig_pkg_path)
+    dest_paths = path_calculator.build_dest_paths(orig_pkg_info)
 
-    src_paths, h_paths = pc.create_builder_paths(orig_pkg_path, dest_path)
-    SrepkgBuilder(orig_pkg_info, src_paths, h_paths).build_srepkg()
+    SrepkgBuilder(
+        orig_pkg_info,
+        path_calculator.builder_src_paths,
+        dest_paths
+    ).build_srepkg()
 
 
 if __name__ == '__main__':

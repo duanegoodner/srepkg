@@ -1,82 +1,94 @@
 import unittest
 import shutil
 from pathlib import Path
+from operator import attrgetter
 from srepkg.test.persistent_locals import PersistentLocals
 import srepkg.command_input as ci
 import srepkg.path_calculator as pc
-
+import srepkg.ep_console_script as epcs
 
 my_orig_pkg = Path.home() / 'dproj' / 'my_project' / 'my_project'
-inner_pkg = Path.home() / 'srepkg_pkgs' /\
-                  (my_orig_pkg.name + '_as_' + my_orig_pkg.name + 'srnew')
-srepkg_path = Path(__file__).parent.parent.absolute()
+srepkg_root = Path.home() / 'srepkg_pkgs' / \
+            (my_orig_pkg.name + '_as_' + my_orig_pkg.name + 'srnew')
+
+my_orig_pkg_cs = '\nmy_project = my_project.__main__:main\n' \
+                 'my_test = my_project.test:first_test'
+my_orig_pkg_cse = [epcs.parse_cs_line(entry) for entry in
+                   my_orig_pkg_cs.strip().split('\n')]
+
+srepkg_app_path = Path(__file__).parent.parent.absolute()
 
 
 @PersistentLocals
-def m_paths(orig_pkg: Path):
+def p_calc(orig_pkg: Path):
     args = ci.get_args([str(orig_pkg)])
-    my_orig_pkg_path, dest_path = pc.calc_root_paths_from(args)
-    pc.validate_root_paths(my_orig_pkg_path, dest_path)
-    pc.validate_orig_pkg(my_orig_pkg_path)
-    orig_pkg_info = pc.read_orig_pkg_info(my_orig_pkg_path)
-    src_paths, h_paths = pc.create_builder_paths(my_orig_pkg_path, dest_path)
+    path_calculator = pc.PathCalculator(args)
+    path_calculator.validate_orig_pkg_path()
+    path_calculator.validate_setup_cfg()
+    orig_pkg_info = path_calculator.get_orig_cfg_info()
+    dest_paths = path_calculator.build_dest_paths(orig_pkg_info)
 
-    return orig_pkg_info, src_paths, h_paths
+    return orig_pkg_info, path_calculator.builder_src_paths, dest_paths
 
 
-class TestPathCalc(unittest.TestCase):
+class TestPathCalculator(unittest.TestCase):
 
     @classmethod
-    def setUpClass(cls):
-        if inner_pkg.exists():
-            shutil.rmtree(inner_pkg)
+    def setUpClass(cls) -> None:
+        if srepkg_root.exists():
+            shutil.rmtree(srepkg_root)
 
-        m_paths(my_orig_pkg)
+        p_calc(str(my_orig_pkg))
 
-    def test_locals_accessible(self):
-        print(m_paths.locals)
-
-    def test_args(self):
-        assert m_paths.locals['args'].orig_pkg_path == str(my_orig_pkg)
-        assert m_paths.locals['args'].srepkg_name is None
-
-    def test_root_paths(self):
-        assert Path(m_paths.locals['my_orig_pkg_path']) == my_orig_pkg
-        assert Path(m_paths.locals['dest_path']) == inner_pkg /\
-               'my_projectsrnew'
+    def test_standard_path_calc_locals_accessible(self):
+        print(p_calc.locals)
 
     def test_builder_src_paths(self):
-        src_paths = m_paths.locals['src_paths']
+        src_paths = p_calc.locals['path_calculator'].builder_src_paths
+        install_components = srepkg_app_path / 'install_components'
+        assert src_paths.sre_pkg_init == install_components / 'srepkg_init.py'
+        assert src_paths.entry_module_template == install_components / \
+               'srepkg_entry.py.template'
+        assert src_paths.entry_point_template == install_components / \
+               'entry_point.py.template'
+        assert src_paths.srepkg_components == install_components / \
+               'srepkg_components'
+        assert src_paths.srepkg_setup_py == install_components / 'setup.py'
+        assert src_paths.srepkg_setup_cfg == install_components / \
+               'setup_template.cfg'
 
-        assert src_paths.orig_setup_cfg == my_orig_pkg.parent / 'setup.cfg'
-        assert src_paths.name_template == srepkg_path /\
-               'install_components' / 'pkg_name.py.template'
-        assert src_paths.srepkg_components == srepkg_path /\
-               'install_components' / 'srepkg_components'
-        assert src_paths.setup_py_outer == srepkg_path /\
-               'install_components' / 'setup.py'
-        assert src_paths.setup_cfg_outer == srepkg_path /\
-               'install_components' / 'setup_template.cfg'
-        assert src_paths.init == srepkg_path / 'install_components' /\
-               'srepkg_init.py'
+    def test_orig_pkg_info(self):
+        orig_pkg_info = p_calc.locals['orig_pkg_info']
 
-    def test_builder_h_paths(self):
-        h_paths = m_paths.locals['h_paths']
-        assert h_paths.init == inner_pkg /\
-               (my_orig_pkg.name + 'srnew') / '__init__.py'
-        assert h_paths.srepkg_components == inner_pkg /\
-               (my_orig_pkg.name + 'srnew') / 'srepkg_components'
-        assert h_paths.setup_cfg_outer == inner_pkg / 'setup.cfg'
-        assert h_paths.setup_py_outer == inner_pkg / 'setup.py'
-        assert h_paths.root == inner_pkg / (my_orig_pkg.name + 'srnew')
-        assert h_paths.header == inner_pkg / (my_orig_pkg.name + 'srnew') /\
-               'srepkg_components' / 'srepkg_header.py'
-        assert h_paths.setup_py_inner == inner_pkg /\
-               (my_orig_pkg.name + 'srnew') / 'setup.py'
+        assert orig_pkg_info.pkg_name == 'my_project'
+        assert orig_pkg_info.root_path == my_orig_pkg.parent.absolute()
+        assert orig_pkg_info.entry_pts.sort(key=attrgetter('command')) ==\
+               my_orig_pkg_cse.sort(key=attrgetter('command'))
+
+    def test_dest_paths(self):
+        dest_paths = p_calc.locals['dest_paths']
+
+        srepkg_path = srepkg_root / (my_orig_pkg.name + 'srnew')
+        srepkg_components = srepkg_path / 'srepkg_components'
+        srepkg_entry_module = srepkg_components / 'entry_points.py'
+        srepkg_entry_points = srepkg_path / 'srepkg_entry_points'
+        srepkg_setup_cfg = srepkg_root / 'setup.cfg'
+        srepkg_setup_py = srepkg_root / 'setup.py'
+        srepkg_init = srepkg_path / '__init__.py'
+        my_orig_pkg_setup_cfg = srepkg_path / 'setup.cfg'
+        my_orig_pkg_setup_py = srepkg_path / 'setup.py'
+
+        assert dest_paths.root == srepkg_root
+        assert dest_paths.srepkg == srepkg_path
+        assert dest_paths.srepkg_components == srepkg_components
+        assert dest_paths.srepkg_entry_module == srepkg_entry_module
+        assert dest_paths.srepkg_entry_points == srepkg_entry_points
+        assert dest_paths.srepkg_setup_cfg == srepkg_setup_cfg
+        assert dest_paths.srepkg_setup_py == srepkg_setup_py
+        assert dest_paths.srepkg_init == srepkg_init
+        assert dest_paths.orig_pkg_setup_cfg == my_orig_pkg_setup_cfg
+        assert dest_paths.orig_pkg_setup_py == my_orig_pkg_setup_py
 
 
 if __name__ == '__main__':
     unittest.main()
-
-
-

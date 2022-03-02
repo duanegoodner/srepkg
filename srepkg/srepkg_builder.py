@@ -67,18 +67,13 @@ class SrepkgBuilder:
     def repkg_paths(self):
         return self._repkg_paths
 
-    @property
-    def header_subs(self):
-        """Substitution dictionary for writing srepkg_header.py"""
-        return {'pkg_name': self._src_paths.orig_pkg.name}
-
     def copy_inner_package(self):
         """Copies original package to SRE-package directory"""
         try:
-            shutil.copytree(self.orig_pkg_info.container_path,
-                            self._repkg_paths.root,
+            shutil.copytree(self.orig_pkg_info.root_path,
+                            self.repkg_paths.srepkg,
                             ignore=shutil.ignore_patterns(*self._ignore_types))
-        except (OSError, FileNotFoundError, FileExistsError, Exception) as e_in:
+        except (OSError, FileNotFoundError, FileExistsError, Exception):
             print('Error when attempting to copy original package '
                   'to new location.')
             exit(1)
@@ -86,23 +81,23 @@ class SrepkgBuilder:
     def copy_srepkg_components(self):
         """Copies srepkg components and driver to SRE-package directory"""
         try:
-            shutil.copytree(self._src_paths.srepkg_components,
-                            self._repkg_paths.srepkg_components)
-        except (OSError, FileNotFoundError, FileExistsError, Exception) as e_s:
+            shutil.copytree(self.src_paths.srepkg_components,
+                            self.repkg_paths.srepkg_components)
+        except (OSError, FileNotFoundError, FileExistsError, Exception):
             print('Error when attempting to copy srepkg_components.')
             exit(1)
 
     def orig_cse_to_sr_cse(self, orig_cse: epcs.CSEntry):
         return epcs.CSEntry(
             command=orig_cse.command + '_sr',
-            module_path=self.repkg_paths.inner_pkg_container.name + '.' +
-            self._repkg_paths.entry_points.name + '.' + orig_cse.funct,
+            module_path=self.repkg_paths.srepkg.name + '.' +
+            self.repkg_paths.srepkg_entry_points.name + '.' + orig_cse.funct,
             funct=orig_cse.funct
         )
 
     def build_sr_cfg(self):
         sr_config = configparser.ConfigParser()
-        sr_config.read(self._src_paths.setup_cfg_outer)
+        sr_config.read(self.src_paths.srepkg_setup_cfg)
         sr_config_ep_cs_list = [self.orig_cse_to_sr_cse(orig_cse) for orig_cse
                                 in self.orig_pkg_info.entry_pts]
         sr_config_cs_lines = [epcs.build_cs_line(sr_cse) for sr_cse in
@@ -110,18 +105,17 @@ class SrepkgBuilder:
         sr_config['options.entry_points']['console_scripts'] = \
             '\n' + '\n'.join(sr_config_cs_lines)
 
-        sr_config['metadata']['name'] =\
-            self.repkg_paths.inner_pkg_container.name
+        sr_config['metadata']['name'] = self.repkg_paths.srepkg.name
 
-        with open(self._repkg_paths.setup_cfg_outer, 'w') as sr_configfile:
+        with open(self.repkg_paths.srepkg_setup_cfg, 'w') as sr_configfile:
             sr_config.write(sr_configfile)
 
     def simple_file_copy(self, paths_attr: str):
         """Copies file from source to SRE-package based on attribute name
         in _src_paths and _repkg_paths. Requires same attribute name in each"""
         try:
-            shutil.copy2(getattr(self._src_paths, paths_attr),
-                         getattr(self._repkg_paths, paths_attr))
+            shutil.copy2(getattr(self.src_paths, paths_attr),
+                         getattr(self.repkg_paths, paths_attr))
         except FileNotFoundError:
             print(f'Unable to find file when attempting to copy from'
                   f'{str(getattr(self._src_paths, paths_attr))} to '
@@ -129,7 +123,7 @@ class SrepkgBuilder:
         except FileExistsError:
             print(f'File already exists at '
                   f'{str(getattr(self._repkg_paths, paths_attr))}.')
-        except (OSError, Exception) as simple_copy_e:
+        except (OSError, Exception):
             print(f'Error when attempting to copy from'
                   f'{str(getattr(self._src_paths, paths_attr))} to '
                   f'{str(getattr(self._repkg_paths, paths_attr))}')
@@ -141,11 +135,11 @@ class SrepkgBuilder:
         """
         # self.move_orig_safe_main()
         # self.simple_file_copy('main_inner')
-        self._repkg_paths.setup_py_inner.rename(
-            self._repkg_paths.setup_py_inner.parent / 'setup_off.py')
+        self.repkg_paths.orig_pkg_setup_py.rename(
+            self.repkg_paths.orig_pkg_setup_py.parent / 'setup_off.py')
 
-        self._repkg_paths.setup_cfg_inner.rename(
-            self._repkg_paths.setup_cfg_inner.parent / 'setup_off.cfg')
+        self.repkg_paths.orig_pkg_setup_cfg.rename(
+            self.repkg_paths.orig_pkg_setup_cfg.parent / 'setup_off.cfg')
 
     def add_srepkg_layer(self):
         """
@@ -157,8 +151,8 @@ class SrepkgBuilder:
         # write_file_from_template('main_outer.py.template',
         #                          self._repkg_paths.main_outer,
         #                          self.main_outer_subs)
-        write_file_from_template('pkg_name.py.template',
-                                 self._repkg_paths.header, self.header_subs)
+        # write_file_from_template('pkg_name.py.template',
+        #                          self._repkg_paths.header, self.header_subs)
 
         self.simple_file_copy('setup_py_outer')
         self.simple_file_copy('init')
@@ -175,5 +169,6 @@ class SrepkgBuilder:
 
         # self.add_srepkg_layer()
 
-        print(f'SRE-package built from: {self._src_paths.orig_pkg}\n'
-              f'SRE-package saved in: {self._repkg_paths.root}\n')
+        print(f'SRE-package built from:'
+              f'{self.orig_pkg_info.root_path / self.orig_pkg_info.pkg_name}\n'
+              f'SRE-package saved in: {self.repkg_paths.root}\n')
