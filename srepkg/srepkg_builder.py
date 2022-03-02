@@ -67,6 +67,16 @@ class SrepkgBuilder:
     def repkg_paths(self):
         return self._repkg_paths
 
+    @property
+    def entry_module_subs(self):
+        return {
+            'pkg_name':
+                self._repkg_paths.srepkg.name,
+            'controller_import_path':
+                self._repkg_paths.srepkg.name +
+                '.srepkg_components.srepkg_controller'
+        }
+
     def copy_inner_package(self):
         """Copies original package to SRE-package directory"""
         try:
@@ -133,8 +143,7 @@ class SrepkgBuilder:
         Bundle of all methods that modify the inner (aka original) package
         inside the SRE-package.
         """
-        # self.move_orig_safe_main()
-        # self.simple_file_copy('main_inner')
+
         self.repkg_paths.orig_pkg_setup_py.rename(
             self.repkg_paths.orig_pkg_setup_py.parent / 'setup_off.py')
 
@@ -148,14 +157,12 @@ class SrepkgBuilder:
         """
 
         self.copy_srepkg_components()
-        # write_file_from_template('main_outer.py.template',
-        #                          self._repkg_paths.main_outer,
-        #                          self.main_outer_subs)
-        # write_file_from_template('pkg_name.py.template',
-        #                          self._repkg_paths.header, self.header_subs)
+        write_file_from_template('srepkg_entry.py.template',
+                                 self._repkg_paths.srepkg_entry_module,
+                                 self.entry_module_subs)
 
-        self.simple_file_copy('setup_py_outer')
-        self.simple_file_copy('init')
+        self.simple_file_copy('srepkg_setup_py')
+        self.simple_file_copy('srepkg_init')
         self.build_sr_cfg()
 
     def build_srepkg(self):
@@ -167,7 +174,7 @@ class SrepkgBuilder:
         self.modify_inner_pkg()
         self.build_sr_cfg()
 
-        # self.add_srepkg_layer()
+        self.add_srepkg_layer()
 
         print(f'SRE-package built from:'
               f'{self.orig_pkg_info.root_path / self.orig_pkg_info.pkg_name}\n'

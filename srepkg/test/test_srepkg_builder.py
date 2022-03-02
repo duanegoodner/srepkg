@@ -92,3 +92,9 @@ class TestSrepkgBuilder(unittest.TestCase):
 
         assert [entry.funct for entry in outer_config_cse_list] == \
                [entry.funct for entry in orig_config_cse_list]
+
+    def test_add_srepkg_layer(self):
+        self.srepkg_builder.copy_inner_package()
+        self.srepkg_builder.modify_inner_pkg()
+        self.srepkg_builder.build_sr_cfg()
+        self.srepkg_builder.add_srepkg_layer()

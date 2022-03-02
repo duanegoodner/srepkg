@@ -35,7 +35,7 @@ class BuilderDestPaths(NamedTuple):
 
 
 class InstallCompSrcPaths(NamedTuple):
-    init: Path
+    srepkg_init: Path
     entry_module_template: Path
     entry_point_template: Path
     srepkg_components: Path
@@ -50,14 +50,14 @@ class BuilderSrcPaths(NamedTuple):
     srepkg_components: Path
     srepkg_setup_py: Path
     srepkg_setup_cfg: Path
-    sre_pkg_init: Path
+    srepkg_init: Path
 
 
 class PathCalculator:
     # ===== start of class variables =====
     install_components = Path(__file__).parent.absolute() / 'install_components'
     builder_src_paths = BuilderSrcPaths(
-        sre_pkg_init=install_components / 'srepkg_init.py',
+        srepkg_init=install_components / 'srepkg_init.py',
         entry_module_template=install_components / 'srepkg_entry.py.template',
         entry_point_template=install_components / 'entry_point.py.template',
         srepkg_components=install_components / 'srepkg_components',

@@ -1,7 +1,9 @@
 import argparse
 from pathlib import Path
-from $header_import_path import pkg_name
 from $controller_import_path import HpkgController
+
+
+pkg_name = '$pkg_name'
 
 
 def collect_pkg_args():

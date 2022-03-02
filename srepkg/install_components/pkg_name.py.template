@@ -1,9 +1,0 @@
-"""
-Header file to provide quick access to original package name from within
-SRE-packaged app.  Will be saved as srepkg_header.py inside srepkg_components
-directory of SRE-packaged app.
-"""
-
-
-pkg_name = '$pkg_name'
-
