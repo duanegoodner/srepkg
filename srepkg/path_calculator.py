@@ -27,6 +27,7 @@ class BuilderDestPaths(NamedTuple):
     srepkg_components: Path
     srepkg_entry_module: Path
     srepkg_entry_points: Path
+    srepkg_entry_points_init: Path
     srepkg_setup_cfg: Path
     srepkg_setup_py: Path
     srepkg_init: Path
@@ -151,6 +152,8 @@ class PathCalculator:
         orig_setup_cfg = srepkg_path / 'setup.cfg'
         orig_setup_py = srepkg_path / 'setup.py'
 
+        srepkg_entry_points_init = srepkg_entry_points / '__init__.py'
+
         srepkg_entry_module = srepkg_components / 'entry_points.py'
 
         return BuilderDestPaths(
@@ -159,6 +162,7 @@ class PathCalculator:
             srepkg_components=srepkg_components,
             srepkg_entry_module=srepkg_entry_module,
             srepkg_entry_points=srepkg_entry_points,
+            srepkg_entry_points_init=srepkg_entry_points_init,
             srepkg_setup_cfg=srepkg_setup_cfg,
             srepkg_init=srepkg_init,
             srepkg_setup_py=srepkg_setup_py,

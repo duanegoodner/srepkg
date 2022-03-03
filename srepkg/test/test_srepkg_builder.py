@@ -91,7 +91,7 @@ class TestSrepkgBuilder(unittest.TestCase):
                 for orig_entry in orig_config_cse_list]
 
         assert [entry.funct for entry in outer_config_cse_list] == \
-               [entry.funct for entry in orig_config_cse_list]
+               ['entry_funct' for entry in orig_config_cse_list]
 
     def test_add_srepkg_layer(self):
         self.srepkg_builder.copy_inner_package()

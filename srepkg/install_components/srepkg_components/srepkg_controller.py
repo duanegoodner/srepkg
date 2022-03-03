@@ -37,10 +37,18 @@ class HpkgController:
     def install_inner_pkg(self):
         (self._paths.safe_src.parent / 'setup_off.py').rename(
             self._paths.safe_src.parent / 'setup.py')
+        (self._paths.safe_src.parent / 'setup_off.cfg').rename(
+            self._paths.safe_src.parent / 'setup.cfg')
         subprocess.call([self._paths.venv_pip, 'install',
                          self._paths.safe_src.parent / '.', '--quiet'])
         (self._paths.safe_src.parent / 'setup.py').rename(
             self._paths.safe_src.parent / 'setup_off.py')
+        (self._paths.safe_src.parent / 'setup.cfg').rename(
+            self._paths.safe_src.parent / 'setup_off.cfg')
+        return self
+
+    def inner_pkg_entry_point(self, entry_command: str, *pkg_args):
+        subprocess.call([self._paths.venv_bin / entry_command, *pkg_args])
         return self
 
     def run_inner_pkg(self, *pkg_args):

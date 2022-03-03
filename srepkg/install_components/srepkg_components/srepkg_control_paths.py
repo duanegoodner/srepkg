@@ -6,6 +6,7 @@ from pathlib import Path
 class HpkgControlPaths(NamedTuple):
     safe_src: Path
     venv_pkg: Path
+    venv_bin: Path
     venv_py: Path
     venv_pip: Path
 
@@ -15,11 +16,12 @@ class HpkgControlPaths(NamedTuple):
             str(safe_src.name) + '_venv'
         )
 
+        venv_bin = venv_path.joinpath('bin')
         venv_py = venv_path.joinpath('bin/python')
         venv_pip = venv_path.joinpath('bin/pip')
         py_v = 'python' + str(version_info.major) + '.' + \
             str(version_info.minor)
         venv_pkg = venv_path.joinpath('lib', py_v, 'site-packages')
 
-        return cls(safe_src=safe_src, venv_pkg=venv_pkg,
+        return cls(safe_src=safe_src, venv_pkg=venv_pkg, venv_bin=venv_bin,
                    venv_py=venv_py, venv_pip=venv_pip)

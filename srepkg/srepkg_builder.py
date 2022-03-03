@@ -71,7 +71,7 @@ class SrepkgBuilder:
     def entry_module_subs(self):
         return {
             'pkg_name':
-                self._repkg_paths.srepkg.name,
+                self._orig_pkg_info.pkg_name,
             'controller_import_path':
                 self._repkg_paths.srepkg.name +
                 '.srepkg_components.srepkg_controller'
@@ -101,8 +101,8 @@ class SrepkgBuilder:
         return epcs.CSEntry(
             command=orig_cse.command + '_sr',
             module_path=self.repkg_paths.srepkg.name + '.' +
-            self.repkg_paths.srepkg_entry_points.name + '.' + orig_cse.funct,
-            funct=orig_cse.funct
+            self.repkg_paths.srepkg_entry_points.name + '.' + orig_cse.command,
+            funct='entry_funct'
         )
 
     def build_sr_cfg(self):
@@ -120,23 +120,48 @@ class SrepkgBuilder:
         with open(self.repkg_paths.srepkg_setup_cfg, 'w') as sr_configfile:
             sr_config.write(sr_configfile)
 
-    def simple_file_copy(self, paths_attr: str):
+    def write_entry_point_file(self, orig_cse: epcs.CSEntry):
+        entry_point_subs = {
+            'entry_module': self._repkg_paths.srepkg.name +
+                            '.srepkg_components.entry_points',
+            'entry_command': orig_cse.command
+        }
+
+        write_file_from_template('entry_point.py.template',
+                                 self._repkg_paths.srepkg_entry_points /
+                                 (orig_cse.command + '.py'), entry_point_subs)
+
+    def write_entry_point_init(self):
+        entry_pt_imports = [
+            f'import {self._repkg_paths.srepkg.name}.srepkg_entry_points.' \
+            f'{cse.command}' for cse in self.orig_pkg_info.entry_pts
+        ]
+
+        with open(self._repkg_paths.srepkg_entry_points_init, 'w') as ent_init:
+            for import_entry in entry_pt_imports:
+                ent_init.write(import_entry + '\n')
+
+    def simple_file_copy(self, src_key: str, dest_key: str):
         """Copies file from source to SRE-package based on attribute name
         in _src_paths and _repkg_paths. Requires same attribute name in each"""
         try:
-            shutil.copy2(getattr(self.src_paths, paths_attr),
-                         getattr(self.repkg_paths, paths_attr))
+            shutil.copy2(getattr(self.src_paths, src_key),
+                         getattr(self.repkg_paths, dest_key))
         except FileNotFoundError:
             print(f'Unable to find file when attempting to copy from'
-                  f'{str(getattr(self._src_paths, paths_attr))} to '
-                  f'{str(getattr(self._repkg_paths, paths_attr))}')
+                  f'{str(getattr(self._src_paths, src_key))} to '
+                  f'{str(getattr(self._repkg_paths, dest_key))}')
+            exit(1)
+
         except FileExistsError:
             print(f'File already exists at '
-                  f'{str(getattr(self._repkg_paths, paths_attr))}.')
+                  f'{str(getattr(self._repkg_paths, dest_key))}.')
+            exit(1)
         except (OSError, Exception):
             print(f'Error when attempting to copy from'
-                  f'{str(getattr(self._src_paths, paths_attr))} to '
-                  f'{str(getattr(self._repkg_paths, paths_attr))}')
+                  f'{str(getattr(self._src_paths, src_key))} to '
+                  f'{str(getattr(self._repkg_paths, dest_key))}')
+            exit(1)
 
     def modify_inner_pkg(self):
         """
@@ -161,9 +186,18 @@ class SrepkgBuilder:
                                  self._repkg_paths.srepkg_entry_module,
                                  self.entry_module_subs)
 
-        self.simple_file_copy('srepkg_setup_py')
-        self.simple_file_copy('srepkg_init')
+        self.simple_file_copy(src_key='srepkg_setup_py',
+                              dest_key='srepkg_setup_py')
+        self.simple_file_copy(src_key='srepkg_init', dest_key='srepkg_init')
         self.build_sr_cfg()
+
+        self._repkg_paths.srepkg_entry_points.mkdir()
+        self.write_entry_point_init()
+        # self.simple_file_copy(src_key='srepkg_init',
+        #                       dest_key='srepkg_entry_points_init')
+
+        for entry_pt in self.orig_pkg_info.entry_pts:
+            self.write_entry_point_file(entry_pt)
 
     def build_srepkg(self):
         """
