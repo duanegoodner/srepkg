@@ -1,0 +1,10 @@
+[metadata]
+name = example
+
+[options]
+packages = find:
+install_requires =
+    numpy
+cmdclass =
+    install = build.CustomInstallCommand
+

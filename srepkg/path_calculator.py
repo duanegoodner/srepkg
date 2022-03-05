@@ -128,7 +128,7 @@ class PathCalculator:
         else:
             srepkg_name = orig_pkg_info.pkg_name + self.auto_srepkg_suffix
 
-        dest_root_path = self.srepkg_pkgs_dir / (orig_pkg_info.pkg_name + \
+        dest_root_path = self.srepkg_pkgs_dir / (orig_pkg_info.pkg_name +
                                                  '_as_' + srepkg_name)
 
         if dest_root_path.exists():
