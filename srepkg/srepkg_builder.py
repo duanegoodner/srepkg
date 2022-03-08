@@ -68,6 +68,13 @@ class SrepkgBuilder:
         return self._repkg_paths
 
     @property
+    def pkg_names_subs(self):
+        return {
+            'inner_pkg_name': self._orig_pkg_info.pkg_name,
+            'sre_pkg_name': self._repkg_paths.srepkg.name,
+        }
+
+    @property
     def entry_module_subs(self):
         return {
             'pkg_name':
@@ -121,15 +128,20 @@ class SrepkgBuilder:
             sr_config.write(sr_configfile)
 
     def write_entry_point_file(self, orig_cse: epcs.CSEntry):
-        entry_point_subs = {
-            'entry_module': self._repkg_paths.srepkg.name +
-                            '.srepkg_components.entry_points',
-            'entry_command': orig_cse.command
-        }
+        # entry_point_subs = {
+        #     'entry_module': self._repkg_paths.srepkg.name +
+        #                     '.srepkg_components.entry_points',
+        #     'entry_command': orig_cse.command
+        # }
 
-        write_file_from_template('entry_point.py.template',
-                                 self._repkg_paths.srepkg_entry_points /
-                                 (orig_cse.command + '.py'), entry_point_subs)
+        shutil.copy2(self._src_paths.entry_point_template,
+                     self._repkg_paths.srepkg_entry_points /
+                     (orig_cse.command + '.py'))
+
+        #
+        # write_file_from_template('entry_point.py.template',
+        #                          self._repkg_paths.srepkg_entry_points /
+        #                          (orig_cse.command + '.py'), entry_point_subs)
 
     def write_entry_point_init(self):
         entry_pt_imports = [
@@ -182,13 +194,19 @@ class SrepkgBuilder:
         """
 
         self.copy_srepkg_components()
-        write_file_from_template('srepkg_entry.py.template',
-                                 self._repkg_paths.srepkg_entry_module,
-                                 self.entry_module_subs)
 
         self.simple_file_copy(src_key='srepkg_setup_py',
                               dest_key='srepkg_setup_py')
         self.simple_file_copy(src_key='srepkg_init', dest_key='srepkg_init')
+        self.simple_file_copy(src_key='inner_pkg_installer',
+                              dest_key='inner_pkg_installer')
+
+        write_file_from_template('pkg_names.py.template',
+                                 self._repkg_paths.pkg_names_outer,
+                                 self.pkg_names_subs)
+        write_file_from_template('pkg_names.py.template',
+                                 self._repkg_paths.pkg_names_inner,
+                                 self.pkg_names_subs)
         self.build_sr_cfg()
 
         self._repkg_paths.srepkg_entry_points.mkdir()
