@@ -152,6 +152,7 @@ class SrepkgBuilder:
         with open(self._repkg_paths.srepkg_entry_points_init, 'w') as ent_init:
             for import_entry in entry_pt_imports:
                 ent_init.write(import_entry + '\n')
+            ent_init.write('\n')
 
     def simple_file_copy(self, src_key: str, dest_key: str):
         """Copies file from source to SRE-package based on attribute name
@@ -206,6 +207,9 @@ class SrepkgBuilder:
                                  self.pkg_names_subs)
         write_file_from_template('pkg_names.py.template',
                                  self._repkg_paths.pkg_names_inner,
+                                 self.pkg_names_subs)
+        write_file_from_template('MANIFEST.in.template',
+                                 self._repkg_paths.manifest,
                                  self.pkg_names_subs)
         self.build_sr_cfg()
 

@@ -28,6 +28,7 @@ class BuilderDestPaths(NamedTuple):
     srepkg_entry_points: Path
     srepkg_entry_points_init: Path
     inner_pkg_installer: Path
+    manifest: Path
     pkg_names_outer: Path
     pkg_names_inner: Path
     srepkg_setup_cfg: Path
@@ -41,6 +42,7 @@ class BuilderSrcPaths(NamedTuple):
     """Named tuple of paths to be copied from during srepkg build"""
     entry_point_template: Path
     inner_pkg_installer: Path
+    manifest_template: Path
     pkg_names_template: Path
     srepkg_components: Path
     srepkg_setup_py: Path
@@ -55,6 +57,7 @@ class PathCalculator:
         srepkg_init=install_components / 'srepkg_init.py',
         entry_point_template=install_components / 'entry_point_template.py',
         inner_pkg_installer=install_components / 'inner_pkg_installer.py',
+        manifest_template=install_components / 'MANIFEST.in.template',
         pkg_names_template=install_components / 'pkg_names.py.template',
         srepkg_components=install_components / 'srepkg_components',
         srepkg_setup_py=install_components / 'setup.py',
@@ -140,6 +143,7 @@ class PathCalculator:
         srepkg_setup_py = srepkg_root_path / 'setup.py'
         srepkg_setup_cfg = srepkg_root_path / 'setup.cfg'
         inner_pkg_installer = srepkg_root_path / 'inner_pkg_installer.py'
+        manifest = srepkg_root_path / 'MANIFEST.in'
         pkg_names_outer = srepkg_root_path / 'pkg_names.py'
         srepkg_path = srepkg_root_path / srepkg_info.pkg_name
         srepkg_init = srepkg_path / '__init__.py'
@@ -151,7 +155,6 @@ class PathCalculator:
 
         srepkg_entry_points_init = srepkg_entry_points / '__init__.py'
 
-
         return BuilderDestPaths(
             root=srepkg_info.root_path,
             srepkg=srepkg_path,
@@ -160,6 +163,7 @@ class PathCalculator:
             srepkg_entry_points_init=srepkg_entry_points_init,
             srepkg_setup_cfg=srepkg_setup_cfg,
             inner_pkg_installer=inner_pkg_installer,
+            manifest=manifest,
             pkg_names_outer=pkg_names_outer,
             pkg_names_inner=pkg_names_inner,
             srepkg_init=srepkg_init,

@@ -49,17 +49,16 @@ class InnerPkgInstaller:
         return self
 
     def install_inner_pkg(self):
-        # (self._paths.inner_src.parent / 'setup_off.py').rename(
-        #     self._paths.inner_src.parent / 'setup.py')
-        # (self._paths.inner_src.parent / 'setup_off.cfg').rename(
-        #     self._paths.inner_src.parent / 'setup.cfg')
-
+        (self._paths.inner_src.parent / 'setup_off.py').rename(
+            self._paths.inner_src.parent / 'setup.py')
+        (self._paths.inner_src.parent / 'setup_off.cfg').rename(
+            self._paths.inner_src.parent / 'setup.cfg')
         subprocess.call([self._paths.venv_pip, 'install',
                          self._paths.inner_src.parent / '.', '--quiet'])
-        # (self._paths.inner_src.parent / 'setup.py').rename(
-        #     self._paths.inner_src.parent / 'setup_off.py')
-        # (self._paths.inner_src.parent / 'setup.cfg').rename(
-        #     self._paths.inner_src.parent / 'setup_off.cfg')
+        (self._paths.inner_src.parent / 'setup.py').rename(
+            self._paths.inner_src.parent / 'setup_off.py')
+        (self._paths.inner_src.parent / 'setup.cfg').rename(
+            self._paths.inner_src.parent / 'setup_off.cfg')
         return self
 
 
