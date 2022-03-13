@@ -11,7 +11,6 @@ import shutil
 import configparser
 import srepkg.path_calculator as pcalc
 import srepkg.ep_console_script as epcs
-import srepkg.config_builder as cb
 
 
 # TODO modify copy order / folder structure to ensure no possible overwrite
@@ -188,6 +187,13 @@ class SrepkgBuilder:
         self.repkg_paths.orig_pkg_setup_cfg.rename(
             self.repkg_paths.orig_pkg_setup_cfg.parent / 'setup_off.cfg')
 
+        self.repkg_paths.main_inner.rename(self.repkg_paths.main_inner_orig)
+        shutil.copy2(self._src_paths.main_inner, self._repkg_paths.main_inner)
+
+        write_file_from_template('pkg_names.py.template',
+                                 self._repkg_paths.pkg_names_inner,
+                                 self.pkg_names_subs)
+
     def add_srepkg_layer(self):
         """
         Encapsulates work required to wrap srepkg file structure around modified
@@ -201,12 +207,13 @@ class SrepkgBuilder:
         self.simple_file_copy(src_key='srepkg_init', dest_key='srepkg_init')
         self.simple_file_copy(src_key='inner_pkg_installer',
                               dest_key='inner_pkg_installer')
+        self.simple_file_copy(src_key='main_outer', dest_key='main_outer')
 
         write_file_from_template('pkg_names.py.template',
                                  self._repkg_paths.pkg_names_outer,
                                  self.pkg_names_subs)
         write_file_from_template('pkg_names.py.template',
-                                 self._repkg_paths.pkg_names_inner,
+                                 self._repkg_paths.pkg_names_mid,
                                  self.pkg_names_subs)
         write_file_from_template('MANIFEST.in.template',
                                  self._repkg_paths.manifest,

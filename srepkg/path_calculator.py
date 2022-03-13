@@ -30,12 +30,17 @@ class BuilderDestPaths(NamedTuple):
     inner_pkg_installer: Path
     manifest: Path
     pkg_names_outer: Path
+    pkg_names_mid: Path
     pkg_names_inner: Path
     srepkg_setup_cfg: Path
     srepkg_setup_py: Path
     srepkg_init: Path
     orig_pkg_setup_cfg: Path
     orig_pkg_setup_py: Path
+    main_outer: Path
+    main_inner: Path
+    main_inner_orig: Path
+
 
 
 class BuilderSrcPaths(NamedTuple):
@@ -48,6 +53,8 @@ class BuilderSrcPaths(NamedTuple):
     srepkg_setup_py: Path
     srepkg_setup_cfg: Path
     srepkg_init: Path
+    main_outer: Path
+    main_inner: Path
 
 
 class PathCalculator:
@@ -61,7 +68,9 @@ class PathCalculator:
         pkg_names_template=install_components / 'pkg_names.py.template',
         srepkg_components=install_components / 'srepkg_components',
         srepkg_setup_py=install_components / 'setup.py',
-        srepkg_setup_cfg=install_components / 'setup_template.cfg'
+        srepkg_setup_cfg=install_components / 'setup_template.cfg',
+        main_outer=install_components / 'main_outer.py',
+        main_inner=install_components / 'main_inner.py'
     )
 
     srepkg_pkgs_dir = Path.home() / 'srepkg_pkgs'
@@ -147,13 +156,19 @@ class PathCalculator:
         pkg_names_outer = srepkg_root_path / 'pkg_names.py'
         srepkg_path = srepkg_root_path / srepkg_info.pkg_name
         srepkg_init = srepkg_path / '__init__.py'
-        pkg_names_inner = srepkg_path / 'pkg_names.py'
+        pkg_names_mid = srepkg_path / 'pkg_names.py'
         srepkg_components = srepkg_path / 'srepkg_components'
         srepkg_entry_points = srepkg_path / 'srepkg_entry_points'
         orig_setup_cfg = srepkg_path / 'setup.cfg'
         orig_setup_py = srepkg_path / 'setup.py'
-
+        main_outer = srepkg_path / '__main__.py'
         srepkg_entry_points_init = srepkg_entry_points / '__init__.py'
+
+        inner_pkg = srepkg_path / orig_pkg_info.pkg_name
+        pkg_names_inner = inner_pkg / 'pkg_names.py'
+        main_inner = inner_pkg / '__main__.py'
+        main_inner_orig = inner_pkg / 'orig_main.py'
+
 
         return BuilderDestPaths(
             root=srepkg_info.root_path,
@@ -165,11 +180,15 @@ class PathCalculator:
             inner_pkg_installer=inner_pkg_installer,
             manifest=manifest,
             pkg_names_outer=pkg_names_outer,
+            pkg_names_mid=pkg_names_mid,
             pkg_names_inner=pkg_names_inner,
             srepkg_init=srepkg_init,
             srepkg_setup_py=srepkg_setup_py,
             orig_pkg_setup_cfg=orig_setup_cfg,
-            orig_pkg_setup_py=orig_setup_py
+            orig_pkg_setup_py=orig_setup_py,
+            main_outer=main_outer,
+            main_inner=main_inner,
+            main_inner_orig=main_inner_orig
         )
 
 
