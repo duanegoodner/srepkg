@@ -175,7 +175,7 @@ class SrepkgBuilder:
                   f'{str(getattr(self._repkg_paths, dest_key))}')
             exit(1)
 
-    def modify_inner_pkg(self):
+    def inner_pkg_install_inhibit(self):
         """
         Bundle of all methods that modify the inner (aka original) package
         inside the SRE-package.
@@ -187,6 +187,7 @@ class SrepkgBuilder:
         self.repkg_paths.orig_pkg_setup_cfg.rename(
             self.repkg_paths.orig_pkg_setup_cfg.parent / 'setup_off.cfg')
 
+    def enable_dash_m_entry(self):
         self.repkg_paths.main_inner.rename(self.repkg_paths.main_inner_orig)
         shutil.copy2(self._src_paths.main_inner, self._repkg_paths.main_inner)
 
@@ -234,10 +235,13 @@ class SrepkgBuilder:
         original package and SRE-package paths when complete.
         """
         self.copy_inner_package()
-        self.modify_inner_pkg()
+        self.inner_pkg_install_inhibit()
         self.build_sr_cfg()
 
         self.add_srepkg_layer()
+
+        if self._repkg_paths.main_inner.exists():
+            self.enable_dash_m_entry()
 
         print(f'SRE-package built from:'
               f'{self.orig_pkg_info.root_path / self.orig_pkg_info.pkg_name}\n'
