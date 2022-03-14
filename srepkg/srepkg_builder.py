@@ -107,7 +107,7 @@ class SrepkgBuilder:
         return epcs.CSEntry(
             command=orig_cse.command + '_sr',
             module_path=self.repkg_paths.srepkg.name + '.' +
-            self.repkg_paths.srepkg_entry_points.name + '.' + orig_cse.command,
+                        self.repkg_paths.srepkg_entry_points.name + '.' + orig_cse.command,
             funct='entry_funct'
         )
 
@@ -127,20 +127,10 @@ class SrepkgBuilder:
             sr_config.write(sr_configfile)
 
     def write_entry_point_file(self, orig_cse: epcs.CSEntry):
-        # entry_point_subs = {
-        #     'entry_module': self._repkg_paths.srepkg.name +
-        #                     '.srepkg_components.entry_points',
-        #     'entry_command': orig_cse.command
-        # }
 
         shutil.copy2(self._src_paths.entry_point_template,
                      self._repkg_paths.srepkg_entry_points /
                      (orig_cse.command + '.py'))
-
-        #
-        # write_file_from_template('entry_point.py.template',
-        #                          self._repkg_paths.srepkg_entry_points /
-        #                          (orig_cse.command + '.py'), entry_point_subs)
 
     def write_entry_point_init(self):
         entry_pt_imports = [
@@ -181,11 +171,11 @@ class SrepkgBuilder:
         inside the SRE-package.
         """
 
-        self.repkg_paths.orig_pkg_setup_py.rename(
-            self.repkg_paths.orig_pkg_setup_py.parent / 'setup_off.py')
+        self.repkg_paths.inner_setup_py_active.rename(
+            self.repkg_paths.inner_setup_py_inactive)
 
-        self.repkg_paths.orig_pkg_setup_cfg.rename(
-            self.repkg_paths.orig_pkg_setup_cfg.parent / 'setup_off.cfg')
+        self.repkg_paths.inner_setup_cfg_active.rename(
+            self.repkg_paths.inner_setup_cfg_inactive)
 
     def enable_dash_m_entry(self):
         self.repkg_paths.main_inner.rename(self.repkg_paths.main_inner_orig)
@@ -194,6 +184,28 @@ class SrepkgBuilder:
         write_file_from_template('pkg_names.py.template',
                                  self._repkg_paths.pkg_names_inner,
                                  self.pkg_names_subs)
+
+        self.rebuild_inner_cfg_cse()
+
+    def rebuild_inner_cs_lines(self):
+        orig_inner_main = self._orig_pkg_info.pkg_name + '.' + '__main__'
+
+        return [
+            epcs.build_cs_line(entry_pt) if
+            entry_pt.module_path != orig_inner_main else
+            epcs.build_cs_line(
+                entry_pt, with_redirect=True,
+                new_path=self._orig_pkg_info.pkg_name + '.' + 'orig_main')
+            for entry_pt in self.orig_pkg_info.entry_pts
+        ]
+
+    def rebuild_inner_cfg_cse(self):
+        inner_config = configparser.ConfigParser()
+        inner_config.read(self._repkg_paths.inner_setup_cfg_inactive)
+        inner_config['options.entry_points']['console_scripts'] =\
+            '\n' + '\n'.join(self.rebuild_inner_cs_lines())
+        with open(self._repkg_paths.inner_setup_cfg_inactive, 'w') as inner_cf_file:
+            inner_config.write(inner_cf_file)
 
     def add_srepkg_layer(self):
         """
@@ -223,8 +235,6 @@ class SrepkgBuilder:
 
         self._repkg_paths.srepkg_entry_points.mkdir()
         self.write_entry_point_init()
-        # self.simple_file_copy(src_key='srepkg_init',
-        #                       dest_key='srepkg_entry_points_init')
 
         for entry_pt in self.orig_pkg_info.entry_pts:
             self.write_entry_point_file(entry_pt)
@@ -235,7 +245,11 @@ class SrepkgBuilder:
         original package and SRE-package paths when complete.
         """
         self.copy_inner_package()
+
+        # TODO only need one of these (they do same thing)
+
         self.inner_pkg_install_inhibit()
+
         self.build_sr_cfg()
 
         self.add_srepkg_layer()

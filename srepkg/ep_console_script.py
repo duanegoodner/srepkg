@@ -18,8 +18,17 @@ def parse_cs_line(cfg_file_line: str):
     return CSEntry(command=command, module_path=module_path, funct=funct)
 
 
-def build_cs_line(cs_entry: CSEntry):
-    return cs_entry.command + ' = ' + cs_entry.module_path + ':' + cs_entry.funct
+def build_cs_line(cs_entry: CSEntry, with_redirect=False, new_path: str=None):
+
+    if not with_redirect:
+        module_path = cs_entry.module_path
+    else:
+        if not new_path:
+            print('Must provide new_path parameter when with_redirect is True')
+            exit(1)
+        module_path = new_path
+
+    return cs_entry.command + ' = ' + module_path + ':' + cs_entry.funct
 
 
 def orig_to_sr_line(orig_line: str, sr_entry_points: str):

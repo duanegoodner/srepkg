@@ -16,7 +16,7 @@ if inner_pkg.exists():
 src_paths, h_paths = m_paths(my_orig_pkg)
 srepkg_builder = SrepkgBuilder(src_paths, h_paths)
 
-print(srepkg_builder.src_paths.orig_setup_cfg)
+print(srepkg_builder.src_paths.orig_setup_cfg_active)
 
 config = configparser.ConfigParser()
 config.read(srepkg_builder.src_paths.orig_setup_cfg)

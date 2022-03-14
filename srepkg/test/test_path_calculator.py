@@ -75,8 +75,8 @@ class TestPathCalculator(unittest.TestCase):
         srepkg_setup_cfg = srepkg_root / 'setup.cfg'
         srepkg_setup_py = srepkg_root / 'setup.py'
         srepkg_init = srepkg_path / '__init__.py'
-        my_orig_pkg_setup_cfg = srepkg_path / 'setup.cfg'
-        my_orig_pkg_setup_py = srepkg_path / 'setup.py'
+        my_inner_setup_cfg_active = srepkg_path / 'setup.cfg'
+        my_inner_setup_py_active = srepkg_path / 'setup.py'
 
         assert dest_paths.root == srepkg_root
         assert dest_paths.srepkg == srepkg_path
@@ -86,8 +86,8 @@ class TestPathCalculator(unittest.TestCase):
         assert dest_paths.srepkg_setup_cfg == srepkg_setup_cfg
         assert dest_paths.srepkg_setup_py == srepkg_setup_py
         assert dest_paths.srepkg_init == srepkg_init
-        assert dest_paths.orig_pkg_setup_cfg == my_orig_pkg_setup_cfg
-        assert dest_paths.orig_pkg_setup_py == my_orig_pkg_setup_py
+        assert dest_paths.inner_setup_cfg_active == my_inner_setup_cfg_active
+        assert dest_paths.inner_setup_py_active == my_inner_setup_py_active
 
 
 if __name__ == '__main__':

@@ -35,8 +35,10 @@ class BuilderDestPaths(NamedTuple):
     srepkg_setup_cfg: Path
     srepkg_setup_py: Path
     srepkg_init: Path
-    orig_pkg_setup_cfg: Path
-    orig_pkg_setup_py: Path
+    inner_setup_cfg_active: Path
+    inner_setup_cfg_inactive: Path
+    inner_setup_py_active: Path
+    inner_setup_py_inactive: Path
     main_outer: Path
     main_inner: Path
     main_inner_orig: Path
@@ -159,8 +161,10 @@ class PathCalculator:
         pkg_names_mid = srepkg_path / 'pkg_names.py'
         srepkg_components = srepkg_path / 'srepkg_components'
         srepkg_entry_points = srepkg_path / 'srepkg_entry_points'
-        orig_setup_cfg = srepkg_path / 'setup.cfg'
-        orig_setup_py = srepkg_path / 'setup.py'
+        inner_setup_cfg_active = srepkg_path / 'setup.cfg'
+        inner_setup_cfg_inactive = srepkg_path / 'setup_off.cfg'
+        inner_setup_py_active = srepkg_path / 'setup.py'
+        inner_setup_py_inactive = srepkg_path / 'setup_off.py'
         main_outer = srepkg_path / '__main__.py'
         srepkg_entry_points_init = srepkg_entry_points / '__init__.py'
 
@@ -184,8 +188,10 @@ class PathCalculator:
             pkg_names_inner=pkg_names_inner,
             srepkg_init=srepkg_init,
             srepkg_setup_py=srepkg_setup_py,
-            orig_pkg_setup_cfg=orig_setup_cfg,
-            orig_pkg_setup_py=orig_setup_py,
+            inner_setup_cfg_active=inner_setup_cfg_active,
+            inner_setup_cfg_inactive=inner_setup_cfg_inactive,
+            inner_setup_py_active=inner_setup_py_active,
+            inner_setup_py_inactive=inner_setup_py_inactive,
             main_outer=main_outer,
             main_inner=main_inner,
             main_inner_orig=main_inner_orig
