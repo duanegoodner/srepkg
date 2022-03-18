@@ -1,7 +1,7 @@
 import argparse
 from pathlib import Path
 from .pkg_names import inner_pkg_name
-from .srepkg_components.srepkg_controller import HpkgController
+from .srepkg_control_components.srepkg_controller import HpkgController
 
 
 def main():

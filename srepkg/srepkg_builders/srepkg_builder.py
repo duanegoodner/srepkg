@@ -25,7 +25,7 @@ def write_file_from_template(template_name: str, dest_path: Path, subs: dict):
     :param subs: dictionary of template_key: replacement_string entries.
     """
     template_text = pkgutil.get_data(
-        'srepkg.install_components', template_name).decode()
+        'srepkg.repackaging_components', template_name).decode()
     template = string.Template(template_text)
     result = template.substitute(subs)
     with dest_path.open(mode='w') as output_file:
@@ -80,7 +80,7 @@ class SrepkgBuilder:
                 self._orig_pkg_info.pkg_name,
             'controller_import_path':
                 self._repkg_paths.srepkg.name +
-                '.srepkg_components.srepkg_controller'
+                '.srepkg_control_components.srepkg_controller'
         }
 
     def copy_inner_package(self):
@@ -94,20 +94,20 @@ class SrepkgBuilder:
                   'to new location.')
             exit(1)
 
-    def copy_srepkg_components(self):
+    def copy_srepkg_control_components(self):
         """Copies srepkg components and driver to SRE-package directory"""
         try:
-            shutil.copytree(self.src_paths.srepkg_components,
-                            self.repkg_paths.srepkg_components)
+            shutil.copytree(self.src_paths.srepkg_control_components,
+                            self.repkg_paths.srepkg_control_components)
         except (OSError, FileNotFoundError, FileExistsError, Exception):
-            print('Error when attempting to copy srepkg_components.')
+            print('Error when attempting to copy srepkg_control_components.')
             exit(1)
 
     def orig_cse_to_sr_cse(self, orig_cse: epcs.CSEntry):
         return epcs.CSEntry(
-            command=orig_cse.command + '_sr',
+            command=orig_cse.command,
             module_path=self.repkg_paths.srepkg.name + '.' +
-                        self.repkg_paths.srepkg_entry_points.name + '.' + orig_cse.command,
+            self.repkg_paths.srepkg_entry_points.name + '.' + orig_cse.command,
             funct='entry_funct'
         )
 
@@ -202,9 +202,10 @@ class SrepkgBuilder:
     def rebuild_inner_cfg_cse(self):
         inner_config = configparser.ConfigParser()
         inner_config.read(self._repkg_paths.inner_setup_cfg_inactive)
-        inner_config['options.entry_points']['console_scripts'] =\
+        inner_config['options.entry_points']['console_scripts'] = \
             '\n' + '\n'.join(self.rebuild_inner_cs_lines())
-        with open(self._repkg_paths.inner_setup_cfg_inactive, 'w') as inner_cf_file:
+        with open(self._repkg_paths.inner_setup_cfg_inactive,
+                  'w') as inner_cf_file:
             inner_config.write(inner_cf_file)
 
     def add_srepkg_layer(self):
@@ -213,7 +214,7 @@ class SrepkgBuilder:
         copy of inner package.
         """
 
-        self.copy_srepkg_components()
+        self.copy_srepkg_control_components()
 
         self.simple_file_copy(src_key='srepkg_setup_py',
                               dest_key='srepkg_setup_py')

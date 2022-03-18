@@ -13,10 +13,10 @@ import srepkg.srepkg_builders.ep_console_script as epcs
 
 
 def calc_builder_src_paths():
-    install_components = Path(
-        __file__).parent.parent.absolute() / 'install_components'
-    src_names, src_paths = file_structure_walk(file_structure=fs.install_components,
-                                        root_path=install_components)
+    repackaging_components = Path(
+        __file__).parent.parent.absolute() / 'repackaging_components'
+    src_names, src_paths = file_structure_walk(file_structure=fs.repackaging_components,
+                                        root_path=repackaging_components)
     return BuilderSrcPaths(*src_paths)
 
 

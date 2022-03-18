@@ -29,11 +29,7 @@ def main():
                                                  args.srepkg_name)
     dest_paths = dest_path_calculator.build_dest_paths()
 
-    SrepkgBuilder(
-        orig_pkg_info,
-        builder_src_paths,
-        dest_paths
-    ).build_srepkg()
+    SrepkgBuilder(orig_pkg_info, builder_src_paths, dest_paths).build_srepkg()
 
 
 if __name__ == '__main__':

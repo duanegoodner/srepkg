@@ -3,12 +3,12 @@ from pathlib import Path
 
 
 class BuilderSrcPaths(NamedTuple):
-    srepkg_components: Path
-    srepkg_components_init: Path
+    srepkg_control_components: Path
+    srepkg_control_components_init: Path
     entry_module: Path
     srepkg_control_paths: Path
     srepkg_controller: Path
-    install_components_init: Path
+    repackaging_components_init: Path
     entry_point_template: Path
     inner_pkg_installer: Path
     main_inner: Path

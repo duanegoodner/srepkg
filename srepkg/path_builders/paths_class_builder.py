@@ -34,8 +34,8 @@ def build_paths_class(shortcut_names: List[str], class_name: str,
 
 def main():
     src_names, src_paths = file_structure_walk(
-        fs.install_components, Path(__file__).parent.parent.absolute() /
-        'install_components')
+        fs.repackaging_components, Path(__file__).parent.parent.absolute() /
+        'repackaging_components')
 
     builder_src_paths_path = Path(__file__).parent.absolute() / \
         'builder_src_paths.py'

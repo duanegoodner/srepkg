@@ -5,14 +5,14 @@ SCF = NamedTuple('SCF', [('pname', str), ('sc', str)])
 SCD = NamedTuple('SCD', [('pname', str), ('sc', str), ('contents', List)])
 
 
-install_components = \
-    [SCD(pname='srepkg_components', sc='srepkg_components', contents=[
-        SCF(pname='__init__.py', sc='srepkg_components_init'),
+repackaging_components = \
+    [SCD(pname='srepkg_control_components', sc='srepkg_control_components', contents=[
+        SCF(pname='__init__.py', sc='srepkg_control_components_init'),
         SCF(pname='entry_points.py', sc='entry_module'),
         SCF(pname='srepkg_control_paths.py', sc='srepkg_control_paths'),
         SCF(pname='srepkg_controller.py', sc='srepkg_controller')
     ]),
-     SCF(pname='__init__.py', sc='install_components_init'),
+     SCF(pname='__init__.py', sc='repackaging_components_init'),
      SCF(pname='entry_point_template.py', sc='entry_point_template'),
      SCF(pname='inner_pkg_installer.py', sc='inner_pkg_installer'),
      SCF(pname='main_inner.py', sc='main_inner'),
@@ -30,9 +30,9 @@ def get_builder_dest(root_name: str = 'dummy_root',
     return [
         SCD(pname=root_name, sc='root', contents=[
             SCD(pname=srepkg_name, sc='srepkg', contents=[
-                SCD(pname='srepkg_components', sc='srepkg_components',
+                SCD(pname='srepkg_control_components', sc='srepkg_control_components',
                     contents=[
-                        SCF(pname='__init__.py', sc='srepkg_components_init'),
+                        SCF(pname='__init__.py', sc='srepkg_control_components_init'),
                         SCF(pname='entry_points.py', sc='entry_module'),
                         SCF(pname='srepkg_control_paths.py',
                             sc='srepkg_control_paths'),

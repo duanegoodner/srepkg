@@ -1,5 +1,5 @@
 from pathlib import Path
-from ..srepkg_components.entry_points import run_entry_funct
+from ..srepkg_control_components.entry_points import run_entry_funct
 
 
 # entry_command = '$entry_command'

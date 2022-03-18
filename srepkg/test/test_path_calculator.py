@@ -51,16 +51,16 @@ class TestPathCalculator(unittest.TestCase):
 
     def test_builder_src_paths(self):
         src_paths = p_calc.locals['builder_src_paths']
-        install_components = srepkg_app_path / 'install_components'
-        assert src_paths.srepkg_init == install_components / 'srepkg_init.py'
-        assert src_paths.entry_module == install_components /\
-               'srepkg_components' / 'entry_points.py'
-        assert src_paths.entry_point_template == install_components / \
+        repackaging_components = srepkg_app_path / 'repackaging_components'
+        assert src_paths.srepkg_init == repackaging_components / 'srepkg_init.py'
+        assert src_paths.entry_module == repackaging_components /\
+               'srepkg_control_components' / 'entry_points.py'
+        assert src_paths.entry_point_template == repackaging_components / \
                'entry_point_template.py'
-        assert src_paths.srepkg_components == install_components / \
-               'srepkg_components'
-        assert src_paths.srepkg_setup_py == install_components / 'setup.py'
-        assert src_paths.srepkg_setup_cfg == install_components / \
+        assert src_paths.srepkg_control_components == repackaging_components / \
+               'srepkg_control_components'
+        assert src_paths.srepkg_setup_py == repackaging_components / 'setup.py'
+        assert src_paths.srepkg_setup_cfg == repackaging_components / \
                'setup_template.cfg'
 
     def test_orig_pkg_info(self):
@@ -75,8 +75,8 @@ class TestPathCalculator(unittest.TestCase):
         dest_paths = p_calc.locals['dest_paths']
 
         srepkg_path = srepkg_root / (my_orig_pkg.name + 'srnew')
-        srepkg_components = srepkg_path / 'srepkg_components'
-        srepkg_entry_module = srepkg_components / 'entry_points.py'
+        srepkg_control_components = srepkg_path / 'srepkg_control_components'
+        srepkg_entry_module = srepkg_control_components / 'entry_points.py'
         srepkg_entry_points = srepkg_path / 'srepkg_entry_points'
         srepkg_setup_cfg = srepkg_root / 'setup.cfg'
         srepkg_setup_py = srepkg_root / 'setup.py'
@@ -86,7 +86,7 @@ class TestPathCalculator(unittest.TestCase):
 
         assert dest_paths.root == srepkg_root
         assert dest_paths.srepkg == srepkg_path
-        assert dest_paths.srepkg_components == srepkg_components
+        assert dest_paths.srepkg_control_components == srepkg_control_components
         assert dest_paths.entry_module == srepkg_entry_module
         assert dest_paths.srepkg_entry_points == srepkg_entry_points
         assert dest_paths.srepkg_setup_cfg == srepkg_setup_cfg

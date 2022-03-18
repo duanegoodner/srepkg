@@ -5,8 +5,8 @@ from pathlib import Path
 class BuilderDestPaths(NamedTuple):
     root: Path
     srepkg: Path
-    srepkg_components: Path
-    srepkg_components_init: Path
+    srepkg_control_components: Path
+    srepkg_control_components_init: Path
     entry_module: Path
     srepkg_control_paths: Path
     srepkg_controller: Path
