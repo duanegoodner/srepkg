@@ -2,12 +2,12 @@
 import shutil
 import configparser
 from pathlib import Path
-from srepkg.test.test_path_calculator import m_paths
-from srepkg.builders.srepkg_builder import SrepkgBuilder
+from src.srepkg.test.test_path_calculator import m_paths
+from src.srepkg import SrepkgBuilder
 
 my_orig_pkg = Path.home() / 'dproj' / 'my_project' / 'my_project'
 inner_pkg = Path.home() / 'srepkg_pkgs' /\
-                  (my_orig_pkg.name + '_as_' + my_orig_pkg.name + 'srnew')
+                  (my_orig_pkg.name + '_as_' + my_orig_pkg.name + 'srepkg')
 srepkg_path = Path(__file__).parent.parent.absolute()
 
 if inner_pkg.exists():

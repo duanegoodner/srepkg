@@ -6,11 +6,11 @@ from srepkg.test.persistent_locals import PersistentLocals
 import srepkg.input.orig_pkg_inspector as ipi
 import srepkg.input.command_input as ci
 import srepkg.path_builders.path_calculator as pc
-import srepkg.srepkg_builders.ep_console_script as epcs
+from srepkg.srepkg_builders import ep_console_script as epcs
 
 my_orig_pkg = Path.home() / 'dproj' / 'my_project' / 'my_project'
 srepkg_root = Path.home() / 'srepkg_pkgs' / \
-            (my_orig_pkg.name + '_as_' + my_orig_pkg.name + 'srnew')
+            (my_orig_pkg.name + '_as_' + my_orig_pkg.name + 'srepkg')
 
 my_orig_pkg_cs = '\nmy_project = my_project.__main__:main\n' \
                  'my_test = my_project.test:first_test'
@@ -74,7 +74,7 @@ class TestPathCalculator(unittest.TestCase):
     def test_dest_paths(self):
         dest_paths = p_calc.locals['dest_paths']
 
-        srepkg_path = srepkg_root / (my_orig_pkg.name + 'srnew')
+        srepkg_path = srepkg_root / (my_orig_pkg.name + 'srepkg')
         srepkg_control_components = srepkg_path / 'srepkg_control_components'
         srepkg_entry_module = srepkg_control_components / 'entry_points.py'
         srepkg_entry_points = srepkg_path / 'srepkg_entry_points'

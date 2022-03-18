@@ -10,7 +10,7 @@ import pkgutil
 import shutil
 import configparser
 import srepkg.path_builders.path_calculator as pcalc
-import srepkg.srepkg_builders.ep_console_script as epcs
+from srepkg.srepkg_builders import ep_console_script as epcs
 
 
 # TODO modify copy order / folder structure to ensure no possible overwrite

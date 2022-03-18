@@ -9,7 +9,7 @@ from srepkg.path_builders.builder_src_paths import BuilderSrcPaths
 from srepkg.path_builders.builder_dest_paths import BuilderDestPaths
 from srepkg.path_builders.paths_class_builder import file_structure_walk
 import srepkg.path_builders.file_structures as fs
-import srepkg.srepkg_builders.ep_console_script as epcs
+from srepkg.srepkg_builders import ep_console_script as epcs
 
 
 def calc_builder_src_paths():
@@ -35,7 +35,7 @@ class DestPathCalculator:
     # TODO implement 'check' to ensure file structure is same now as it was when paths classes were created
     # ===== start of class variables =====
     srepkg_pkgs_dir = Path.home() / 'srepkg_pkgs'
-    auto_srepkg_suffix = 'srnew'
+    auto_srepkg_suffix = 'srepkg'
     # ===== end of class variables =====
 
     def __init__(self, orig_pkg_info: OrigPkgInfo,

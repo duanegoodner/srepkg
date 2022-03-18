@@ -1,5 +1,5 @@
 from pathlib import Path
-import srepkg.input.command_input as ci
+import src.srepkg.input.command_input as ci
 
 arg_1 = str(Path.home() / 'dproj' / 'my_project' / 'my_project')
 arg_2 = 'custom_package_name'

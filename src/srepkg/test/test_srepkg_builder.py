@@ -5,11 +5,11 @@ from operator import attrgetter
 from pathlib import Path
 from srepkg.test.test_path_calculator import p_calc
 from srepkg.srepkg_builders.srepkg_builder import SrepkgBuilder
-import srepkg.srepkg_builders.ep_console_script as epcs
+from srepkg.srepkg_builders import ep_console_script as epcs
 
 my_orig_pkg = Path.home() / 'dproj' / 't_proj' / 't_proj'
 inner_pkg = Path.home() / 'srepkg_pkgs' / \
-            (my_orig_pkg.name + '_as_' + my_orig_pkg.name + 'srnew')
+            (my_orig_pkg.name + '_as_' + my_orig_pkg.name + 'srepkg')
 srepkg_path = Path(__file__).parent.parent.absolute()
 
 
@@ -83,7 +83,7 @@ class TestSrepkgBuilder(unittest.TestCase):
         orig_config_cse_list.sort(key=attrgetter('command'))
 
         assert [entry.command for entry in outer_config_cse_list] == \
-               [entry.command + '_sr' for entry in orig_config_cse_list]
+               [entry.command for entry in orig_config_cse_list]
 
         assert [entry.module_path for entry in outer_config_cse_list] == \
                [self.h_paths.srepkg.name +

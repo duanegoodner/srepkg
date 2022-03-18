@@ -1,7 +1,7 @@
 import configparser
 from pathlib import Path
 from typing import NamedTuple, List
-import srepkg.srepkg_builders.ep_console_script as epcs
+from srepkg.srepkg_builders import ep_console_script as epcs
 
 
 class OrigPkgInfo(NamedTuple):
