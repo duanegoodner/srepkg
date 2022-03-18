@@ -1,4 +1,4 @@
-from srepkg.builders.srepkg_builder import SrepkgBuilder
+from srepkg.srepkg_builders.srepkg_builder import SrepkgBuilder
 import srepkg.input.command_input as ci
 import srepkg.input.orig_pkg_inspector as ipi
 import srepkg.path_builders.path_calculator as pc
