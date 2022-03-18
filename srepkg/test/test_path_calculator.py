@@ -3,8 +3,9 @@ import shutil
 from pathlib import Path
 from operator import attrgetter
 from srepkg.test.persistent_locals import PersistentLocals
+import srepkg.orig_pkg_inspector as ipi
 import srepkg.command_input as ci
-import srepkg.path_calculator as pc
+import srepkg.paths_classes_builder.path_calculator_2 as pc
 import srepkg.ep_console_script as epcs
 
 my_orig_pkg = Path.home() / 'dproj' / 'my_project' / 'my_project'
@@ -22,11 +23,19 @@ srepkg_app_path = Path(__file__).parent.parent.absolute()
 @PersistentLocals
 def p_calc(orig_pkg: Path):
     args = ci.get_args([str(orig_pkg)])
-    path_calculator = pc.PathCalculator(args)
-    path_calculator.validate_orig_pkg_path()
-    path_calculator.validate_setup_cfg()
-    orig_pkg_info = path_calculator.get_orig_cfg_info()
-    dest_paths = path_calculator.build_dest_paths(orig_pkg_info)
+
+    inner_pkg_inspector = ipi.OrigPkgInspector(args.orig_pkg) \
+        .validate_orig_pkg_path().validate_setup_cfg()
+    orig_pkg_info = inner_pkg_inspector.get_orig_pkg_info()
+
+    path_calculator = pc.PathCalculator(orig_pkg_info, args.srepkg_name)
+    dest_paths = path_calculator.build_dest_paths()
+
+    # path_calculator = pc.PathCalculator(args)
+    # path_calculator.validate_orig_pkg_path()
+    # path_calculator.validate_setup_cfg()
+    # orig_pkg_info = path_calculator.get_orig_cfg_info()
+    # dest_paths = path_calculator.build_dest_paths(orig_pkg_info)
 
     return orig_pkg_info, path_calculator.builder_src_paths, dest_paths
 
@@ -46,11 +55,11 @@ class TestPathCalculator(unittest.TestCase):
     def test_builder_src_paths(self):
         src_paths = p_calc.locals['path_calculator'].builder_src_paths
         install_components = srepkg_app_path / 'install_components'
-        assert src_paths.sre_pkg_init == install_components / 'srepkg_init.py'
-        assert src_paths.entry_module_template == install_components / \
-               'srepkg_entry.py.template'
+        assert src_paths.srepkg_init == install_components / 'srepkg_init.py'
+        assert src_paths.entry_module == install_components /\
+               'srepkg_components' / 'entry_points.py'
         assert src_paths.entry_point_template == install_components / \
-               'entry_point.py.template'
+               'entry_point_template.py'
         assert src_paths.srepkg_components == install_components / \
                'srepkg_components'
         assert src_paths.srepkg_setup_py == install_components / 'setup.py'
@@ -81,7 +90,7 @@ class TestPathCalculator(unittest.TestCase):
         assert dest_paths.root == srepkg_root
         assert dest_paths.srepkg == srepkg_path
         assert dest_paths.srepkg_components == srepkg_components
-        assert dest_paths.srepkg_entry_module == srepkg_entry_module
+        assert dest_paths.entry_module == srepkg_entry_module
         assert dest_paths.srepkg_entry_points == srepkg_entry_points
         assert dest_paths.srepkg_setup_cfg == srepkg_setup_cfg
         assert dest_paths.srepkg_setup_py == srepkg_setup_py

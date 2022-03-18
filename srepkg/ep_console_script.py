@@ -18,8 +18,7 @@ def parse_cs_line(cfg_file_line: str):
     return CSEntry(command=command, module_path=module_path, funct=funct)
 
 
-def build_cs_line(cs_entry: CSEntry, with_redirect=False, new_path: str=None):
-
+def build_cs_line(cs_entry: CSEntry, with_redirect=False, new_path: str = None):
     if not with_redirect:
         module_path = cs_entry.module_path
     else:
@@ -61,8 +60,3 @@ def cfg_cs_list_to_cse_list(cfg_path: Path):
         print('Unable to parse console script entries')
 
     return cse_list
-
-
-
-
-

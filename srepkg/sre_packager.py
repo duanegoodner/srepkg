@@ -1,6 +1,7 @@
 from srepkg.srepkg_builder import SrepkgBuilder
 import srepkg.command_input as ci
-import srepkg.path_calculator as pc
+import srepkg.orig_pkg_inspector as ipi
+import srepkg.paths_classes_builder.path_calculator_2 as pc
 
 
 def main():
@@ -18,12 +19,13 @@ def main():
     """
     args = ci.get_args()
 
-    path_calculator = pc.PathCalculator(args)
-    path_calculator.validate_orig_pkg_path()
-    path_calculator.validate_setup_cfg()
-    orig_pkg_info = path_calculator.get_orig_cfg_info()
+    inner_pkg_inspector = ipi.OrigPkgInspector(args.orig_pkg)\
+        .validate_orig_pkg_path().validate_setup_cfg()
+    orig_pkg_info = inner_pkg_inspector.get_orig_pkg_info()
 
-    dest_paths = path_calculator.build_dest_paths(orig_pkg_info)
+    path_calculator = pc.PathCalculator(orig_pkg_info, args.srepkg_name)
+
+    dest_paths = path_calculator.build_dest_paths()
 
     SrepkgBuilder(
         orig_pkg_info,
