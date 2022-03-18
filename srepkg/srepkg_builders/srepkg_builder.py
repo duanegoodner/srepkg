@@ -9,8 +9,8 @@ import string
 import pkgutil
 import shutil
 import configparser
-import srepkg.paths_classes_builder.path_calculator as pcalc
-import srepkg.ep_console_script as epcs
+import srepkg.path_builders.path_calculator as pcalc
+import srepkg.srepkg_builders.ep_console_script as epcs
 
 
 # TODO modify copy order / folder structure to ensure no possible overwrite

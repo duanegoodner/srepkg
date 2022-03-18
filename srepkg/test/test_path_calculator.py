@@ -3,10 +3,10 @@ import shutil
 from pathlib import Path
 from operator import attrgetter
 from srepkg.test.persistent_locals import PersistentLocals
-import srepkg.orig_pkg_inspector as ipi
-import srepkg.command_input as ci
-import srepkg.paths_classes_builder.path_calculator as pc
-import srepkg.ep_console_script as epcs
+import srepkg.input.orig_pkg_inspector as ipi
+import srepkg.input.command_input as ci
+import srepkg.path_builders.path_calculator as pc
+import srepkg.srepkg_builders.ep_console_script as epcs
 
 my_orig_pkg = Path.home() / 'dproj' / 'my_project' / 'my_project'
 srepkg_root = Path.home() / 'srepkg_pkgs' / \

@@ -4,8 +4,8 @@ import configparser
 from operator import attrgetter
 from pathlib import Path
 from srepkg.test.test_path_calculator import p_calc
-from srepkg.srepkg_builder import SrepkgBuilder
-import srepkg.ep_console_script as epcs
+from srepkg.srepkg_builders.srepkg_builder import SrepkgBuilder
+import srepkg.srepkg_builders.ep_console_script as epcs
 
 my_orig_pkg = Path.home() / 'dproj' / 't_proj' / 't_proj'
 inner_pkg = Path.home() / 'srepkg_pkgs' / \

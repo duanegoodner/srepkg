@@ -1,6 +1,6 @@
 from pathlib import Path
 from typing import List
-import srepkg.paths_classes_builder.file_structures as fs
+import srepkg.path_builders.file_structures as fs
 
 
 def file_structure_walk(file_structure: List, root_path: Path,

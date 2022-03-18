@@ -5,11 +5,11 @@ package.
 """
 from pathlib import Path
 from typing import NamedTuple, List
-from srepkg.paths_classes_builder.builder_src_paths import BuilderSrcPaths
-from srepkg.paths_classes_builder.builder_dest_paths import BuilderDestPaths
-from srepkg.paths_classes_builder.paths_class_builder import file_structure_walk
-import srepkg.paths_classes_builder.file_structures as fs
-import srepkg.ep_console_script as epcs
+from srepkg.path_builders.builder_src_paths import BuilderSrcPaths
+from srepkg.path_builders.builder_dest_paths import BuilderDestPaths
+from srepkg.path_builders.paths_class_builder import file_structure_walk
+import srepkg.path_builders.file_structures as fs
+import srepkg.srepkg_builders.ep_console_script as epcs
 
 
 def calc_builder_src_paths():

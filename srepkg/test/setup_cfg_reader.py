@@ -3,7 +3,7 @@ import shutil
 import configparser
 from pathlib import Path
 from srepkg.test.test_path_calculator import m_paths
-from srepkg.srepkg_builder import SrepkgBuilder
+from srepkg.builders.srepkg_builder import SrepkgBuilder
 
 my_orig_pkg = Path.home() / 'dproj' / 'my_project' / 'my_project'
 inner_pkg = Path.home() / 'srepkg_pkgs' /\
