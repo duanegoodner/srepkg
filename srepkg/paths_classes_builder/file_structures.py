@@ -1,12 +1,27 @@
-from collections import namedtuple
-
-SCD = namedtuple('SCD', ['pname', 'sc', 'contents'])
-SCF = namedtuple('SCF', ['pname', 'sc'])
+from typing import NamedTuple, List
 
 
-# root_name = 't_proj_as_t_projsrnew'
-# srepkg_name = 't_projsrnew'
-# inner_pkg_name = 't_proj'
+SCF = NamedTuple('SCF', [('pname', str), ('sc', str)])
+SCD = NamedTuple('SCD', [('pname', str), ('sc', str), ('contents', List)])
+
+
+install_components = \
+    [SCD(pname='srepkg_components', sc='srepkg_components', contents=[
+        SCF(pname='__init__.py', sc='srepkg_components_init'),
+        SCF(pname='entry_points.py', sc='entry_module'),
+        SCF(pname='srepkg_control_paths.py', sc='srepkg_control_paths'),
+        SCF(pname='srepkg_controller.py', sc='srepkg_controller')
+    ]),
+     SCF(pname='__init__.py', sc='install_components_init'),
+     SCF(pname='entry_point_template.py', sc='entry_point_template'),
+     SCF(pname='inner_pkg_installer.py', sc='inner_pkg_installer'),
+     SCF(pname='main_inner.py', sc='main_inner'),
+     SCF(pname='main_outer.py', sc='main_outer'),
+     SCF(pname='MANIFEST.in.template', sc='manifest_template'),
+     SCF(pname='pkg_names.py.template', sc='pkg_names_template'),
+     SCF(pname='setup.py', sc='srepkg_setup_py'),
+     SCF(pname='setup_template.cfg', sc='srepkg_setup_cfg'),
+     SCF(pname='srepkg_init.py', sc='srepkg_init')]
 
 
 def get_builder_dest(root_name: str = 'dummy_root',
@@ -47,22 +62,3 @@ def get_builder_dest(root_name: str = 'dummy_root',
             SCF(pname='setup.cfg', sc='srepkg_setup_cfg'),
             SCF(pname='setup.py', sc='srepkg_setup_py')
         ])]
-
-
-install_components = \
-    [SCD(pname='srepkg_components', sc='srepkg_components', contents=[
-        SCF(pname='__init__.py', sc='srepkg_components_init'),
-        SCF(pname='entry_points.py', sc='entry_module'),
-        SCF(pname='srepkg_control_paths.py', sc='srepkg_control_paths'),
-        SCF(pname='srepkg_controller.py', sc='srepkg_controller')
-    ]),
-     SCF(pname='__init__.py', sc='install_components_init'),
-     SCF(pname='entry_point_template.py', sc='entry_point_template'),
-     SCF(pname='inner_pkg_installer.py', sc='inner_pkg_installer'),
-     SCF(pname='main_inner.py', sc='main_inner'),
-     SCF(pname='main_outer.py', sc='main_outer'),
-     SCF(pname='MANIFEST.in.template', sc='manifest_template'),
-     SCF(pname='pkg_names.py.template', sc='pkg_names_template'),
-     SCF(pname='setup.py', sc='srepkg_setup_py'),
-     SCF(pname='setup_template.cfg', sc='srepkg_setup_cfg'),
-     SCF(pname='srepkg_init.py', sc='srepkg_init')]

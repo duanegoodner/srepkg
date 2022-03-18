@@ -9,7 +9,7 @@ import string
 import pkgutil
 import shutil
 import configparser
-import srepkg.path_calculator as pcalc
+import srepkg.paths_classes_builder.path_calculator as pcalc
 import srepkg.ep_console_script as epcs
 
 

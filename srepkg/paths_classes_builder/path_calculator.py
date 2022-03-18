@@ -7,9 +7,17 @@ from pathlib import Path
 from typing import NamedTuple, List
 from srepkg.paths_classes_builder.builder_src_paths import BuilderSrcPaths
 from srepkg.paths_classes_builder.builder_dest_paths import BuilderDestPaths
-from srepkg.paths_classes_builder.paths_builder import get_sc_names
+from srepkg.paths_classes_builder.paths_class_builder import file_structure_walk
 import srepkg.paths_classes_builder.file_structures as fs
 import srepkg.ep_console_script as epcs
+
+
+def calc_builder_src_paths():
+    install_components = Path(
+        __file__).parent.parent.absolute() / 'install_components'
+    src_names, src_paths = file_structure_walk(file_structure=fs.install_components,
+                                        root_path=install_components)
+    return BuilderSrcPaths(*src_paths)
 
 
 class OrigPkgInfo(NamedTuple):
@@ -23,14 +31,9 @@ class SrePkgInfo(NamedTuple):
     root_path: Path
 
 
-class PathCalculator:
+class DestPathCalculator:
     # TODO implement 'check' to ensure file structure is same now as it was when paths classes were created
     # ===== start of class variables =====
-    install_components = Path(__file__).parent.parent.absolute() / 'install_components'
-    src_names, src_paths = get_sc_names(file_structure=fs.install_components,
-                                        root_path=install_components)
-    builder_src_paths = BuilderSrcPaths(*src_paths)
-
     srepkg_pkgs_dir = Path.home() / 'srepkg_pkgs'
     auto_srepkg_suffix = 'srnew'
     # ===== end of class variables =====
@@ -70,7 +73,7 @@ class PathCalculator:
             srepkg_name=srepkg_info.pkg_name,
             inner_pkg_name=self._orig_pkg_info.pkg_name
         )
-        dest_names, dest_paths = get_sc_names(
+        dest_names, dest_paths = file_structure_walk(
             file_structure=builder_dest_structure,
             root_path=self.srepkg_pkgs_dir
         )

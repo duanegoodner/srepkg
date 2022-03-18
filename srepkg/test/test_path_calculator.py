@@ -5,7 +5,7 @@ from operator import attrgetter
 from srepkg.test.persistent_locals import PersistentLocals
 import srepkg.orig_pkg_inspector as ipi
 import srepkg.command_input as ci
-import srepkg.paths_classes_builder.path_calculator_2 as pc
+import srepkg.paths_classes_builder.path_calculator as pc
 import srepkg.ep_console_script as epcs
 
 my_orig_pkg = Path.home() / 'dproj' / 'my_project' / 'my_project'
@@ -28,16 +28,13 @@ def p_calc(orig_pkg: Path):
         .validate_orig_pkg_path().validate_setup_cfg()
     orig_pkg_info = inner_pkg_inspector.get_orig_pkg_info()
 
-    path_calculator = pc.PathCalculator(orig_pkg_info, args.srepkg_name)
-    dest_paths = path_calculator.build_dest_paths()
+    builder_src_paths = pc.calc_builder_src_paths()
 
-    # path_calculator = pc.PathCalculator(args)
-    # path_calculator.validate_orig_pkg_path()
-    # path_calculator.validate_setup_cfg()
-    # orig_pkg_info = path_calculator.get_orig_cfg_info()
-    # dest_paths = path_calculator.build_dest_paths(orig_pkg_info)
+    dest_path_calculator = pc.DestPathCalculator(orig_pkg_info,
+                                                 args.srepkg_name)
+    dest_paths = dest_path_calculator.build_dest_paths()
 
-    return orig_pkg_info, path_calculator.builder_src_paths, dest_paths
+    return orig_pkg_info, builder_src_paths, dest_paths
 
 
 class TestPathCalculator(unittest.TestCase):
@@ -53,7 +50,7 @@ class TestPathCalculator(unittest.TestCase):
         print(p_calc.locals)
 
     def test_builder_src_paths(self):
-        src_paths = p_calc.locals['path_calculator'].builder_src_paths
+        src_paths = p_calc.locals['builder_src_paths']
         install_components = srepkg_app_path / 'install_components'
         assert src_paths.srepkg_init == install_components / 'srepkg_init.py'
         assert src_paths.entry_module == install_components /\
