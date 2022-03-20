@@ -7,9 +7,10 @@ from srepkg.test.test_path_calculator import p_calc
 from srepkg.srepkg_builders.srepkg_builder import SrepkgBuilder
 from srepkg.srepkg_builders import ep_console_script as epcs
 
-my_orig_pkg = Path.home() / 'dproj' / 't_proj' / 't_proj'
+proj_name_in_setup_cfg = 't_proj'
+my_orig_pkg_setup_dir = Path.home() / 'dproj' / 't_proj'
 inner_pkg = Path.home() / 'srepkg_pkgs' / \
-            (my_orig_pkg.name + '_as_' + my_orig_pkg.name + 'srepkg')
+            (proj_name_in_setup_cfg + '_as_' + proj_name_in_setup_cfg + 'srepkg')
 srepkg_path = Path(__file__).parent.parent.absolute()
 
 
@@ -18,7 +19,8 @@ class TestSrepkgBuilder(unittest.TestCase):
     def setUp(self) -> None:
         if inner_pkg.exists():
             shutil.rmtree(inner_pkg)
-        self.orig_pkg_info, self.src_paths, self.h_paths = p_calc(my_orig_pkg)
+        self.orig_pkg_info, self.src_paths, self.h_paths =\
+            p_calc(my_orig_pkg_setup_dir)
         self.srepkg_builder = SrepkgBuilder(self.orig_pkg_info, self.src_paths,
                                             self.h_paths)
 

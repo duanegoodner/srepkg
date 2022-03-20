@@ -8,9 +8,10 @@ import srepkg.input.command_input as ci
 import srepkg.path_builders.path_calculator as pc
 from srepkg.srepkg_builders import ep_console_script as epcs
 
-my_orig_pkg = Path.home() / 'dproj' / 'my_project' / 'my_project'
-srepkg_root = Path.home() / 'srepkg_pkgs' / \
-            (my_orig_pkg.name + '_as_' + my_orig_pkg.name + 'srepkg')
+proj_name_in_setup_cfg = 'my_project'
+my_orig_pkg_setup_dir = Path.home() / 'dproj' / 'my_project'
+srepkg_root = Path.home() / 'srepkg_pkgs' / (proj_name_in_setup_cfg + '_as_' +
+                                             proj_name_in_setup_cfg + 'srepkg')
 
 my_orig_pkg_cs = '\nmy_project = my_project.__main__:main\n' \
                  'my_test = my_project.test:first_test'
@@ -21,10 +22,10 @@ srepkg_app_path = Path(__file__).parent.parent.absolute()
 
 
 @PersistentLocals
-def p_calc(orig_pkg: Path):
-    args = ci.get_args([str(orig_pkg)])
+def p_calc(orig_pkg_setup_dir: Path):
+    args = ci.get_args([str(orig_pkg_setup_dir)])
 
-    inner_pkg_inspector = ipi.OrigPkgInspector(args.orig_pkg) \
+    inner_pkg_inspector = ipi.OrigPkgInspector(args.orig_pkg_setup_dir) \
         .validate_orig_pkg_path().validate_setup_cfg()
     orig_pkg_info = inner_pkg_inspector.get_orig_pkg_info()
 
@@ -44,7 +45,7 @@ class TestPathCalculator(unittest.TestCase):
         if srepkg_root.exists():
             shutil.rmtree(srepkg_root)
 
-        p_calc(str(my_orig_pkg))
+        p_calc(str(my_orig_pkg_setup_dir))
 
     def test_standard_path_calc_locals_accessible(self):
         print(p_calc.locals)
@@ -66,15 +67,15 @@ class TestPathCalculator(unittest.TestCase):
     def test_orig_pkg_info(self):
         orig_pkg_info = p_calc.locals['orig_pkg_info']
 
-        assert orig_pkg_info.pkg_name == 'my_project'
-        assert orig_pkg_info.root_path == my_orig_pkg.parent.absolute()
+        assert orig_pkg_info.pkg_name == proj_name_in_setup_cfg
+        assert orig_pkg_info.root_path == my_orig_pkg_setup_dir.absolute()
         assert orig_pkg_info.entry_pts.sort(key=attrgetter('command')) ==\
                my_orig_pkg_cse.sort(key=attrgetter('command'))
 
     def test_dest_paths(self):
         dest_paths = p_calc.locals['dest_paths']
 
-        srepkg_path = srepkg_root / (my_orig_pkg.name + 'srepkg')
+        srepkg_path = srepkg_root / ('my_project' + 'srepkg')
         srepkg_control_components = srepkg_path / 'srepkg_control_components'
         srepkg_entry_module = srepkg_control_components / 'entry_points.py'
         srepkg_entry_points = srepkg_path / 'srepkg_entry_points'
