@@ -4,6 +4,7 @@ from typing import NamedTuple, List
 from srepkg.srepkg_builders import ep_console_script as epcs
 
 
+
 class OrigPkgInfo(NamedTuple):
     pkg_name: str
     root_path: Path
@@ -35,7 +36,6 @@ class OrigPkgInspector:
         pkg_name = ''
         config = configparser.ConfigParser()
 
-        # root_path = self.orig_pkg_path.parent.absolute()
         try:
             config.read(self.orig_pkg_setup_dir / 'setup.cfg')
         except (FileNotFoundError, KeyError, Exception):

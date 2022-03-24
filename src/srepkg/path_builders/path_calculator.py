@@ -64,7 +64,6 @@ class DestPathCalculator:
         return SrePkgInfo(pkg_name=srepkg_name, root_path=dest_root_path)
 
     def build_dest_paths(self):
-        # TODO refactor / clean up gathering of names and root path to pass to fs.get_builder_dest
 
         srepkg_info = self.get_sre_pkg_info()
 

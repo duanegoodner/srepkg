@@ -3,8 +3,8 @@ import shutil
 from pathlib import Path
 from operator import attrgetter
 from srepkg.test.persistent_locals import PersistentLocals
-import srepkg.input.orig_pkg_inspector as ipi
-import srepkg.input.command_input as ci
+import srepkg.io.orig_pkg_inspector as ipi
+import srepkg.io.command_input as ci
 import srepkg.path_builders.path_calculator as pc
 from srepkg.srepkg_builders import ep_console_script as epcs
 
