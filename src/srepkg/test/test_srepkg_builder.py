@@ -4,8 +4,8 @@ import configparser
 from operator import attrgetter
 from pathlib import Path
 from srepkg.test.test_path_calculator import p_calc
-from srepkg.srepkg_builders.srepkg_builder import SrepkgBuilder
-from srepkg.srepkg_builders import ep_console_script as epcs
+from srepkg.srepkg_builder import SrepkgBuilder
+import srepkg.ep_console_script as epcs
 
 proj_name_in_setup_cfg = 't_proj'
 my_orig_pkg_setup_dir = Path.home() / 'dproj' / 't_proj'
@@ -50,9 +50,10 @@ class TestSrepkgBuilder(unittest.TestCase):
         orig_config.read(self.srepkg_builder.orig_pkg_info.root_path /
                          'setup.cfg')
         orig_config_sections = orig_config.sections()
-        assert len(orig_config_sections) == 4
+        assert len(orig_config_sections) == 5
         assert 'metadata' in orig_config_sections
         assert 'options' in orig_config_sections
+        assert 'options.packages.find' in orig_config_sections
         assert 'options.entry_points' in orig_config_sections
         assert 'options.package_data' in orig_config_sections
 

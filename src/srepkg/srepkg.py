@@ -1,7 +1,7 @@
-from srepkg.srepkg_builders.srepkg_builder import SrepkgBuilder
-import srepkg.io.command_input as ci
-import srepkg.io.orig_pkg_inspector as ipi
-import srepkg.path_builders.path_calculator as pc
+from srepkg.srepkg_builder import SrepkgBuilder
+import srepkg.command_input as ci
+import srepkg.orig_pkg_inspector as ipi
+import srepkg.path_calculator as pc
 
 
 def main():

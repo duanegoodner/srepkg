@@ -5,19 +5,20 @@ package.
 """
 from pathlib import Path
 from typing import NamedTuple, List
-from srepkg.path_builders.builder_src_paths import BuilderSrcPaths
-from srepkg.path_builders.builder_dest_paths import BuilderDestPaths
-from srepkg.path_builders.paths_class_builder import file_structure_walk
-import srepkg.path_builders.file_structures as fs
-from srepkg.srepkg_builders import ep_console_script as epcs
+
+
+import srepkg.path_builders as pb
+
+import srepkg.ep_console_script as epcs
 
 
 def calc_builder_src_paths():
     repackaging_components = Path(
-        __file__).parent.parent.absolute() / 'repackaging_components'
-    src_names, src_paths = file_structure_walk(file_structure=fs.repackaging_components,
-                                        root_path=repackaging_components)
-    return BuilderSrcPaths(*src_paths)
+        __file__).parent.absolute() / 'repackaging_components'
+    src_names, src_paths = pb.paths_class_builder.file_structure_walk(
+        file_structure=pb.file_structures.repackaging_components,
+        root_path=repackaging_components)
+    return pb.builder_src_paths.BuilderSrcPaths(*src_paths)
 
 
 class OrigPkgInfo(NamedTuple):
@@ -67,14 +68,14 @@ class DestPathCalculator:
 
         srepkg_info = self.get_sre_pkg_info()
 
-        builder_dest_structure = fs.get_builder_dest(
+        builder_dest_structure = pb.file_structures.get_builder_dest(
             root_name=srepkg_info.root_path.name,
             srepkg_name=srepkg_info.pkg_name,
             inner_pkg_name=self._orig_pkg_info.pkg_name
         )
-        dest_names, dest_paths = file_structure_walk(
+        dest_names, dest_paths = pb.paths_class_builder.file_structure_walk(
             file_structure=builder_dest_structure,
             root_path=self.srepkg_pkgs_dir
         )
 
-        return BuilderDestPaths(*dest_paths)
+        return pb.builder_dest_paths.BuilderDestPaths(*dest_paths)

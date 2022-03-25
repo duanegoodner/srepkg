@@ -9,8 +9,9 @@ import string
 import pkgutil
 import shutil
 import configparser
-import srepkg.path_builders.path_calculator as pcalc
-from srepkg.srepkg_builders import ep_console_script as epcs
+import srepkg.path_builders as pb
+import srepkg.path_calculator as pcalc
+import srepkg.ep_console_script as epcs
 
 
 # TODO modify copy order / folder structure to ensure no possible overwrite
@@ -42,8 +43,8 @@ class SrepkgBuilder:
     _ignore_types = ['*.git', '*.gitignore', '*.idea', '*__pycache__']
 
     def __init__(self, orig_pkg_info: pcalc.OrigPkgInfo,
-                 src_paths: pcalc.BuilderSrcPaths,
-                 repkg_paths: pcalc.BuilderDestPaths):
+                 src_paths: pb.builder_src_paths.BuilderSrcPaths,
+                 repkg_paths: pb.builder_dest_paths.BuilderDestPaths):
         """
         Construct a new SrepkgBuilder
         :param src_paths: BuilderSrcPaths object built by path_calculator module

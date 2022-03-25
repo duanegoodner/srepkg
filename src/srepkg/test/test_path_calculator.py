@@ -3,10 +3,10 @@ import shutil
 from pathlib import Path
 from operator import attrgetter
 from srepkg.test.persistent_locals import PersistentLocals
-import srepkg.io.orig_pkg_inspector as ipi
-import srepkg.io.command_input as ci
-import srepkg.path_builders.path_calculator as pc
-from srepkg.srepkg_builders import ep_console_script as epcs
+import srepkg.orig_pkg_inspector as ipi
+import srepkg.command_input as ci
+import srepkg.path_calculator as pc
+import srepkg.ep_console_script as epcs
 
 proj_name_in_setup_cfg = 'my_project'
 my_orig_pkg_setup_dir = Path.home() / 'dproj' / 'my_project'
