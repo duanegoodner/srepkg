@@ -1,14 +1,6 @@
 import configparser
 from pathlib import Path
-from typing import NamedTuple, List
-import srepkg.ep_console_script as epcs
-
-
-
-class OrigPkgInfo(NamedTuple):
-    pkg_name: str
-    root_path: Path
-    entry_pts: List[epcs.CSEntry]
+import srepkg.shared_utils as su
 
 
 class OrigPkgInspector:
@@ -52,13 +44,15 @@ class OrigPkgInspector:
         try:
             ep_cs_list = config['options.entry_points']['console_scripts'] \
                 .strip().splitlines()
-            cse_list = [epcs.parse_cs_line(entry) for entry in ep_cs_list]
+            cse_list = [su.ep_console_script.parse_cs_line(entry) for entry in ep_cs_list]
         except (TypeError, Exception):
             print('Unable to find any console script entry point for original'
                   'package')
             # TODO if inner pkg __main__ exists, just warn instead of exit
             exit(1)
 
-        return OrigPkgInfo(pkg_name=pkg_name, root_path=self.orig_pkg_setup_dir,
-                           entry_pts=cse_list)
+        return su.named_tuples.OrigPkgInfo(
+            pkg_name=pkg_name,
+            root_path=self.orig_pkg_setup_dir,
+            entry_pts=cse_list)
 

@@ -6,7 +6,7 @@ from srepkg.test.persistent_locals import PersistentLocals
 import srepkg.orig_pkg_inspector as ipi
 import srepkg.command_input as ci
 import srepkg.path_calculator as pc
-import srepkg.ep_console_script as epcs
+import srepkg.shared_utils.ep_console_script as epcs
 
 proj_name_in_setup_cfg = 'my_project'
 my_orig_pkg_setup_dir = Path.home() / 'dproj' / 'my_project'

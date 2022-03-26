@@ -9,9 +9,9 @@ import string
 import pkgutil
 import shutil
 import configparser
-import srepkg.path_builders as pb
-import srepkg.path_calculator as pcalc
-import srepkg.ep_console_script as epcs
+# import srepkg.path_builders as pb
+import srepkg.shared_utils as su
+# import srepkg.shared_utils.ep_console_script as epcs
 
 
 # TODO modify copy order / folder structure to ensure no possible overwrite
@@ -42,13 +42,13 @@ class SrepkgBuilder:
     # file patterns that are not copied into the SRE-packaged app
     _ignore_types = ['*.git', '*.gitignore', '*.idea', '*__pycache__']
 
-    def __init__(self, orig_pkg_info: pcalc.OrigPkgInfo,
-                 src_paths: pb.builder_src_paths.BuilderSrcPaths,
-                 repkg_paths: pb.builder_dest_paths.BuilderDestPaths):
+    def __init__(self, orig_pkg_info: su.named_tuples.OrigPkgInfo,
+                 src_paths: su.named_tuples.BuilderSrcPaths,
+                 repkg_paths: su.named_tuples.BuilderDestPaths):
         """
         Construct a new SrepkgBuilder
-        :param src_paths: BuilderSrcPaths object built by path_calculator module
-        :param repkg_paths: BuilderDestPaths object built by path_calculator
+        :param src_paths: BuilderSrcPaths namedtuple
+        :param repkg_paths: BuilderDestPaths named tuple
         module
         """
         self._orig_pkg_info = orig_pkg_info
@@ -104,8 +104,8 @@ class SrepkgBuilder:
             print('Error when attempting to copy srepkg_control_components.')
             exit(1)
 
-    def orig_cse_to_sr_cse(self, orig_cse: epcs.CSEntry):
-        return epcs.CSEntry(
+    def orig_cse_to_sr_cse(self, orig_cse: su.named_tuples.CSEntry):
+        return su.named_tuples.CSEntry(
             command=orig_cse.command,
             module_path=self.repkg_paths.srepkg.name + '.' +
             self.repkg_paths.srepkg_entry_points.name + '.' + orig_cse.command,
@@ -117,7 +117,7 @@ class SrepkgBuilder:
         sr_config.read(self.src_paths.srepkg_setup_cfg)
         sr_config_ep_cs_list = [self.orig_cse_to_sr_cse(orig_cse) for orig_cse
                                 in self.orig_pkg_info.entry_pts]
-        sr_config_cs_lines = [epcs.build_cs_line(sr_cse) for sr_cse in
+        sr_config_cs_lines = [su.ep_console_script.build_cs_line(sr_cse) for sr_cse in
                               sr_config_ep_cs_list]
         sr_config['options.entry_points']['console_scripts'] = \
             '\n' + '\n'.join(sr_config_cs_lines)
@@ -127,7 +127,7 @@ class SrepkgBuilder:
         with open(self.repkg_paths.srepkg_setup_cfg, 'w') as sr_configfile:
             sr_config.write(sr_configfile)
 
-    def write_entry_point_file(self, orig_cse: epcs.CSEntry):
+    def write_entry_point_file(self, orig_cse: su.named_tuples.CSEntry):
 
         shutil.copy2(self._src_paths.entry_point_template,
                      self._repkg_paths.srepkg_entry_points /
@@ -192,9 +192,9 @@ class SrepkgBuilder:
         orig_inner_main = self._orig_pkg_info.pkg_name + '.' + '__main__'
 
         return [
-            epcs.build_cs_line(entry_pt) if
+            su.ep_console_script.build_cs_line(entry_pt) if
             entry_pt.module_path != orig_inner_main else
-            epcs.build_cs_line(
+            su.ep_console_script.build_cs_line(
                 entry_pt, with_redirect=True,
                 new_path=self._orig_pkg_info.pkg_name + '.' + 'orig_main')
             for entry_pt in self.orig_pkg_info.entry_pts

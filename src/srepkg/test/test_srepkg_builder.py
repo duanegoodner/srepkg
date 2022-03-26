@@ -5,7 +5,7 @@ from operator import attrgetter
 from pathlib import Path
 from srepkg.test.test_path_calculator import p_calc
 from srepkg.srepkg_builder import SrepkgBuilder
-import srepkg.ep_console_script as epcs
+import srepkg.shared_utils.ep_console_script as epcs
 
 proj_name_in_setup_cfg = 't_proj'
 my_orig_pkg_setup_dir = Path.home() / 'dproj' / 't_proj'
