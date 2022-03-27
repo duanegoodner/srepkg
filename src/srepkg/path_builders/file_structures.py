@@ -6,7 +6,8 @@ SCD = NamedTuple('SCD', [('pname', str), ('sc', str), ('contents', List)])
 
 
 repackaging_components = \
-    [SCD(pname='srepkg_control_components', sc='srepkg_control_components', contents=[
+    [SCD(pname='srepkg_control_components', sc='srepkg_control_components',
+         contents=[
         SCF(pname='__init__.py', sc='srepkg_control_components_init'),
         SCF(pname='entry_points.py', sc='entry_module'),
         SCF(pname='srepkg_control_paths.py', sc='srepkg_control_paths'),
@@ -30,9 +31,11 @@ def get_builder_dest(root_name: str = 'dummy_root',
     return [
         SCD(pname=root_name, sc='root', contents=[
             SCD(pname=srepkg_name, sc='srepkg', contents=[
-                SCD(pname='srepkg_control_components', sc='srepkg_control_components',
+                SCD(pname='srepkg_control_components',
+                    sc='srepkg_control_components',
                     contents=[
-                        SCF(pname='__init__.py', sc='srepkg_control_components_init'),
+                        SCF(pname='__init__.py',
+                            sc='srepkg_control_components_init'),
                         SCF(pname='entry_points.py', sc='entry_module'),
                         SCF(pname='srepkg_control_paths.py',
                             sc='srepkg_control_paths'),

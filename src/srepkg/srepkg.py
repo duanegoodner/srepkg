@@ -19,17 +19,17 @@ def main():
     """
     args = ci.get_args()
 
-    inner_pkg_inspector = ipi.OrigPkgInspector(args.orig_pkg_setup_dir)\
-        .validate_orig_pkg_path().validate_setup_cfg()
-    orig_pkg_info = inner_pkg_inspector.get_orig_pkg_info()
+    orig_pkg_info = ipi.OrigPkgInspector(args.orig_pkg_setup_dir)\
+        .validate_orig_pkg_path()\
+        .validate_setup_cfg()\
+        .get_orig_pkg_info()
 
-    builder_src_paths = pc.calc_builder_src_paths()
+    builder_src_paths, builder_dest_paths = pc.BuilderPathsCalculator(
+        orig_pkg_info, args.srepkg_name)\
+        .calc_builder_paths()
 
-    dest_path_calculator = pc.DestPathCalculator(orig_pkg_info,
-                                                 args.srepkg_name)
-    dest_paths = dest_path_calculator.build_dest_paths()
-
-    SrepkgBuilder(orig_pkg_info, builder_src_paths, dest_paths).build_srepkg()
+    SrepkgBuilder(orig_pkg_info, builder_src_paths, builder_dest_paths)\
+        .build_srepkg()
 
 
 if __name__ == '__main__':
