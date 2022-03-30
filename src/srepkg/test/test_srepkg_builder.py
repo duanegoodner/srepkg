@@ -1,32 +1,29 @@
 import unittest
 import shutil
-import configparser
-from operator import attrgetter
-from pathlib import Path
-from srepkg.test.test_path_calculator import p_calc
-from srepkg.srepkg_builder import SrepkgBuilder
-import srepkg.shared_utils.ep_console_script as epcs
-
-proj_name_in_setup_cfg = 't_proj'
-my_orig_pkg_setup_dir = Path.home() / 'dproj' / 't_proj'
-inner_pkg = Path.home() / 'srepkg_pkgs' / \
-            (proj_name_in_setup_cfg + '_as_' + proj_name_in_setup_cfg + 'srepkg')
-srepkg_path = Path(__file__).parent.parent.absolute()
+import srepkg.test.calc_test_paths as ctp
+import srepkg.srepkg_builder as sb
+import srepkg.test.t_proj_srepkg_info as tpsi
 
 
 class TestSrepkgBuilder(unittest.TestCase):
 
     def setUp(self) -> None:
-        if inner_pkg.exists():
-            shutil.rmtree(inner_pkg)
-        self.orig_pkg_info, self.src_paths, self.h_paths =\
-            p_calc(my_orig_pkg_setup_dir)
-        self.srepkg_builder = SrepkgBuilder(self.orig_pkg_info, self.src_paths,
-                                            self.h_paths)
+        if tpsi.srepkg_root.exists():
+            shutil.rmtree(tpsi.srepkg_root)
+
+        self.builder_src_paths, self.builder_dest_paths = ctp.calc_test_paths()
+
+        self.srepkg_builder = sb.SrepkgBuilder(
+            ctp.calc_test_paths.locals['orig_pkg_info'],
+            self.builder_src_paths, self.builder_dest_paths)
+
+    def tearDown(self) -> None:
+        if tpsi.test_srepkg_pkgs_dir.exists():
+            shutil.rmtree(tpsi.test_srepkg_pkgs_dir)
 
     def test_srepkg_builder_paths(self):
-        assert self.srepkg_builder.src_paths == self.src_paths
-        assert self.srepkg_builder.repkg_paths == self.h_paths
+        assert self.srepkg_builder.src_paths == self.builder_src_paths
+        assert self.srepkg_builder.repkg_paths == self.builder_dest_paths
 
     def test_inner_pkg_copy(self):
         self.srepkg_builder.copy_inner_package()
@@ -38,6 +35,7 @@ class TestSrepkgBuilder(unittest.TestCase):
     def test_modify_inner_pkg(self):
         self.srepkg_builder.copy_inner_package()
         self.srepkg_builder.inner_pkg_install_inhibit()
+
         assert not self.srepkg_builder.repkg_paths.inner_setup_py_active.exists()
         assert (self.srepkg_builder.repkg_paths.inner_setup_cfg_active.parent /
                 'setup_off.py').exists()
@@ -45,62 +43,6 @@ class TestSrepkgBuilder(unittest.TestCase):
         assert (self.srepkg_builder.repkg_paths.inner_setup_cfg_active.parent /
                 'setup_off.cfg').exists()
 
-    def test_orig_config_read(self):
-        orig_config = configparser.ConfigParser()
-        orig_config.read(self.srepkg_builder.orig_pkg_info.root_path /
-                         'setup.cfg')
-        orig_config_sections = orig_config.sections()
-        assert len(orig_config_sections) == 5
-        assert 'metadata' in orig_config_sections
-        assert 'options' in orig_config_sections
-        assert 'options.packages.find' in orig_config_sections
-        assert 'options.entry_points' in orig_config_sections
-        assert 'options.package_data' in orig_config_sections
 
-    def test_setup_template_config_read(self):
-        sr_config = configparser.ConfigParser()
-        sr_config.read(self.srepkg_builder.src_paths.srepkg_setup_cfg)
-        sr_config_sections = sr_config.sections()
-        assert len(sr_config_sections) == 3
-        assert 'metadata' in sr_config_sections
-        assert 'options' in sr_config_sections
-        assert 'options.entry_points' in sr_config_sections
-        # assert 'options.package_data' in sr_config_sections
 
-    def test_build_sr_cfg(self):
-        self.srepkg_builder.copy_inner_package()
-        self.srepkg_builder.inner_pkg_install_inhibit()
-        self.srepkg_builder.build_sr_cfg()
 
-        assert self.srepkg_builder.repkg_paths.srepkg_setup_cfg.exists()
-
-        outer_config_cse_list = epcs.cfg_cs_list_to_cse_list(
-            self.srepkg_builder.repkg_paths.srepkg_setup_cfg)
-
-        orig_config_cse_list = epcs.cfg_cs_list_to_cse_list(
-            self.srepkg_builder.orig_pkg_info.root_path / 'setup.cfg')
-
-        assert len(outer_config_cse_list) == len(orig_config_cse_list)
-
-        outer_config_cse_list.sort(key=attrgetter('command'))
-        orig_config_cse_list.sort(key=attrgetter('command'))
-
-        assert [entry.command for entry in outer_config_cse_list] == \
-               [entry.command for entry in orig_config_cse_list]
-
-        assert [entry.module_path for entry in outer_config_cse_list] == \
-               [self.h_paths.srepkg.name +
-                '.' + self.h_paths.srepkg_entry_points.name + '.' + orig_entry.command
-                for orig_entry in orig_config_cse_list]
-
-        assert [entry.funct for entry in outer_config_cse_list] == \
-               ['entry_funct' for entry in orig_config_cse_list]
-
-    def test_add_srepkg_layer(self):
-        self.srepkg_builder.copy_inner_package()
-        self.srepkg_builder.inner_pkg_install_inhibit()
-        self.srepkg_builder.build_sr_cfg()
-        self.srepkg_builder.add_srepkg_layer()
-
-        if self.srepkg_builder.repkg_paths.main_inner.exists():
-            self.srepkg_builder.enable_dash_m_entry()

@@ -1,6 +1,6 @@
-from srepkg.srepkg_builder import SrepkgBuilder
+import srepkg.srepkg_builder as sb
 import srepkg.command_input as ci
-import srepkg.orig_pkg_inspector as ipi
+import srepkg.orig_pkg_inspector as opi
 import srepkg.path_calculator as pc
 
 
@@ -19,7 +19,7 @@ def main():
     """
     args = ci.get_args()
 
-    orig_pkg_info = ipi.OrigPkgInspector(args.orig_pkg_setup_dir)\
+    orig_pkg_info = opi.OrigPkgInspector(args.orig_pkg_setup_dir)\
         .validate_orig_pkg_path()\
         .validate_setup_cfg()\
         .get_orig_pkg_info()
@@ -28,7 +28,7 @@ def main():
         orig_pkg_info, args.srepkg_name)\
         .calc_builder_paths()
 
-    SrepkgBuilder(orig_pkg_info, builder_src_paths, builder_dest_paths)\
+    sb.SrepkgBuilder(orig_pkg_info, builder_src_paths, builder_dest_paths)\
         .build_srepkg()
 
 

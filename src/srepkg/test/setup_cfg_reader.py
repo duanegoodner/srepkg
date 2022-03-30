@@ -2,7 +2,7 @@
 import shutil
 import configparser
 from pathlib import Path
-from src.srepkg.test.test_path_calculator import m_paths
+from src.srepkg.test.test_path_calculator_old import m_paths
 from src.srepkg import SrepkgBuilder
 
 my_orig_pkg = Path.home() / 'dproj' / 'my_project' / 'my_project'

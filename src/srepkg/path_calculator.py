@@ -3,6 +3,7 @@ Uses args namespace from command_input module to calculate and validate source
 and destination paths used when building a new sre-package from an existing
 package.
 """
+import sys
 from pathlib import Path
 import srepkg.shared_utils as su
 import srepkg.path_builders as pb
@@ -43,8 +44,8 @@ class BuilderPathsCalculator:
                                                  '_as_' + srepkg_name)
 
         if dest_root_path.exists():
-            print(f'Destination path {str(dest_root_path)} already exists')
-            exit(1)
+            err_msg = f'Destination path {str(dest_root_path)} already exists'
+            sys.exit(err_msg)
 
         return su.named_tuples.SrePkgInfo(pkg_name=srepkg_name,
                                           root_path=dest_root_path)

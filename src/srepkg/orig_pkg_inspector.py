@@ -1,6 +1,45 @@
 import configparser
 from pathlib import Path
+from typing import NamedTuple
+from enum import Enum
+import sys
 import srepkg.shared_utils as su
+
+
+PkgErrorMsg = NamedTuple('PkgErrorMsg', [('msg', str)])
+
+
+class PkgError(PkgErrorMsg, Enum):
+    PkgNameNotFound = PkgErrorMsg(msg='Unable to find package name in setup.cfg')
+    InvalidPkgName = PkgErrorMsg(msg='Invalid package name')
+    CSENotFound = PkgErrorMsg(msg='Unable to find any console script entry '
+                                  'point for original')
+    PkgPathNotFound = PkgErrorMsg(msg='Original package path not found')
+    SetupCfgNotFound = PkgErrorMsg(msg='Original package setup.cfg file not '
+                                       'found')
+    SetupCfgReadError = PkgErrorMsg(msg='Unable to read or parse setup.cfg')
+
+
+def get_pkg_name(populated_config: configparser.ConfigParser):
+    try:
+        pkg_name = populated_config['metadata']['name']
+    except KeyError:
+        sys.exit(PkgError.PkgNameNotFound.msg)
+    if len(pkg_name) == 0:
+        sys.exit(PkgError.InvalidPkgName.msg)
+    return pkg_name
+
+
+def get_cse_list(populated_config: configparser.ConfigParser):
+    try:
+        ep_cs_list = \
+            populated_config['options.entry_points']['console_scripts'] \
+            .strip().splitlines()
+    except KeyError:
+        sys.exit(PkgError.CSENotFound.msg)
+        # TODO if inner pkg __main__ exists, just warn instead of exit
+
+    return [su.ep_console_script.parse_cs_line(entry) for entry in ep_cs_list]
 
 
 class OrigPkgInspector:
@@ -8,51 +47,32 @@ class OrigPkgInspector:
     def __init__(self, orig_pkg_setup_dir: str):
         self._orig_pkg_setup_dir = Path(orig_pkg_setup_dir)
 
-    @property
-    def orig_pkg_setup_dir(self):
-        return self._orig_pkg_setup_dir
-
     def validate_orig_pkg_path(self):
-        if not self.orig_pkg_setup_dir.exists():
-            print('Original package path not found.')
-            exit(1)
+        if not self._orig_pkg_setup_dir.exists():
+            raise SystemExit(PkgError.PkgPathNotFound.msg)
         return self
 
     def validate_setup_cfg(self):
-        if not (self.orig_pkg_setup_dir.absolute() / 'setup.cfg').exists():
-            print('Original package setup.cfg file not found.')
-            exit(1)
+        if not (self._orig_pkg_setup_dir.absolute() / 'setup.cfg').exists():
+            sys.exit(PkgError.SetupCfgNotFound.msg)
         return self
 
-    def get_orig_pkg_info(self):
-        pkg_name = ''
+    def read_orig_cfg(self):
         config = configparser.ConfigParser()
 
         try:
-            config.read(self.orig_pkg_setup_dir / 'setup.cfg')
-        except (FileNotFoundError, KeyError, Exception):
-            print(f'Unable to read setup.cfg file')
-            exit(1)
+            config.read(self._orig_pkg_setup_dir / 'setup.cfg')
+        except (configparser.ParsingError,
+                configparser.MissingSectionHeaderError):
+            sys.exit(PkgError.SetupCfgReadError.msg)
 
-        try:
-            pkg_name = config['metadata']['name']
-        except (KeyError, Exception):
-            print('Unable to read package name')
-            exit(1)
+        return config
 
-        cse_list = []
-        try:
-            ep_cs_list = config['options.entry_points']['console_scripts'] \
-                .strip().splitlines()
-            cse_list = [su.ep_console_script.parse_cs_line(entry) for entry in ep_cs_list]
-        except (TypeError, Exception):
-            print('Unable to find any console script entry point for original'
-                  'package')
-            # TODO if inner pkg __main__ exists, just warn instead of exit
-            exit(1)
+    def get_orig_pkg_info(self):
+        self.validate_orig_pkg_path().validate_setup_cfg()
+        config = self.read_orig_cfg()
 
         return su.named_tuples.OrigPkgInfo(
-            pkg_name=pkg_name,
-            root_path=self.orig_pkg_setup_dir,
-            entry_pts=cse_list)
-
+            pkg_name=get_pkg_name(config),
+            root_path=self._orig_pkg_setup_dir,
+            entry_pts=get_cse_list(config))
