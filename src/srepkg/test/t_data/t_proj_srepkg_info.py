@@ -1,7 +1,7 @@
 from pathlib import Path
-import srepkg.test.t_proj_orig_info as tpoi
+import srepkg.test.t_data.t_proj_info as tpi
 
 
 test_srepkg_pkgs_dir = Path(__file__).parent.absolute() / 'test_srepkg_pkgs'
 srepkg_root = test_srepkg_pkgs_dir / \
-                       (tpoi.pkg_name + '_as_' + tpoi.pkg_name + 'srepkg')
+                       (tpi.pkg_name + '_as_' + tpi.pkg_name + 'srepkg')

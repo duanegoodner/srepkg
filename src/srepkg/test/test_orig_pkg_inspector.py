@@ -1,9 +1,8 @@
 import pytest
-from pathlib import Path
 from operator import attrgetter
 from typing import NamedTuple
+import srepkg.test.t_data as t_data
 import srepkg.orig_pkg_inspector as opi
-import srepkg.test.t_proj.t_proj_info as tpi
 
 
 ErrorTest = NamedTuple(
@@ -29,7 +28,7 @@ error_tests = [
 
 
 def sys_exit_condition(condition: ErrorTest):
-    setup_cfg_dir = Path(__file__).parent.absolute() / condition.cfg_dir_name
+    setup_cfg_dir = t_data.paths.base / condition.cfg_dir_name
     orig_pkg_inspector = opi.OrigPkgInspector(str(setup_cfg_dir))
     with pytest.raises(SystemExit) as e:
         orig_pkg_info = orig_pkg_inspector.get_orig_pkg_info()
@@ -42,28 +41,25 @@ def test_sys_exit_conditions():
 
 
 def test_good_setup_cfg():
-    setup_cfg_dir = Path(__file__).parent.absolute() / 'setup_cfg_valid'
+    setup_cfg_dir = t_data.paths.base / 'setup_cfg_valid'
     orig_pkg_inspector = opi.OrigPkgInspector(str(setup_cfg_dir))
     orig_pkg_info = orig_pkg_inspector.get_orig_pkg_info()
+
+    actual_pkg_data = t_data.setup_cfg_valid.cfg_data
+
     assert orig_pkg_info.root_path == setup_cfg_dir
-    assert orig_pkg_info.pkg_name == 'goodpkg'
-    assert len(orig_pkg_info.entry_pts) == 2
-    assert orig_pkg_info.entry_pts[0].command == 'goodpkg'
-    assert orig_pkg_info.entry_pts[0].module_path == 'goodpkg.goodpkg'
-    assert orig_pkg_info.entry_pts[0].funct == 'main'
-    assert orig_pkg_info.entry_pts[1].command == 'goodtool'
-    assert orig_pkg_info.entry_pts[1].module_path == 'goodpkg.tool'
-    assert orig_pkg_info.entry_pts[1].funct == 'atool'
+    assert orig_pkg_info.pkg_name == actual_pkg_data.pkg_name
+    assert orig_pkg_info.entry_pts == actual_pkg_data.entry_pts
 
 
 def test_valid_pkg():
 
-    orig_pkg_info = opi.OrigPkgInspector(tpi.pkg_root) \
+    orig_pkg_info = opi.OrigPkgInspector(t_data.t_proj_info.pkg_root) \
         .validate_orig_pkg_path() \
         .validate_setup_cfg() \
         .get_orig_pkg_info()
 
-    assert orig_pkg_info.pkg_name == tpi.pkg_name
-    assert orig_pkg_info.root_path == tpi.pkg_root
+    assert orig_pkg_info.pkg_name == t_data.t_proj_info.pkg_name
+    assert orig_pkg_info.root_path == t_data.t_proj_info.pkg_root
     assert orig_pkg_info.entry_pts.sort(key=attrgetter('command')) ==\
-           tpi.cse_list.sort(key=attrgetter('command'))
+           t_data.t_proj_info.cse_list.sort(key=attrgetter('command'))

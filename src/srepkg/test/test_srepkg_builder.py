@@ -1,25 +1,25 @@
 import unittest
 import shutil
-import srepkg.test.calc_test_paths as ctp
 import srepkg.srepkg_builder as sb
-import srepkg.test.t_proj_srepkg_info as tpsi
+import srepkg.test.test_path_calculator as tpc
+import srepkg.test.t_data as t_data
 
 
 class TestSrepkgBuilder(unittest.TestCase):
 
     def setUp(self) -> None:
-        if tpsi.srepkg_root.exists():
-            shutil.rmtree(tpsi.srepkg_root)
+        if t_data.t_proj_srepkg_info.srepkg_root.exists():
+            shutil.rmtree(t_data.t_proj_srepkg_info.srepkg_root)
 
-        self.builder_src_paths, self.builder_dest_paths = ctp.calc_test_paths()
+        self.builder_src_paths, self.builder_dest_paths = tpc.calc_test_paths()
 
         self.srepkg_builder = sb.SrepkgBuilder(
-            ctp.calc_test_paths.locals['orig_pkg_info'],
+            tpc.calc_test_paths.locals['orig_pkg_info'],
             self.builder_src_paths, self.builder_dest_paths)
 
     def tearDown(self) -> None:
-        if tpsi.test_srepkg_pkgs_dir.exists():
-            shutil.rmtree(tpsi.test_srepkg_pkgs_dir)
+        if t_data.t_proj_srepkg_info.test_srepkg_pkgs_dir.exists():
+            shutil.rmtree(t_data.t_proj_srepkg_info.test_srepkg_pkgs_dir)
 
     def test_srepkg_builder_paths(self):
         assert self.srepkg_builder.src_paths == self.builder_src_paths
