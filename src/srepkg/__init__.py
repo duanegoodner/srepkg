@@ -2,9 +2,16 @@
 Solo Re-Package (srepkg)
 =========================
 
-Builds a re-packaged version of existing packaged application. When the
-re-packaged version of the app is launched, it automatically creates its own new
-virtual env and installs and runs the original package in the new env. The
-active environment used to launch the re-packaged application remains active and
-unchanged during and after installation and execution of the re-packaged app.
+srepkg is a Python package that modifies other Python packages by
+adding a layer that affects how and where the modified packages are
+installed. When a “re-packaged” package is installed via a pip from a
+pre-existing environment, the isolation layer that was added by srepkg
+creates a new virtual environment. The original package and its
+dependencies are installed in this newly-created, isolated environment.
+
+A dependency-free access package is installed in the pre-existing
+environment to provide access to the original package's command line
+entry points.
+
+
 """

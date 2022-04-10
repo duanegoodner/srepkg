@@ -1,13 +1,6 @@
 import configparser
-from typing import NamedTuple
 from pathlib import Path
 from srepkg.shared_utils.named_tuples import CSEntry
-
-
-# class CSEntry(NamedTuple):
-#     command: str
-#     module_path: str
-#     funct: str
 
 
 def parse_cs_line(cfg_file_line: str):

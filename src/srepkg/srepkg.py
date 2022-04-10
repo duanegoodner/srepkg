@@ -19,7 +19,7 @@ def main():
     """
     args = ci.get_args()
 
-    orig_pkg_info = opi.OrigPkgInspector(args.orig_pkg_setup_dir)\
+    orig_pkg_info = opi.OrigPkgInspector(args.orig_pkg_path)\
         .validate_orig_pkg_path()\
         .validate_setup_cfg()\
         .get_orig_pkg_info()

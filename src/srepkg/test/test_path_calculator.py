@@ -14,7 +14,7 @@ repackaging_components = t_data.paths.repackaging_components_actual
 def calc_test_paths():
     args = ci.get_args([str(t_data.t_proj_info.pkg_root)])
 
-    orig_pkg_info = opi.OrigPkgInspector(args.orig_pkg_setup_dir) \
+    orig_pkg_info = opi.OrigPkgInspector(args.orig_pkg_path) \
         .validate_orig_pkg_path() \
         .validate_setup_cfg() \
         .get_orig_pkg_info()

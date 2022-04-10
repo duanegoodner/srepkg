@@ -5,14 +5,6 @@ Module for collecting command line input.
 import argparse
 
 
-# def define_args():
-#     parser = argparse.ArgumentParser()
-#     parser.add_argument('orig_pkg_setup_dir')
-#     parser.add_argument('srepkg_name', nargs='?')
-#
-#     return parser
-
-
 def get_args(*args):
     """
     Collects and parses command line args.
@@ -23,7 +15,17 @@ def get_args(*args):
     :return: Namespace with orig_pkg_path and (if provided) srepkg_name
     """
     parser = argparse.ArgumentParser()
-    parser.add_argument('orig_pkg_setup_dir')
+    parser.add_argument(
+        'orig_pkg_path',
+        type=str,
+        help="Path to directory containing original package's setup.cfg file")
 
-    parser.add_argument('srepkg_name', nargs='?')
+    parser.add_argument(
+        '--srepkg_name',
+        type=str,
+        nargs='?',
+        action='store',
+        help="Name to be used for repackaged package. "
+             "Default is <original-pkg-name-from-setup.cfg + 'srepkg'>"
+    )
     return parser.parse_args(*args)

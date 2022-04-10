@@ -20,7 +20,15 @@ class PkgError(PkgErrorMsg, Enum):
     SetupCfgReadError = PkgErrorMsg(msg='Unable to read or parse setup.cfg')
 
 
-def get_pkg_name(populated_config: configparser.ConfigParser):
+def get_pkg_name(populated_config: configparser.ConfigParser) -> str:
+    """
+
+
+    :param populated_config: a ConfigParser that has previously read data from
+    a setup.cfg file
+    :return: value name in the metadata section of setup.cfg
+    :raises
+    """
     try:
         pkg_name = populated_config['metadata']['name']
     except KeyError:
@@ -44,16 +52,16 @@ def get_cse_list(populated_config: configparser.ConfigParser):
 
 class OrigPkgInspector:
 
-    def __init__(self, orig_pkg_setup_dir: str):
-        self._orig_pkg_setup_dir = Path(orig_pkg_setup_dir)
+    def __init__(self, orig_pkg_path: str):
+        self._orig_pkg_path = Path(orig_pkg_path)
 
     def validate_orig_pkg_path(self):
-        if not self._orig_pkg_setup_dir.exists():
+        if not self._orig_pkg_path.exists():
             raise SystemExit(PkgError.PkgPathNotFound.msg)
         return self
 
     def validate_setup_cfg(self):
-        if not (self._orig_pkg_setup_dir.absolute() / 'setup.cfg').exists():
+        if not (self._orig_pkg_path.absolute() / 'setup.cfg').exists():
             sys.exit(PkgError.SetupCfgNotFound.msg)
         return self
 
@@ -61,7 +69,7 @@ class OrigPkgInspector:
         config = configparser.ConfigParser()
 
         try:
-            config.read(self._orig_pkg_setup_dir / 'setup.cfg')
+            config.read(self._orig_pkg_path / 'setup.cfg')
         except (configparser.ParsingError,
                 configparser.MissingSectionHeaderError):
             sys.exit(PkgError.SetupCfgReadError.msg)
@@ -74,5 +82,5 @@ class OrigPkgInspector:
 
         return su.named_tuples.OrigPkgInfo(
             pkg_name=get_pkg_name(config),
-            root_path=self._orig_pkg_setup_dir,
+            root_path=self._orig_pkg_path,
             entry_pts=get_cse_list(config))

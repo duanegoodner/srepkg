@@ -9,9 +9,7 @@ import string
 import pkgutil
 import shutil
 import configparser
-# import srepkg.path_builders as pb
 import srepkg.shared_utils as su
-# import srepkg.shared_utils.ep_console_script as epcs
 
 
 # TODO modify copy order / folder structure to ensure no possible overwrite
@@ -74,21 +72,20 @@ class SrepkgBuilder:
             'sre_pkg_name': self._repkg_paths.srepkg.name,
         }
 
-    @property
-    def entry_module_subs(self):
-        return {
-            'pkg_name':
-                self._orig_pkg_info.pkg_name,
-            'controller_import_path':
-                self._repkg_paths.srepkg.name +
-                '.srepkg_control_components.srepkg_controller'
-        }
+    # @property
+    # def entry_module_subs(self):
+    #     return {
+    #         'pkg_name': self._orig_pkg_info.pkg_name,
+    #         'controller_import_path':
+    #             self._repkg_paths.srepkg.name +
+    #             '.srepkg_control_components.srepkg_controller'
+    #     }
 
     def copy_inner_package(self):
         """Copies original package to SRE-package directory"""
         try:
-            shutil.copytree(self.orig_pkg_info.root_path,
-                            self.repkg_paths.srepkg,
+            shutil.copytree(self._orig_pkg_info.root_path,
+                            self._repkg_paths.srepkg,
                             ignore=shutil.ignore_patterns(*self._ignore_types))
         except (OSError, FileNotFoundError, FileExistsError, Exception):
             print('Error when attempting to copy original package '
@@ -98,8 +95,8 @@ class SrepkgBuilder:
     def copy_srepkg_control_components(self):
         """Copies srepkg components and driver to SRE-package directory"""
         try:
-            shutil.copytree(self.src_paths.srepkg_control_components,
-                            self.repkg_paths.srepkg_control_components)
+            shutil.copytree(self._src_paths.srepkg_control_components,
+                            self._repkg_paths.srepkg_control_components)
         except (OSError, FileNotFoundError, FileExistsError, Exception):
             print('Error when attempting to copy srepkg_control_components.')
             exit(1)
@@ -107,24 +104,24 @@ class SrepkgBuilder:
     def orig_cse_to_sr_cse(self, orig_cse: su.named_tuples.CSEntry):
         return su.named_tuples.CSEntry(
             command=orig_cse.command,
-            module_path=self.repkg_paths.srepkg.name + '.' +
-            self.repkg_paths.srepkg_entry_points.name + '.' + orig_cse.command,
+            module_path=self._repkg_paths.srepkg.name + '.' +
+            self._repkg_paths.srepkg_entry_points.name + '.' + orig_cse.command,
             funct='entry_funct'
         )
 
     def build_sr_cfg(self):
         sr_config = configparser.ConfigParser()
-        sr_config.read(self.src_paths.srepkg_setup_cfg)
+        sr_config.read(self._src_paths.srepkg_setup_cfg)
         sr_config_ep_cs_list = [self.orig_cse_to_sr_cse(orig_cse) for orig_cse
-                                in self.orig_pkg_info.entry_pts]
-        sr_config_cs_lines = [su.ep_console_script.build_cs_line(sr_cse) for sr_cse in
-                              sr_config_ep_cs_list]
+                                in self._orig_pkg_info.entry_pts]
+        sr_config_cs_lines = [su.ep_console_script.build_cs_line(sr_cse) for
+                              sr_cse in sr_config_ep_cs_list]
         sr_config['options.entry_points']['console_scripts'] = \
             '\n' + '\n'.join(sr_config_cs_lines)
 
-        sr_config['metadata']['name'] = self.repkg_paths.srepkg.name
+        sr_config['metadata']['name'] = self._repkg_paths.srepkg.name
 
-        with open(self.repkg_paths.srepkg_setup_cfg, 'w') as sr_configfile:
+        with open(self._repkg_paths.srepkg_setup_cfg, 'w') as sr_configfile:
             sr_config.write(sr_configfile)
 
     def write_entry_point_file(self, orig_cse: su.named_tuples.CSEntry):
@@ -135,8 +132,8 @@ class SrepkgBuilder:
 
     def write_entry_point_init(self):
         entry_pt_imports = [
-            f'import {self._repkg_paths.srepkg.name}.srepkg_entry_points.' \
-            f'{cse.command}' for cse in self.orig_pkg_info.entry_pts
+            f'import {self._repkg_paths.srepkg.name}.srepkg_entry_points.'
+            f'{cse.command}' for cse in self._orig_pkg_info.entry_pts
         ]
 
         with open(self._repkg_paths.srepkg_entry_points_init, 'w') as ent_init:
@@ -148,8 +145,8 @@ class SrepkgBuilder:
         """Copies file from source to SRE-package based on attribute name
         in _src_paths and _repkg_paths. Requires same attribute name in each"""
         try:
-            shutil.copy2(getattr(self.src_paths, src_key),
-                         getattr(self.repkg_paths, dest_key))
+            shutil.copy2(getattr(self._src_paths, src_key),
+                         getattr(self._repkg_paths, dest_key))
         except FileNotFoundError:
             print(f'Unable to find file when attempting to copy from'
                   f'{str(getattr(self._src_paths, src_key))} to '
@@ -166,20 +163,20 @@ class SrepkgBuilder:
                   f'{str(getattr(self._repkg_paths, dest_key))}')
             exit(1)
 
-    def inner_pkg_install_inhibit(self):
+    def inner_pkg_setup_off(self):
         """
         Bundle of all methods that modify the inner (aka original) package
         inside the SRE-package.
         """
 
-        self.repkg_paths.inner_setup_py_active.rename(
-            self.repkg_paths.inner_setup_py_inactive)
+        self._repkg_paths.inner_setup_py_active.rename(
+            self._repkg_paths.inner_setup_py_inactive)
 
-        self.repkg_paths.inner_setup_cfg_active.rename(
-            self.repkg_paths.inner_setup_cfg_inactive)
+        self._repkg_paths.inner_setup_cfg_active.rename(
+            self._repkg_paths.inner_setup_cfg_inactive)
 
     def enable_dash_m_entry(self):
-        self.repkg_paths.main_inner.rename(self.repkg_paths.main_inner_orig)
+        self._repkg_paths.main_inner.rename(self._repkg_paths.main_inner_orig)
         shutil.copy2(self._src_paths.main_inner, self._repkg_paths.main_inner)
 
         write_file_from_template('pkg_names.py.template',
@@ -197,7 +194,7 @@ class SrepkgBuilder:
             su.ep_console_script.build_cs_line(
                 entry_pt, with_redirect=True,
                 new_path=self._orig_pkg_info.pkg_name + '.' + 'orig_main')
-            for entry_pt in self.orig_pkg_info.entry_pts
+            for entry_pt in self._orig_pkg_info.entry_pts
         ]
 
     def rebuild_inner_cfg_cse(self):
@@ -238,7 +235,7 @@ class SrepkgBuilder:
         self._repkg_paths.srepkg_entry_points.mkdir()
         self.write_entry_point_init()
 
-        for entry_pt in self.orig_pkg_info.entry_pts:
+        for entry_pt in self._orig_pkg_info.entry_pts:
             self.write_entry_point_file(entry_pt)
 
     def build_srepkg(self):
@@ -250,7 +247,7 @@ class SrepkgBuilder:
 
         # TODO only need one of these (they do same thing)
 
-        self.inner_pkg_install_inhibit()
+        self.inner_pkg_setup_off()
 
         self.build_sr_cfg()
 
@@ -260,5 +257,5 @@ class SrepkgBuilder:
             self.enable_dash_m_entry()
 
         print(f'SRE-package built from:'
-              f'{self.orig_pkg_info.root_path / self.orig_pkg_info.pkg_name}\n'
-              f'SRE-package saved in: {self.repkg_paths.root}\n')
+              f'{self._orig_pkg_info.root_path / self._orig_pkg_info.pkg_name}'
+              f'S\nRE-package saved in: {self._repkg_paths.root}\n')

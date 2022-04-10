@@ -5,7 +5,7 @@
 
 
 ## Description
-srepkg is a Python package that modifies other Python packages by adding a layer that affects how and where the modified packages are installed. When a “re-packaged” package is installed via a pip from a pre-existing environment, the isolation layer that was added by Srepkg creates a new virtual environment. The original package and its dependencies are installed in this newly-created, isolated environment.
+srepkg is a Python package that modifies other Python packages by adding a layer that affects how and where the modified packages are installed. When a “re-packaged” package is installed via a pip from a pre-existing environment, the isolation layer that was added by srepkg creates a new virtual environment. The original package and its dependencies are installed in this newly-created, isolated environment.
 
 A package with the sole purpose of providing access to the command line entry points of the original package is installed in the pre-existing environment. However, since this access package does not contain any dependencies (nor any code from the original package) there is no risk of dependency conflicts with any other packages in the pre-existing environment.
 
