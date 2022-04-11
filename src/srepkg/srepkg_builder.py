@@ -217,13 +217,13 @@ class SrepkgBuilder:
         self._repkg_paths.inner_setup_cfg_active.rename(
             self._repkg_paths.inner_setup_cfg_inactive)
 
-    def enable_dash_m_entry(self):
-        self._repkg_paths.main_inner.rename(self._repkg_paths.main_inner_orig)
-        shutil.copy2(self._src_paths.main_inner, self._repkg_paths.main_inner)
-
-        self._template_file_writer.write_file(
-            template_file_name='pkg_names.py.template',
-            dest_path=self._repkg_paths.pkg_names_inner)
+    # def enable_dash_m_entry(self):
+    #     self._repkg_paths.main_inner.rename(self._repkg_paths.main_inner_orig)
+    #     shutil.copy2(self._src_paths.main_inner, self._repkg_paths.main_inner)
+    #
+    #     self._template_file_writer.write_file(
+    #         template_file_name='pkg_names.py.template',
+    #         dest_path=self._repkg_paths.pkg_names_inner)
 
         # file_writer = TemplateFileWriter.from_pkg_data_dir(
         #     pkg='srepkg.repackaging_components',
@@ -233,29 +233,29 @@ class SrepkgBuilder:
         #
         # file_writer.write_file(template_file_name='pkg_names.py.template',
         #                        dest_path=self._repkg_paths.pkg_names_inner)
-
-        self.rebuild_inner_cfg_cse()
-
-    def rebuild_inner_cs_lines(self):
-        orig_inner_main = self._orig_pkg_info.pkg_name + '.' + '__main__'
-
-        return [
-            su.ep_console_script.build_cs_line(entry_pt) if
-            entry_pt.module_path != orig_inner_main else
-            su.ep_console_script.build_cs_line(
-                entry_pt, with_redirect=True,
-                new_path=self._orig_pkg_info.pkg_name + '.' + 'orig_main')
-            for entry_pt in self._orig_pkg_info.entry_pts
-        ]
-
-    def rebuild_inner_cfg_cse(self):
-        inner_config = configparser.ConfigParser()
-        inner_config.read(self._repkg_paths.inner_setup_cfg_inactive)
-        inner_config['options.entry_points']['console_scripts'] = \
-            '\n' + '\n'.join(self.rebuild_inner_cs_lines())
-        with open(self._repkg_paths.inner_setup_cfg_inactive,
-                  'w') as inner_cf_file:
-            inner_config.write(inner_cf_file)
+    #
+    #     self.rebuild_inner_cfg_cse()
+    #
+    # def rebuild_inner_cs_lines(self):
+    #     orig_inner_main = self._orig_pkg_info.pkg_name + '.' + '__main__'
+    #
+    #     return [
+    #         su.ep_console_script.build_cs_line(entry_pt) if
+    #         entry_pt.module_path != orig_inner_main else
+    #         su.ep_console_script.build_cs_line(
+    #             entry_pt, with_redirect=True,
+    #             new_path=self._orig_pkg_info.pkg_name + '.' + 'orig_main')
+    #         for entry_pt in self._orig_pkg_info.entry_pts
+    #     ]
+    #
+    # def rebuild_inner_cfg_cse(self):
+    #     inner_config = configparser.ConfigParser()
+    #     inner_config.read(self._repkg_paths.inner_setup_cfg_inactive)
+    #     inner_config['options.entry_points']['console_scripts'] = \
+    #         '\n' + '\n'.join(self.rebuild_inner_cs_lines())
+    #     with open(self._repkg_paths.inner_setup_cfg_inactive,
+    #               'w') as inner_cf_file:
+    #         inner_config.write(inner_cf_file)
 
     def add_srepkg_layer(self):
         """
@@ -312,8 +312,8 @@ class SrepkgBuilder:
 
         self.add_srepkg_layer()
 
-        if self._repkg_paths.main_inner.exists():
-            self.enable_dash_m_entry()
+        # if self._repkg_paths.main_inner.exists():
+        #     self.enable_dash_m_entry()
 
         print(f'SRE-package built from:'
               f'{self._orig_pkg_info.root_path / self._orig_pkg_info.pkg_name}'

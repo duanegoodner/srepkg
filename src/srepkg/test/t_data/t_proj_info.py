@@ -8,3 +8,7 @@ cse_string = '\nmy_project = t_proj.app:run' \
              '\nmain_entry = t_proj.__main__:main'
 cse_list = [su.ep_console_script.parse_cs_line(entry) for entry in
             cse_string.strip().split('\n')]
+
+
+non_src_layout_pkg_root = Path(__file__).parent.absolute() /\
+                          't_proj_non_src_layout'

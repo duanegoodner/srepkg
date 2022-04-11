@@ -1,5 +1,6 @@
 import shutil
 import unittest
+from pathlib import Path
 import srepkg.command_input as ci
 import srepkg.orig_pkg_inspector as opi
 import srepkg.path_calculator as pc
@@ -11,8 +12,8 @@ repackaging_components = t_data.paths.repackaging_components_actual
 
 
 @tu.p_loc.PersistentLocals
-def calc_test_paths():
-    args = ci.get_args([str(t_data.t_proj_info.pkg_root)])
+def calc_test_paths(pkg_root: Path = t_data.t_proj_info.pkg_root):
+    args = ci.get_args([str(pkg_root)])
 
     orig_pkg_info = opi.OrigPkgInspector(args.orig_pkg_path) \
         .validate_orig_pkg_path() \
