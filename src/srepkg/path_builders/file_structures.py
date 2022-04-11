@@ -11,13 +11,15 @@ repackaging_components = \
              SCF(pname='srepkg_control_paths.py', sc='srepkg_control_paths'),
              SCF(pname='srepkg_controller.py', sc='srepkg_controller')
          ]),
+     SCD(pname='template_files', sc='template_files', contents=[
+         SCF(pname='MANIFEST.in.template', sc='manifest_template'),
+         SCF(pname='pkg_names.py.template', sc='pkg_names_template')
+     ]),
      SCF(pname='__init__.py', sc='repackaging_components_init'),
      SCF(pname='entry_point_template.py', sc='entry_point_template'),
      SCF(pname='inner_pkg_installer.py', sc='inner_pkg_installer'),
      SCF(pname='main_inner.py', sc='main_inner'),
      SCF(pname='main_outer.py', sc='main_outer'),
-     SCF(pname='MANIFEST.in.template', sc='manifest_template'),
-     SCF(pname='pkg_names.py.template', sc='pkg_names_template'),
      SCF(pname='setup.py', sc='srepkg_setup_py'),
      SCF(pname='setup_template.cfg', sc='srepkg_setup_cfg'),
      SCF(pname='srepkg_init.py', sc='srepkg_init')]

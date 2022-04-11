@@ -23,12 +23,49 @@ def write_file_from_template(template_name: str, dest_path: Path, subs: dict):
     :param dest_path: Path object referencing destination file
     :param subs: dictionary of template_key: replacement_string entries.
     """
+    # loader = pkgutil.get_loader('srepkg.repackaging_components.template_files')
+    # template_file_sub_dir = ''
+    #
+    # template_files_loc = Path(loader.path).parent.absolute() / template_file_sub_dir
+    #
+    # template_file = template_files_loc / template_name
+    #
+    # with template_file.open(mode='r') as tf:
+    #     template_text = tf.read()
+
     template_text = pkgutil.get_data(
-        'srepkg.repackaging_components', template_name).decode()
+        'srepkg.repackaging_components', '/template_files/' + template_name).decode()
+
     template = string.Template(template_text)
     result = template.substitute(subs)
     with dest_path.open(mode='w') as output_file:
         output_file.write(result)
+
+
+class TemplateFileWriter:
+
+    def __init__(self, templates_dir: Path, substitution_map: dict):
+        self._templates_dir = templates_dir
+        self._substitution_map = substitution_map
+
+    @classmethod
+    def from_pkg_data_dir(cls, pkg: str, data_dir: str, substitution_map: dict):
+
+        pkg_path = Path(pkgutil.get_loader(pkg).path)
+        template_dir_path = pkg_path / data_dir
+
+        return cls(template_dir_path, substitution_map)
+
+    def write_file(self, template_file_name: str, dest_path: Path):
+        with (self._templates_dir / template_file_name).open(mode='r') as tf:
+            template_text = tf.read()
+        template = string.Template(template_text)
+        result = template.substitute(self._substitution_map)
+        with dest_path.open(mode='w') as output_file:
+            output_file.write(result)
+
+
+
 
 
 class SrepkgBuilder:
@@ -179,9 +216,17 @@ class SrepkgBuilder:
         self._repkg_paths.main_inner.rename(self._repkg_paths.main_inner_orig)
         shutil.copy2(self._src_paths.main_inner, self._repkg_paths.main_inner)
 
-        write_file_from_template('pkg_names.py.template',
-                                 self._repkg_paths.pkg_names_inner,
-                                 self.pkg_names_subs)
+        file_writer = TemplateFileWriter.from_pkg_data_dir(
+            pkg='srepkg.repackaging_components',
+            data_dir='template_files'
+        )
+
+        file_writer.write_file(template_file_name='pkg_names.py.template',
+                               dest_path=self._repkg_paths.pkg_names_inner)
+
+        # write_file_from_template('pkg_names.py.template',
+        #                          self._repkg_paths.pkg_names_inner,
+        #                          self.pkg_names_subs)
 
         self.rebuild_inner_cfg_cse()
 
