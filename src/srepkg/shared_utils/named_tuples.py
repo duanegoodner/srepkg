@@ -19,3 +19,10 @@ class OrigPkgInfo(NamedTuple):
 class SrePkgInfo(NamedTuple):
     pkg_name: str
     root_path: Path
+
+
+class DirectCopyShortcuts(NamedTuple):
+    src_key: str
+    dest_key: str
+
+

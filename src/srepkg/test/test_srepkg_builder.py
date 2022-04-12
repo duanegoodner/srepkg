@@ -1,6 +1,5 @@
 import unittest
 import shutil
-from pathlib import Path
 import srepkg.srepkg_builder as sb
 import srepkg.test.test_path_calculator as tpc
 import srepkg.test.t_data as t_data
@@ -42,10 +41,12 @@ class TestSrepkgBuilder(unittest.TestCase):
         self.srepkg_builder.copy_inner_package()
         self.srepkg_builder.inner_pkg_setup_off()
 
-        assert not self.srepkg_builder.repkg_paths.inner_setup_py_active.exists()
+        assert not self.srepkg_builder.repkg_paths.inner_setup_py_active\
+            .exists()
         assert (self.srepkg_builder.repkg_paths.inner_setup_cfg_active.parent /
                 'setup_off.py').exists()
-        assert not self.srepkg_builder.repkg_paths.inner_setup_cfg_active.exists()
+        assert not self.srepkg_builder.repkg_paths.inner_setup_cfg_active\
+            .exists()
         assert (self.srepkg_builder.repkg_paths.inner_setup_cfg_active.parent /
                 'setup_off.cfg').exists()
 
@@ -78,4 +79,3 @@ class TestSrepkgBuilder(unittest.TestCase):
 class TestSrepkgBuilderNonSrcLayout(TestSrepkgBuilder, unittest.TestCase):
     srepkg_root = t_data.t_proj_srepkg_info.srepkg_root
     orig_pkg_root = t_data.t_proj_info.non_src_layout_pkg_root
-

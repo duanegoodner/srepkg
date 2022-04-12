@@ -4,6 +4,7 @@ wraps the copied package with a file structure that forces it to run as a
 Srepkg.
 """
 
+from typing import List, Callable
 from pathlib import Path
 import string
 import pkgutil
@@ -147,7 +148,7 @@ class SrepkgBuilder:
         return su.named_tuples.CSEntry(
             command=orig_cse.command,
             module_path=self._repkg_paths.srepkg.name + '.' +
-            self._repkg_paths.srepkg_entry_points.name + '.' + orig_cse.command,
+                        self._repkg_paths.srepkg_entry_points.name + '.' + orig_cse.command,
             funct='entry_funct'
         )
 
@@ -217,45 +218,58 @@ class SrepkgBuilder:
         self._repkg_paths.inner_setup_cfg_active.rename(
             self._repkg_paths.inner_setup_cfg_inactive)
 
-    # def enable_dash_m_entry(self):
-    #     self._repkg_paths.main_inner.rename(self._repkg_paths.main_inner_orig)
-    #     shutil.copy2(self._src_paths.main_inner, self._repkg_paths.main_inner)
-    #
-    #     self._template_file_writer.write_file(
-    #         template_file_name='pkg_names.py.template',
-    #         dest_path=self._repkg_paths.pkg_names_inner)
+    def build_srepkg_entry_pts(self):
+        self._repkg_paths.srepkg_entry_points.mkdir()
+        self.write_entry_point_init()
+        for entry_pt in self._orig_pkg_info.entry_pts:
+            self.write_entry_point_file(entry_pt)
 
-        # file_writer = TemplateFileWriter.from_pkg_data_dir(
-        #     pkg='srepkg.repackaging_components',
-        #     data_dir='template_files',
-        #     substitution_map=self.pkg_names_subs
-        # )
-        #
-        # file_writer.write_file(template_file_name='pkg_names.py.template',
-        #                        dest_path=self._repkg_paths.pkg_names_inner)
-    #
-    #     self.rebuild_inner_cfg_cse()
-    #
-    # def rebuild_inner_cs_lines(self):
-    #     orig_inner_main = self._orig_pkg_info.pkg_name + '.' + '__main__'
-    #
-    #     return [
-    #         su.ep_console_script.build_cs_line(entry_pt) if
-    #         entry_pt.module_path != orig_inner_main else
-    #         su.ep_console_script.build_cs_line(
-    #             entry_pt, with_redirect=True,
-    #             new_path=self._orig_pkg_info.pkg_name + '.' + 'orig_main')
-    #         for entry_pt in self._orig_pkg_info.entry_pts
-    #     ]
-    #
-    # def rebuild_inner_cfg_cse(self):
-    #     inner_config = configparser.ConfigParser()
-    #     inner_config.read(self._repkg_paths.inner_setup_cfg_inactive)
-    #     inner_config['options.entry_points']['console_scripts'] = \
-    #         '\n' + '\n'.join(self.rebuild_inner_cs_lines())
-    #     with open(self._repkg_paths.inner_setup_cfg_inactive,
-    #               'w') as inner_cf_file:
-    #         inner_config.write(inner_cf_file)
+    def add_srepkg_mid_layer(self):
+
+        self.copy_srepkg_control_components()
+        self.build_srepkg_entry_pts()
+
+        mid_layer_direct_copy_files = [
+            su.named_tuples.DirectCopyShortcuts(
+                src_key='srepkg_init', dest_key='srepkg_init'
+            ),
+            su.named_tuples.DirectCopyShortcuts(
+                src_key='main_outer', dest_key='main_outer'
+            )
+        ]
+
+        for entry in mid_layer_direct_copy_files:
+            self.simple_file_copy(src_key=entry.src_key,
+                                  dest_key=entry.dest_key)
+
+        self._template_file_writer.write_file(
+            'pkg_names.py.template', self._repkg_paths.pkg_names_mid)
+
+    def add_srepkg_outer_layer(self):
+
+        self.build_sr_cfg()
+
+        outer_layer_direct_copy_files = [
+            su.named_tuples.DirectCopyShortcuts(
+                src_key='inner_pkg_installer', dest_key='inner_pkg_installer'
+            ),
+            su.named_tuples.DirectCopyShortcuts(
+                src_key='srepkg_setup_py', dest_key='srepkg_setup_py'
+            )
+        ]
+
+        for entry in outer_layer_direct_copy_files:
+            self.simple_file_copy(src_key=entry.src_key,
+                                  dest_key=entry.dest_key)
+
+        template_file_writes = {
+            'pkg_names.py.template': self._repkg_paths.pkg_names_outer,
+            'MANIFEST.in.template': self._repkg_paths.manifest
+        }
+
+        for entry in template_file_writes.items():
+            self._template_file_writer.write_file(*entry)
+
 
     def add_srepkg_layer(self):
         """
@@ -279,16 +293,6 @@ class SrepkgBuilder:
         self._template_file_writer.write_file(
             'MANIFEST.in.template', self._repkg_paths.manifest)
 
-
-        # write_file_from_template('pkg_names.py.template',
-        #                          self._repkg_paths.pkg_names_outer,
-        #                          self.pkg_names_subs)
-        # write_file_from_template('pkg_names.py.template',
-        #                          self._repkg_paths.pkg_names_mid,
-        #                          self.pkg_names_subs)
-        # write_file_from_template('MANIFEST.in.template',
-        #                          self._repkg_paths.manifest,
-        #                          self.pkg_names_subs)
         self.build_sr_cfg()
 
         self._repkg_paths.srepkg_entry_points.mkdir()
@@ -297,24 +301,80 @@ class SrepkgBuilder:
         for entry_pt in self._orig_pkg_info.entry_pts:
             self.write_entry_point_file(entry_pt)
 
+    def build_srepkg_layer(
+            self,
+            call_methods: List[Callable] = None,
+            direct_copy_files: List[su.named_tuples.DirectCopyShortcuts] = None,
+            template_file_writes: dict[str, Path] = None):
+
+        if call_methods is not None:
+            for method in call_methods:
+                method()
+
+        if direct_copy_files is not None:
+            for direct_copy in direct_copy_files:
+                self.simple_file_copy(src_key=direct_copy.src_key,
+                                      dest_key=direct_copy.dest_key)
+
+        if template_file_writes is not None:
+            for write_op in template_file_writes.items():
+                self._template_file_writer.write_file(*write_op)
+
     def build_srepkg(self):
         """
         Encapsulates all steps needed to build SRE-package, and displays
         original package and SRE-package paths when complete.
         """
-        self.copy_inner_package()
 
-        # TODO only need one of these (they do same thing)
+        # inner layer
+        self.build_srepkg_layer(
+            call_methods=[self.copy_inner_package, self.inner_pkg_setup_off]
+        )
 
-        self.inner_pkg_setup_off()
+        # mid layer
+        self.build_srepkg_layer(
+            call_methods=[self.copy_srepkg_control_components,
+                          self.build_srepkg_entry_pts],
+            direct_copy_files=[
+                su.named_tuples.DirectCopyShortcuts(
+                    src_key='srepkg_init', dest_key='srepkg_init'
+                ),
+                su.named_tuples.DirectCopyShortcuts(
+                    src_key='main_outer', dest_key='main_outer'
+                )
+            ],
+            template_file_writes={
+                'pkg_names.py.template': self._repkg_paths.pkg_names_mid
+            }
+        )
 
-        self.build_sr_cfg()
+        # outer layer
+        self.build_srepkg_layer(
+            call_methods=[self.build_sr_cfg],
+            direct_copy_files=[
+                su.named_tuples.DirectCopyShortcuts(
+                    src_key='inner_pkg_installer',
+                    dest_key='inner_pkg_installer'
+                ),
+                su.named_tuples.DirectCopyShortcuts(
+                    src_key='srepkg_setup_py', dest_key='srepkg_setup_py'
+                ),
+            ],
+            template_file_writes= {
+                'pkg_names.py.template': self._repkg_paths.pkg_names_outer,
+                'MANIFEST.in.template': self._repkg_paths.manifest
+            }
+        )
 
-        self.add_srepkg_layer()
-
-        # if self._repkg_paths.main_inner.exists():
-        #     self.enable_dash_m_entry()
+        self.add_srepkg_outer_layer()
 
         print(f'SRE-package built from:'
               f'{self._orig_pkg_info.root_path / self._orig_pkg_info.pkg_name}'
               f'S\nRE-package saved in: {self._repkg_paths.root}\n')
+
+
+
+
+
+
+

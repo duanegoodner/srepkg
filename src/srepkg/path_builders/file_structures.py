@@ -16,12 +16,12 @@ repackaging_components = \
          SCF(pname='pkg_names.py.template', sc='pkg_names_template')
      ]),
      SCF(pname='__init__.py', sc='repackaging_components_init'),
-     SCF(pname='entry_point_template.py', sc='entry_point_template'),
+     SCF(pname='generic_entry.py', sc='entry_point_template'),
      SCF(pname='inner_pkg_installer.py', sc='inner_pkg_installer'),
-     SCF(pname='main_inner.py', sc='main_inner'),
-     SCF(pname='main_outer.py', sc='main_outer'),
-     SCF(pname='setup.py', sc='srepkg_setup_py'),
-     SCF(pname='setup_template.cfg', sc='srepkg_setup_cfg'),
+     # SCF(pname='main_inner.py', sc='main_inner'),
+     SCF(pname='srepkg_main.py', sc='main_outer'),
+     SCF(pname='srepkg_setup.py', sc='srepkg_setup_py'),
+     SCF(pname='srepkg_starter_setup.cfg', sc='srepkg_setup_cfg'),
      SCF(pname='srepkg_init.py', sc='srepkg_init')]
 
 
@@ -47,7 +47,7 @@ def get_builder_dest(root_name: str = 'dummy_root',
                         SCF(pname='__init__.py', sc='srepkg_entry_points_init')
                     ]),
                 SCD(pname=inner_pkg_name, sc='inner_pkg', contents=[
-                    SCF(pname='__main__.py', sc='main_inner'),
+                    # SCF(pname='__main__.py', sc='main_inner'),
                     SCF(pname='orig_main.py', sc='main_inner_orig'),
                     SCF(pname='pkg_names.py', sc='pkg_names_inner')
                 ]),

@@ -52,13 +52,13 @@ class TestPathCalculator(unittest.TestCase):
         assert builder_src_paths.entry_module == repackaging_components / \
                'srepkg_control_components' / 'entry_points.py'
         assert builder_src_paths.entry_point_template == \
-               repackaging_components / 'entry_point_template.py'
+               repackaging_components / 'generic_entry.py'
         assert builder_src_paths.srepkg_control_components == \
                repackaging_components / 'srepkg_control_components'
         assert builder_src_paths.srepkg_setup_py == repackaging_components / \
-               'setup.py'
+               'srepkg_setup.py'
         assert builder_src_paths.srepkg_setup_cfg == repackaging_components / \
-               'setup_template.cfg'
+               'srepkg_starter_setup.cfg'
 
     def test_builder_dest_paths(self):
         builder_dest_paths = calc_test_paths.locals['builder_dest_paths']

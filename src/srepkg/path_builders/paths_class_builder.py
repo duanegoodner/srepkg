@@ -4,7 +4,7 @@ import srepkg.path_builders.file_structures as fs
 
 
 def file_structure_walk(file_structure: List, root_path: Path,
-                 shortcut_names=None, paths=None):
+                        shortcut_names=None, paths=None):
     if shortcut_names is None:
         shortcut_names = []
     if paths is None:
@@ -35,16 +35,16 @@ def build_paths_class(shortcut_names: List[str], class_name: str,
 def main():
     src_names, src_paths = file_structure_walk(
         fs.repackaging_components, Path(__file__).parent.parent.absolute() /
-        'repackaging_components')
+                                   'repackaging_components')
 
     builder_src_paths_path = Path(__file__).parent.parent.absolute() / \
-        'shared_utils' / 'builder_src_paths.py'
+                             'shared_utils' / 'builder_src_paths.py'
     build_paths_class(src_names, 'BuilderSrcPaths', builder_src_paths_path)
 
     dest_names, dest_paths = file_structure_walk(fs.get_builder_dest(),
-                                          Path('srepkg_pkgs'))
+                                                 Path('srepkg_pkgs'))
     builder_dest_paths_path = Path(__file__).parent.parent.absolute() / \
-        'shared_utils' / 'builder_dest_paths.py'
+                              'shared_utils' / 'builder_dest_paths.py'
     build_paths_class(dest_names, 'BuilderDestPaths', builder_dest_paths_path)
 
 

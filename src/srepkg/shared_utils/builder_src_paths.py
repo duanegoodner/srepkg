@@ -14,7 +14,6 @@ class BuilderSrcPaths(NamedTuple):
     repackaging_components_init: Path
     entry_point_template: Path
     inner_pkg_installer: Path
-    main_inner: Path
     main_outer: Path
     srepkg_setup_py: Path
     srepkg_setup_cfg: Path
