@@ -6,11 +6,13 @@ import sys
 import srepkg.shared_utils as su
 
 
-PkgErrorMsg = NamedTuple('PkgErrorMsg', [('msg', str)])
+class PkgErrorMsg(NamedTuple):
+    msg: str
 
 
 class PkgError(PkgErrorMsg, Enum):
-    PkgNameNotFound = PkgErrorMsg(msg='Unable to find package name in setup.cfg')
+    PkgNameNotFound = PkgErrorMsg(
+        msg='Unable to find package name in setup.cfg')
     InvalidPkgName = PkgErrorMsg(msg='Invalid package name')
     CSENotFound = PkgErrorMsg(msg='Unable to find any console script entry '
                                   'point for original')

@@ -4,16 +4,47 @@ wraps the copied package with a file structure that forces it to run as a
 Srepkg.
 """
 
-from typing import List, Callable
+from typing import List, Callable, NamedTuple
 from pathlib import Path
+from enum import Enum
 import string
 import shutil
+import sys
 import configparser
 import srepkg.shared_utils as su
 
 
 # TODO modify copy order / folder structure to ensure no possible overwrite
 
+
+class SrepkgBuilderErrorMsg(NamedTuple):
+    msg: str
+
+
+class SrepkgBuilderErrors(SrepkgBuilderErrorMsg, Enum):
+    OrigPkgPathNotFound = SrepkgBuilderErrorMsg(
+        msg='Original package path not found')
+    DestPkgPathExits = SrepkgBuilderErrorMsg(
+        msg='Intended Srepkg destination path already exists')
+    ControlComponentsNotFound = SrepkgBuilderErrorMsg(
+        msg='Error when attempting to copy sub-package '
+            'srepkg_control_components. Sub-package not found'
+    )
+    ControlComponentsExist = SrepkgBuilderErrorMsg(
+        msg='Error when attempting to copy sub-package '
+            'srepkg_control_components. Destination path already exists.'
+    )
+    FileNotFoundForCopy = SrepkgBuilderErrorMsg(
+        msg='Error when attempting to copy. Source file not found.'
+    )
+    CopyDestinationPathExists = SrepkgBuilderErrorMsg(
+        msg='Error when attempting to copy. Destination path already exists'
+    )
+
+
+class SrcDestPair(NamedTuple):
+    src: Path
+    dest: Path
 
 
 class TemplateFileWriter:
@@ -38,6 +69,7 @@ class SrepkgBuilder:
 
     # file patterns that are not copied into the SRE-packaged app
     _ignore_types = ['*.git', '*.gitignore', '*.idea', '*__pycache__']
+    _build_errors = SrepkgBuilderErrors
 
     def __init__(self, orig_pkg_info: su.named_tuples.OrigPkgInfo,
                  src_paths: su.named_tuples.BuilderSrcPaths,
@@ -83,25 +115,26 @@ class SrepkgBuilder:
             shutil.copytree(self._orig_pkg_info.root_path,
                             self._repkg_paths.srepkg,
                             ignore=shutil.ignore_patterns(*self._ignore_types))
-        except (OSError, FileNotFoundError, FileExistsError, Exception):
-            print('Error when attempting to copy original package '
-                  'to new location.')
-            exit(1)
+        except FileNotFoundError:
+            sys.exit(self._build_errors.OrigPkgPathNotFound.msg)
+        except FileExistsError:
+            sys.exit(self._build_errors.DestPkgPathExits.msg)
 
     def copy_srepkg_control_components(self):
         """Copies srepkg components and driver to SRE-package directory"""
         try:
             shutil.copytree(self._src_paths.srepkg_control_components,
                             self._repkg_paths.srepkg_control_components)
-        except (OSError, FileNotFoundError, FileExistsError, Exception):
-            print('Error when attempting to copy srepkg_control_components.')
-            exit(1)
+        except FileNotFoundError:
+            sys.exit(self._build_errors.ControlComponentsNotFound.msg)
+        except FileExistsError:
+            sys.exit(self._build_errors.ControlComponentsExist.msg)
 
     def orig_cse_to_sr_cse(self, orig_cse: su.named_tuples.CSEntry):
         return su.named_tuples.CSEntry(
             command=orig_cse.command,
             module_path=self._repkg_paths.srepkg.name + '.' +
-                        self._repkg_paths.srepkg_entry_points.name + '.' + orig_cse.command,
+            self._repkg_paths.srepkg_entry_points.name + '.' + orig_cse.command,
             funct='entry_funct'
         )
 
@@ -137,33 +170,18 @@ class SrepkgBuilder:
                 ent_init.write(import_entry + '\n')
             ent_init.write('\n')
 
-    def simple_file_copy(self, src_key: str, dest_key: str):
+    def simple_file_copy(self, src_dest: SrcDestPair):
         """Copies file from source to SRE-package based on attribute name
         in _src_paths and _repkg_paths. Requires same attribute name in each"""
         try:
-            shutil.copy2(getattr(self._src_paths, src_key),
-                         getattr(self._repkg_paths, dest_key))
+            shutil.copy2(*src_dest)
         except FileNotFoundError:
             print(f'Unable to find file when attempting to copy from'
-                  f'{str(getattr(self._src_paths, src_key))} to '
-                  f'{str(getattr(self._repkg_paths, dest_key))}')
-            exit(1)
-
+                  f'{str(src_dest.src)} to {str(src_dest.dest)}')
+            sys.exit(self._build_errors.FileNotFoundForCopy.msg)
         except FileExistsError:
-            print(f'File already exists at '
-                  f'{str(getattr(self._repkg_paths, dest_key))}.')
-            exit(1)
-        except (OSError, Exception):
-            print(f'Error when attempting to copy from'
-                  f'{str(getattr(self._src_paths, src_key))} to '
-                  f'{str(getattr(self._repkg_paths, dest_key))}')
-            exit(1)
-
-    def template_file_write_by_keys(self, src_key: str, dest_key: str):
-        self._template_file_writer.write_file(
-            getattr(self._src_paths, src_key),
-            getattr(self._repkg_paths, dest_key)
-        )
+            print(f'File already exists at {str(src_dest.src)}.')
+            sys.exit(self._build_errors.CopyDestinationPathExists.msg)
 
     def inner_pkg_setup_off(self):
         """
@@ -186,24 +204,20 @@ class SrepkgBuilder:
     def build_srepkg_layer(
             self,
             call_methods: List[Callable] = None,
-            direct_copy_files: List[su.named_tuples.SrcDestShortcutPair] = None,
-            template_file_writes: List[su.named_tuples.SrcDestShortcutPair] = None):
+            direct_copy_files: List[SrcDestPair] = None,
+            template_file_writes: List[SrcDestPair] = None):
 
         if call_methods is not None:
             for method in call_methods:
                 method()
 
         if direct_copy_files is not None:
-            for direct_copy in direct_copy_files:
-                self.simple_file_copy(src_key=direct_copy.src_key,
-                                      dest_key=direct_copy.dest_key)
+            for direct_copy_pair in direct_copy_files:
+                self.simple_file_copy(direct_copy_pair)
 
         if template_file_writes is not None:
             for write_op in template_file_writes:
-                self.template_file_write_by_keys(
-                    src_key=write_op.src_key,
-                    dest_key=write_op.dest_key
-                )
+                self._template_file_writer.write_file(*write_op)
 
     def build_srepkg(self):
         """
@@ -221,17 +235,16 @@ class SrepkgBuilder:
             call_methods=[self.copy_srepkg_control_components,
                           self.build_srepkg_entry_pts],
             direct_copy_files=[
-                su.named_tuples.SrcDestShortcutPair(
-                    src_key='srepkg_init', dest_key='srepkg_init'
-                ),
-                su.named_tuples.SrcDestShortcutPair(
-                    src_key='main_outer', dest_key='main_outer'
-                )
+                SrcDestPair(src=self._src_paths.srepkg_init,
+                            dest=self._repkg_paths.srepkg_init),
+                SrcDestPair(
+                    src=self._src_paths.main_outer,
+                    dest=self._repkg_paths.main_outer)
             ],
             template_file_writes=[
-                su.named_tuples.SrcDestShortcutPair(
-                    src_key='pkg_names_template', dest_key='pkg_names_mid'
-                )
+                SrcDestPair(
+                    src=self._src_paths.pkg_names_template,
+                    dest=self._repkg_paths.pkg_names_mid)
             ]
         )
 
@@ -239,22 +252,21 @@ class SrepkgBuilder:
         self.build_srepkg_layer(
             call_methods=[self.build_sr_cfg],
             direct_copy_files=[
-                su.named_tuples.SrcDestShortcutPair(
-                    src_key='inner_pkg_installer',
-                    dest_key='inner_pkg_installer'
-                ),
-                su.named_tuples.SrcDestShortcutPair(
-                    src_key='srepkg_setup_py', dest_key='srepkg_setup_py'
-                ),
+                SrcDestPair(
+                    src=self._src_paths.inner_pkg_installer,
+                    dest=self._repkg_paths.inner_pkg_installer),
+                SrcDestPair(
+                    src=self._src_paths.srepkg_setup_py,
+                    dest=self._repkg_paths.srepkg_setup_py),
             ],
             template_file_writes=[
-                su.named_tuples.SrcDestShortcutPair(
-                    src_key='pkg_names_template', dest_key='pkg_names_outer'
+                SrcDestPair(
+                    src=self._src_paths.pkg_names_template,
+                    dest=self._repkg_paths.pkg_names_outer
                 ),
-                su.named_tuples.SrcDestShortcutPair(
-                    src_key='manifest_template',
-                    dest_key='manifest'
-                )
+                SrcDestPair(
+                    src=self._src_paths.manifest_template,
+                    dest=self._repkg_paths.manifest)
             ]
         )
 

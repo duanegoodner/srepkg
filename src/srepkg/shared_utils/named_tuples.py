@@ -20,9 +20,3 @@ class SrePkgInfo(NamedTuple):
     pkg_name: str
     root_path: Path
 
-
-class SrcDestShortcutPair(NamedTuple):
-    src_key: str
-    dest_key: str
-
-
