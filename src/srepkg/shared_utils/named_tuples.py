@@ -21,7 +21,7 @@ class SrePkgInfo(NamedTuple):
     root_path: Path
 
 
-class DirectCopyShortcuts(NamedTuple):
+class SrcDestShortcutPair(NamedTuple):
     src_key: str
     dest_key: str
 

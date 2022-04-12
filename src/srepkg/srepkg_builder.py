@@ -7,7 +7,6 @@ Srepkg.
 from typing import List, Callable
 from pathlib import Path
 import string
-import pkgutil
 import shutil
 import configparser
 import srepkg.shared_utils as su
@@ -15,50 +14,15 @@ import srepkg.shared_utils as su
 
 # TODO modify copy order / folder structure to ensure no possible overwrite
 
-def write_file_from_template(template_name: str, dest_path: Path, subs: dict):
-    """
-    Helper function used by SrepkgBuilder to write files to SRE-package paths
-    based on template files and user-specified substitution pattern(s).
-    
-    :param template_name: name of template file (not full path)
-    :param dest_path: Path object referencing destination file
-    :param subs: dictionary of template_key: replacement_string entries.
-    """
-    # loader = pkgutil.get_loader('srepkg.repackaging_components.template_files')
-    # template_file_sub_dir = ''
-    #
-    # template_files_loc = Path(loader.path).parent.absolute() / template_file_sub_dir
-    #
-    # template_file = template_files_loc / template_name
-    #
-    # with template_file.open(mode='r') as tf:
-    #     template_text = tf.read()
-
-    template_text = pkgutil.get_data(
-        'srepkg.repackaging_components',
-        '/template_files/' + template_name).decode()
-
-    template = string.Template(template_text)
-    result = template.substitute(subs)
-    with dest_path.open(mode='w') as output_file:
-        output_file.write(result)
 
 
 class TemplateFileWriter:
 
-    def __init__(self, templates_dir: Path, substitution_map: dict):
-        self._templates_dir = templates_dir
+    def __init__(self, substitution_map: dict):
         self._substitution_map = substitution_map
 
-    @classmethod
-    def from_pkg_data_dir(cls, pkg: str, data_dir: str, substitution_map: dict):
-        pkg_path = Path(pkgutil.get_loader(pkg).path).parent
-        template_dir_path = pkg_path / data_dir
-
-        return cls(template_dir_path, substitution_map)
-
-    def write_file(self, template_file_name: str, dest_path: Path):
-        with (self._templates_dir / template_file_name).open(mode='r') as tf:
+    def write_file(self, template_file: Path, dest_path: Path):
+        with template_file.open(mode='r') as tf:
             template_text = tf.read()
         template = string.Template(template_text)
         result = template.substitute(self._substitution_map)
@@ -87,9 +51,7 @@ class SrepkgBuilder:
         self._orig_pkg_info = orig_pkg_info
         self._src_paths = src_paths
         self._repkg_paths = repkg_paths
-        self._template_file_writer = TemplateFileWriter.from_pkg_data_dir(
-            pkg='srepkg.repackaging_components',
-            data_dir='template_files',
+        self._template_file_writer = TemplateFileWriter(
             substitution_map={
                 'inner_pkg_name': self._orig_pkg_info.pkg_name,
                 'sre_pkg_name': self._repkg_paths.srepkg.name,
@@ -114,15 +76,6 @@ class SrepkgBuilder:
             'inner_pkg_name': self._orig_pkg_info.pkg_name,
             'sre_pkg_name': self._repkg_paths.srepkg.name,
         }
-
-    # @property
-    # def entry_module_subs(self):
-    #     return {
-    #         'pkg_name': self._orig_pkg_info.pkg_name,
-    #         'controller_import_path':
-    #             self._repkg_paths.srepkg.name +
-    #             '.srepkg_control_components.srepkg_controller'
-    #     }
 
     def copy_inner_package(self):
         """Copies original package to SRE-package directory"""
@@ -206,6 +159,12 @@ class SrepkgBuilder:
                   f'{str(getattr(self._repkg_paths, dest_key))}')
             exit(1)
 
+    def template_file_write_by_keys(self, src_key: str, dest_key: str):
+        self._template_file_writer.write_file(
+            getattr(self._src_paths, src_key),
+            getattr(self._repkg_paths, dest_key)
+        )
+
     def inner_pkg_setup_off(self):
         """
         Bundle of all methods that modify the inner (aka original) package
@@ -224,88 +183,11 @@ class SrepkgBuilder:
         for entry_pt in self._orig_pkg_info.entry_pts:
             self.write_entry_point_file(entry_pt)
 
-    def add_srepkg_mid_layer(self):
-
-        self.copy_srepkg_control_components()
-        self.build_srepkg_entry_pts()
-
-        mid_layer_direct_copy_files = [
-            su.named_tuples.DirectCopyShortcuts(
-                src_key='srepkg_init', dest_key='srepkg_init'
-            ),
-            su.named_tuples.DirectCopyShortcuts(
-                src_key='main_outer', dest_key='main_outer'
-            )
-        ]
-
-        for entry in mid_layer_direct_copy_files:
-            self.simple_file_copy(src_key=entry.src_key,
-                                  dest_key=entry.dest_key)
-
-        self._template_file_writer.write_file(
-            'pkg_names.py.template', self._repkg_paths.pkg_names_mid)
-
-    def add_srepkg_outer_layer(self):
-
-        self.build_sr_cfg()
-
-        outer_layer_direct_copy_files = [
-            su.named_tuples.DirectCopyShortcuts(
-                src_key='inner_pkg_installer', dest_key='inner_pkg_installer'
-            ),
-            su.named_tuples.DirectCopyShortcuts(
-                src_key='srepkg_setup_py', dest_key='srepkg_setup_py'
-            )
-        ]
-
-        for entry in outer_layer_direct_copy_files:
-            self.simple_file_copy(src_key=entry.src_key,
-                                  dest_key=entry.dest_key)
-
-        template_file_writes = {
-            'pkg_names.py.template': self._repkg_paths.pkg_names_outer,
-            'MANIFEST.in.template': self._repkg_paths.manifest
-        }
-
-        for entry in template_file_writes.items():
-            self._template_file_writer.write_file(*entry)
-
-
-    def add_srepkg_layer(self):
-        """
-        Encapsulates work required to wrap srepkg file structure around modified
-        copy of inner package.
-        """
-
-        self.copy_srepkg_control_components()
-
-        self.simple_file_copy(src_key='srepkg_setup_py',
-                              dest_key='srepkg_setup_py')
-        self.simple_file_copy(src_key='srepkg_init', dest_key='srepkg_init')
-        self.simple_file_copy(src_key='inner_pkg_installer',
-                              dest_key='inner_pkg_installer')
-        self.simple_file_copy(src_key='main_outer', dest_key='main_outer')
-
-        self._template_file_writer.write_file(
-            'pkg_names.py.template', self._repkg_paths.pkg_names_outer)
-        self._template_file_writer.write_file(
-            'pkg_names.py.template', self._repkg_paths.pkg_names_mid)
-        self._template_file_writer.write_file(
-            'MANIFEST.in.template', self._repkg_paths.manifest)
-
-        self.build_sr_cfg()
-
-        self._repkg_paths.srepkg_entry_points.mkdir()
-        self.write_entry_point_init()
-
-        for entry_pt in self._orig_pkg_info.entry_pts:
-            self.write_entry_point_file(entry_pt)
-
     def build_srepkg_layer(
             self,
             call_methods: List[Callable] = None,
-            direct_copy_files: List[su.named_tuples.DirectCopyShortcuts] = None,
-            template_file_writes: dict[str, Path] = None):
+            direct_copy_files: List[su.named_tuples.SrcDestShortcutPair] = None,
+            template_file_writes: List[su.named_tuples.SrcDestShortcutPair] = None):
 
         if call_methods is not None:
             for method in call_methods:
@@ -317,8 +199,11 @@ class SrepkgBuilder:
                                       dest_key=direct_copy.dest_key)
 
         if template_file_writes is not None:
-            for write_op in template_file_writes.items():
-                self._template_file_writer.write_file(*write_op)
+            for write_op in template_file_writes:
+                self.template_file_write_by_keys(
+                    src_key=write_op.src_key,
+                    dest_key=write_op.dest_key
+                )
 
     def build_srepkg(self):
         """
@@ -336,37 +221,42 @@ class SrepkgBuilder:
             call_methods=[self.copy_srepkg_control_components,
                           self.build_srepkg_entry_pts],
             direct_copy_files=[
-                su.named_tuples.DirectCopyShortcuts(
+                su.named_tuples.SrcDestShortcutPair(
                     src_key='srepkg_init', dest_key='srepkg_init'
                 ),
-                su.named_tuples.DirectCopyShortcuts(
+                su.named_tuples.SrcDestShortcutPair(
                     src_key='main_outer', dest_key='main_outer'
                 )
             ],
-            template_file_writes={
-                'pkg_names.py.template': self._repkg_paths.pkg_names_mid
-            }
+            template_file_writes=[
+                su.named_tuples.SrcDestShortcutPair(
+                    src_key='pkg_names_template', dest_key='pkg_names_mid'
+                )
+            ]
         )
 
         # outer layer
         self.build_srepkg_layer(
             call_methods=[self.build_sr_cfg],
             direct_copy_files=[
-                su.named_tuples.DirectCopyShortcuts(
+                su.named_tuples.SrcDestShortcutPair(
                     src_key='inner_pkg_installer',
                     dest_key='inner_pkg_installer'
                 ),
-                su.named_tuples.DirectCopyShortcuts(
+                su.named_tuples.SrcDestShortcutPair(
                     src_key='srepkg_setup_py', dest_key='srepkg_setup_py'
                 ),
             ],
-            template_file_writes= {
-                'pkg_names.py.template': self._repkg_paths.pkg_names_outer,
-                'MANIFEST.in.template': self._repkg_paths.manifest
-            }
+            template_file_writes=[
+                su.named_tuples.SrcDestShortcutPair(
+                    src_key='pkg_names_template', dest_key='pkg_names_outer'
+                ),
+                su.named_tuples.SrcDestShortcutPair(
+                    src_key='manifest_template',
+                    dest_key='manifest'
+                )
+            ]
         )
-
-        self.add_srepkg_outer_layer()
 
         print(f'SRE-package built from:'
               f'{self._orig_pkg_info.root_path / self._orig_pkg_info.pkg_name}'
