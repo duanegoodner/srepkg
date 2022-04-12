@@ -4,25 +4,27 @@ SCF = NamedTuple('SCF', [('pname', str), ('sc', str)])
 SCD = NamedTuple('SCD', [('pname', str), ('sc', str), ('contents', List)])
 
 repackaging_components = \
-    [SCD(pname='srepkg_control_components', sc='srepkg_control_components',
+    [SCD(pname='mid_layer', sc='mid_layer', contents=[
+        SCD(pname='srepkg_control_components', sc='srepkg_control_components',
          contents=[
              SCF(pname='__init__.py', sc='srepkg_control_components_init'),
              SCF(pname='entry_points.py', sc='entry_module'),
              SCF(pname='srepkg_control_paths.py', sc='srepkg_control_paths'),
              SCF(pname='srepkg_controller.py', sc='srepkg_controller')
          ]),
-     SCD(pname='template_files', sc='template_files', contents=[
-         SCF(pname='MANIFEST.in.template', sc='manifest_template'),
-         SCF(pname='pkg_names.py.template', sc='pkg_names_template')
+        SCF(pname='generic_entry.py', sc='entry_point_template'),
+        SCF(pname='srepkg_init.py', sc='srepkg_init'),
+        SCF(pname='srepkg_main.py', sc='main_outer')
+    ]),
+     SCD(pname='outer_layer', sc='outer_layer', contents=[
+        SCF(pname='inner_pkg_installer.py', sc='inner_pkg_installer'),
+        SCF(pname='MANIFEST.in.template', sc='manifest_template'),
+        SCF(pname='srepkg_setup.py', sc='srepkg_setup_py'),
+        SCF(pname='srepkg_starter_setup.cfg', sc='srepkg_setup_cfg'),
      ]),
-     SCF(pname='__init__.py', sc='repackaging_components_init'),
-     SCF(pname='generic_entry.py', sc='entry_point_template'),
-     SCF(pname='inner_pkg_installer.py', sc='inner_pkg_installer'),
-     # SCF(pname='main_inner.py', sc='main_inner'),
-     SCF(pname='srepkg_main.py', sc='main_outer'),
-     SCF(pname='srepkg_setup.py', sc='srepkg_setup_py'),
-     SCF(pname='srepkg_starter_setup.cfg', sc='srepkg_setup_cfg'),
-     SCF(pname='srepkg_init.py', sc='srepkg_init')]
+     SCD(pname='multiple_layers', sc='template_files', contents=[
+         SCF(pname='pkg_names.py.template', sc='pkg_names_template')
+     ])]
 
 
 def get_builder_dest(root_name: str = 'dummy_root',

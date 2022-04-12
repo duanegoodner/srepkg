@@ -14,9 +14,6 @@ import configparser
 import srepkg.shared_utils as su
 
 
-# TODO modify copy order / folder structure to ensure no possible overwrite
-
-
 class SrepkgBuilderErrorMsg(NamedTuple):
     msg: str
 
@@ -28,18 +25,14 @@ class SrepkgBuilderErrors(SrepkgBuilderErrorMsg, Enum):
         msg='Intended Srepkg destination path already exists')
     ControlComponentsNotFound = SrepkgBuilderErrorMsg(
         msg='Error when attempting to copy sub-package '
-            'srepkg_control_components. Sub-package not found'
-    )
+            'srepkg_control_components. Sub-package not found')
     ControlComponentsExist = SrepkgBuilderErrorMsg(
         msg='Error when attempting to copy sub-package '
-            'srepkg_control_components. Destination path already exists.'
-    )
+            'srepkg_control_components. Destination path already exists.')
     FileNotFoundForCopy = SrepkgBuilderErrorMsg(
-        msg='Error when attempting to copy. Source file not found.'
-    )
+        msg='Error when attempting to copy. Source file not found.')
     CopyDestinationPathExists = SrepkgBuilderErrorMsg(
-        msg='Error when attempting to copy. Destination path already exists'
-    )
+        msg='Error when attempting to copy. Destination path already exists')
 
 
 class SrcDestPair(NamedTuple):
@@ -219,18 +212,11 @@ class SrepkgBuilder:
             for write_op in template_file_writes:
                 self._template_file_writer.write_file(*write_op)
 
-    def build_srepkg(self):
-        """
-        Encapsulates all steps needed to build SRE-package, and displays
-        original package and SRE-package paths when complete.
-        """
-
-        # inner layer
+    def build_inner_layer(self):
         self.build_srepkg_layer(
-            call_methods=[self.copy_inner_package, self.inner_pkg_setup_off]
-        )
+            call_methods=[self.copy_inner_package, self.inner_pkg_setup_off])
 
-        # mid layer
+    def build_mid_layer(self):
         self.build_srepkg_layer(
             call_methods=[self.copy_srepkg_control_components,
                           self.build_srepkg_entry_pts],
@@ -245,10 +231,9 @@ class SrepkgBuilder:
                 SrcDestPair(
                     src=self._src_paths.pkg_names_template,
                     dest=self._repkg_paths.pkg_names_mid)
-            ]
-        )
+            ])
 
-        # outer layer
+    def build_outer_layer(self):
         self.build_srepkg_layer(
             call_methods=[self.build_sr_cfg],
             direct_copy_files=[
@@ -267,8 +252,17 @@ class SrepkgBuilder:
                 SrcDestPair(
                     src=self._src_paths.manifest_template,
                     dest=self._repkg_paths.manifest)
-            ]
-        )
+            ])
+
+    def build_srepkg(self):
+        """
+        Encapsulates all steps needed to build SRE-package, and displays
+        original package and SRE-package paths when complete.
+        """
+
+        self.build_inner_layer()
+        self.build_mid_layer()
+        self.build_outer_layer()
 
         print(f'SRE-package built from:'
               f'{self._orig_pkg_info.root_path / self._orig_pkg_info.pkg_name}'

@@ -3,18 +3,19 @@ from pathlib import Path
 
 
 class BuilderSrcPaths(NamedTuple):
+    mid_layer: Path
     srepkg_control_components: Path
     srepkg_control_components_init: Path
     entry_module: Path
     srepkg_control_paths: Path
     srepkg_controller: Path
-    template_files: Path
-    manifest_template: Path
-    pkg_names_template: Path
-    repackaging_components_init: Path
     entry_point_template: Path
-    inner_pkg_installer: Path
+    srepkg_init: Path
     main_outer: Path
+    outer_layer: Path
+    inner_pkg_installer: Path
+    manifest_template: Path
     srepkg_setup_py: Path
     srepkg_setup_cfg: Path
-    srepkg_init: Path
+    template_files: Path
+    pkg_names_template: Path

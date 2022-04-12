@@ -48,17 +48,18 @@ class TestPathCalculator(unittest.TestCase):
     def test_builder_src_paths(self):
         builder_src_paths = calc_test_paths.locals['builder_src_paths']
         assert builder_src_paths.srepkg_init == repackaging_components / \
-               'srepkg_init.py'
+               'mid_layer' / 'srepkg_init.py'
         assert builder_src_paths.entry_module == repackaging_components / \
-               'srepkg_control_components' / 'entry_points.py'
+               'mid_layer' / 'srepkg_control_components' / 'entry_points.py'
         assert builder_src_paths.entry_point_template == \
-               repackaging_components / 'generic_entry.py'
+               repackaging_components / 'mid_layer' / 'generic_entry.py'
         assert builder_src_paths.srepkg_control_components == \
-               repackaging_components / 'srepkg_control_components'
+               repackaging_components / 'mid_layer' /\
+               'srepkg_control_components'
         assert builder_src_paths.srepkg_setup_py == repackaging_components / \
-               'srepkg_setup.py'
+               'outer_layer' / 'srepkg_setup.py'
         assert builder_src_paths.srepkg_setup_cfg == repackaging_components / \
-               'srepkg_starter_setup.cfg'
+               'outer_layer' / 'srepkg_starter_setup.cfg'
 
     def test_builder_dest_paths(self):
         builder_dest_paths = calc_test_paths.locals['builder_dest_paths']
