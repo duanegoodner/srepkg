@@ -3,6 +3,8 @@ from pathlib import Path
 
 
 class BuilderSrcPaths(NamedTuple):
+    inner_layer: Path
+    main_inner: Path
     mid_layer: Path
     srepkg_control_components: Path
     srepkg_control_components_init: Path
