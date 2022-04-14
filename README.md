@@ -1,11 +1,13 @@
 # Srepkg (Solo Repackage)
-* Wraps a Python package with an isolation layer that ensures it can only be installed in an isolated virtual environment
-* Avoids the need for manual environment management at install time.
-
-
+Ensure that your dependency-laden Python package can only be installed in an isolated virtual environment.
 
 ## Description
-srepkg is a Python package that modifies other Python packages by adding a layer that affects how and where the modified packages are installed. When a “re-packaged” package is installed via a pip from a pre-existing environment, the isolation layer that was added by srepkg creates a new virtual environment. The original package and its dependencies are installed in this newly-created, isolated environment.
+srepkg is a Python package that creates modified versions of other Python packages by adding a layer that affects how and where the modified packages can be installed. When a p package is installed via a pip, three things happen:
+1. 
+2.
+3.
+
+from a pre-existing environment, the isolation layer that was added by srepkg creates a new virtual environment. The original package and its dependencies are installed in this newly-created, isolated environment.
 
 A package with the sole purpose of providing access to the command line entry points of the original package is installed in the pre-existing environment. However, since this access package does not contain any dependencies (nor any code from the original package) there is no risk of dependency conflicts with any other packages in the pre-existing environment.
 

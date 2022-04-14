@@ -3,7 +3,7 @@ Solo Re-Package (srepkg)
 =========================
 
 srepkg is a Python package that modifies other Python packages by
-adding a layer that affects how and where the modified packages are
+adding a layer that affects how and where a package is
 installed. When a “re-packaged” package is installed via a pip from a
 pre-existing environment, the isolation layer that was added by srepkg
 creates a new virtual environment. The original package and its
