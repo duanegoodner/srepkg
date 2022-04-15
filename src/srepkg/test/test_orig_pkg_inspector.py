@@ -25,7 +25,9 @@ error_tests = [
     ErrorTest(cfg_dir_name='setup_cfg_empty_cse_no_main',
               expected_err=opi.PkgError.NoCommandLineAccess),
     ErrorTest(cfg_dir_name='setup_cfg_wrong_format',
-              expected_err=opi.PkgError.SetupCfgReadError)
+              expected_err=opi.PkgError.SetupCfgReadError),
+    ErrorTest(cfg_dir_name='setup_cfg_bad_package_dir',
+              expected_err=opi.PkgError.InvalidPackageDirValue)
 ]
 
 
@@ -63,6 +65,15 @@ def test_no_cse_with_main():
 
     assert orig_pkg_info.root_path == setup_cfg_dir
     assert orig_pkg_info.pkg_name == actual_pkg_data.pkg_name
+
+
+def test_src_layout_multi_dir():
+    setup_cfg_dir = t_data.paths.base / 'setup_cfg_good_multi_dir_src_layout'
+    orig_pkg_inspector = opi.OrigPkgInspector(str(setup_cfg_dir))
+    orig_pkg_info = orig_pkg_inspector.get_orig_pkg_info()
+
+    assert orig_pkg_info.package_dir_path == setup_cfg_dir / 'src'
+
 
 
 def test_valid_pkg_with_cse():
