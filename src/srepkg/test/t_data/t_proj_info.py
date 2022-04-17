@@ -11,4 +11,5 @@ cse_list = [su.ep_console_script.parse_cs_line(entry) for entry in
 
 
 non_src_layout_pkg_root = Path(__file__).parent.absolute() /\
-                          't_proj_non_src_layout'
+                          't_nonsrc'
+

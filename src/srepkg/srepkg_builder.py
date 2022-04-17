@@ -84,6 +84,12 @@ class SrepkgBuilder:
         )
 
     @property
+    def inner_pkg_top_level_src(self):
+        return self._repkg_paths.srepkg / \
+               self._orig_pkg_info.package_dir_path.relative_to(
+                   self._orig_pkg_info.root_path) / self._orig_pkg_info.pkg_name
+
+    @property
     def orig_pkg_info(self):
         return self._orig_pkg_info
 
@@ -95,12 +101,12 @@ class SrepkgBuilder:
     def repkg_paths(self):
         return self._repkg_paths
 
-    @property
-    def pkg_names_subs(self):
-        return {
-            'inner_pkg_name': self._orig_pkg_info.pkg_name,
-            'sre_pkg_name': self._repkg_paths.srepkg.name,
-        }
+    # @property
+    # def pkg_names_subs(self):
+    #     return {
+    #         'inner_pkg_name': self._orig_pkg_info.pkg_name,
+    #         'sre_pkg_name': self._repkg_paths.srepkg.name,
+    #     }
 
     def copy_inner_package(self):
         """Copies original package to SRE-package directory"""
@@ -199,8 +205,8 @@ class SrepkgBuilder:
         if not self._orig_pkg_info.has_main:
             return
 
-        inner_main = self._repkg_paths.root / \
-            self._orig_pkg_info.package_dir_path.name / '__main__.py'
+        inner_main =\
+            self.inner_pkg_top_level_src / '__main__.py'
 
         inner_main_orig = inner_main.parent / 'orig_main.py'
 
@@ -208,9 +214,11 @@ class SrepkgBuilder:
 
         shutil.copy2(self._src_paths.main_inner, inner_main)
 
+        pkg_names_inner = inner_main.parent / 'pkg_names.py'
+
         self._template_file_writer.write_file(
             template_file=self._src_paths.pkg_names_template,
-            dest_path=self._repkg_paths.pkg_names_inner)
+            dest_path=pkg_names_inner)
 
         self.rebuild_inner_cfg_cse()
 
@@ -309,11 +317,4 @@ class SrepkgBuilder:
 
         print(f'SRE-package built from:'
               f'{self._orig_pkg_info.root_path / self._orig_pkg_info.pkg_name}'
-              f'S\nRE-package saved in: {self._repkg_paths.root}\n')
-
-
-
-
-
-
-
+              f'\nRE-package saved in: {self._repkg_paths.root}\n')

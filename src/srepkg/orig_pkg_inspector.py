@@ -169,7 +169,7 @@ class OrigPkgInspector:
         pkg_name = get_pkg_name(config)
         entry_pts = get_cse_list(config)
 
-        has_main = (package_dir_path / '__main__.py').exists()
+        has_main = (package_dir_path / pkg_name / '__main__.py').exists()
 
         if not has_main and len(entry_pts) == 0:
             sys.exit(PkgError.NoCommandLineAccess.msg)

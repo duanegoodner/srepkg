@@ -25,7 +25,6 @@ def get_args(*args):
         type=str,
         nargs='?',
         action='store',
-        help="Name to be used for repackaged package. "
-             "Default is <original-pkg-name-from-setup.cfg + 'srepkg'>"
+        help="Custom name to be used for repackaged package."
     )
     return parser.parse_args(*args)
