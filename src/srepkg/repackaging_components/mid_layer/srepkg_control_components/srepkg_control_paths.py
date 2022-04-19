@@ -3,25 +3,23 @@ from typing import NamedTuple
 from pathlib import Path
 
 
-class HpkgControlPaths(NamedTuple):
-    safe_src: Path
-    venv_pkg: Path
-    venv_bin: Path
-    venv_py: Path
-    venv_pip: Path
+class VenvPaths(NamedTuple):
+    site_pkgs: Path
+    vbin: Path
+    py_interp: Path
+    pip_exe: Path
 
     @classmethod
-    def for_env_builder(cls, safe_src: Path):
-        venv_path = safe_src.parent.absolute().joinpath(
-            str(safe_src.name) + '_venv'
+    def default(cls, venv_root: Path):
+
+        py_version = 'python' + str(version_info.major) + '.' + \
+               str(version_info.minor)
+
+        vbin = venv_root / 'bin'
+
+        return cls(
+            site_pkgs=venv_root / 'lib' / py_version / 'site-packages',
+            vbin=vbin,
+            py_interp=vbin / 'python',
+            pip_exe=vbin / 'pip'
         )
-
-        venv_bin = venv_path.joinpath('bin')
-        venv_py = venv_path.joinpath('bin/python')
-        venv_pip = venv_path.joinpath('bin/pip')
-        py_v = 'python' + str(version_info.major) + '.' + \
-            str(version_info.minor)
-        venv_pkg = venv_path.joinpath('lib', py_v, 'site-packages')
-
-        return cls(safe_src=safe_src, venv_pkg=venv_pkg, venv_bin=venv_bin,
-                   venv_py=venv_py, venv_pip=venv_pip)
