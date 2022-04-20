@@ -6,12 +6,13 @@ import srepkg.test.t_data as t_data
 
 
 class TestSrepkgBuilder(unittest.TestCase):
-    srepkg_root = t_data.t_proj_srepkg_info.srepkg_root
-    orig_pkg_root = t_data.t_proj_info.pkg_root
+    srepkg_root = t_data.package_test_cases.t_proj_srepkg_info.srepkg_root
+    orig_pkg_root = t_data.package_test_cases.t_proj_info.pkg_root
 
     def setUp(self) -> None:
         if self.srepkg_root.exists():
-            shutil.rmtree(t_data.t_proj_srepkg_info.srepkg_root)
+            shutil.rmtree(
+                t_data.package_test_cases.t_proj_srepkg_info.srepkg_root)
 
         self.builder_src_paths, self.builder_dest_paths, \
             self.inner_pkg_src = tpc.calc_test_paths(
@@ -22,8 +23,10 @@ class TestSrepkgBuilder(unittest.TestCase):
             self.inner_pkg_src)
 
     def tearDown(self) -> None:
-        if t_data.t_proj_srepkg_info.test_srepkg_pkgs_dir.exists():
-            shutil.rmtree(t_data.t_proj_srepkg_info.test_srepkg_pkgs_dir)
+        if t_data.package_test_cases.t_proj_srepkg_info.test_srepkg_pkgs_dir.\
+                exists():
+            shutil.rmtree(t_data.package_test_cases.t_proj_srepkg_info.
+                          test_srepkg_pkgs_dir)
 
     def test_srepkg_builder_paths(self) -> None:
         assert self.srepkg_builder.src_paths == self.builder_src_paths
@@ -53,7 +56,8 @@ class TestSrepkgBuilder(unittest.TestCase):
         self.srepkg_builder.build_inner_layer()
         self.srepkg_builder.build_mid_layer()
 
-        assert self.srepkg_builder.repkg_paths.srepkg_control_components.exists()
+        assert self.srepkg_builder.repkg_paths.srepkg_control_components.\
+            exists()
         assert self.srepkg_builder.repkg_paths.srepkg_entry_points.exists()
         assert self.srepkg_builder.repkg_paths.srepkg_init.exists()
         assert self.srepkg_builder.repkg_paths.main_outer.exists()
@@ -75,5 +79,6 @@ class TestSrepkgBuilder(unittest.TestCase):
 
 
 class TestSrepkgBuilderNonSrcLayout(TestSrepkgBuilder, unittest.TestCase):
-    srepkg_root = t_data.t_proj_srepkg_info.srepkg_root
-    orig_pkg_root = t_data.t_proj_info.non_src_layout_pkg_root
+    srepkg_root = t_data.package_test_cases.t_proj_srepkg_info.srepkg_root
+    orig_pkg_root = t_data.package_test_cases.t_proj_info.\
+        non_src_layout_pkg_root

@@ -9,7 +9,5 @@ cse_string = '\nmy_project = t_proj.app:run' \
 cse_list = [su.ep_console_script.parse_cs_line(entry) for entry in
             cse_string.strip().split('\n')]
 
-
-non_src_layout_pkg_root = Path(__file__).parent.absolute() /\
-                          't_nonsrc'
+non_src_layout_pkg_root = Path(__file__).parent.absolute() / 't_nonsrc'
 

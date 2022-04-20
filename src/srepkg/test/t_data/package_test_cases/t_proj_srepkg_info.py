@@ -1,5 +1,5 @@
 from pathlib import Path
-import srepkg.test.t_data.t_proj_info as tpi
+import srepkg.test.t_data.package_test_cases.t_proj_info as tpi
 
 
 test_srepkg_pkgs_dir = Path(__file__).parent.absolute() / 'test_srepkg_pkgs'
