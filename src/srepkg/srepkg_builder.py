@@ -66,7 +66,8 @@ class SrepkgBuilder:
 
     def __init__(self, orig_pkg_info: su.named_tuples.OrigPkgInfo,
                  src_paths: su.named_tuples.BuilderSrcPaths,
-                 repkg_paths: su.named_tuples.BuilderDestPaths):
+                 repkg_paths: su.named_tuples.BuilderDestPaths,
+                 inner_pkg_src: Path):
         """
         Construct a new SrepkgBuilder
         :param src_paths: BuilderSrcPaths namedtuple
@@ -76,6 +77,7 @@ class SrepkgBuilder:
         self._orig_pkg_info = orig_pkg_info
         self._src_paths = src_paths
         self._repkg_paths = repkg_paths
+        self._inner_pkg_src = inner_pkg_src
         self._template_file_writer = TemplateFileWriter(
             substitution_map={
                 'inner_pkg_name': self._orig_pkg_info.pkg_name,
@@ -83,11 +85,11 @@ class SrepkgBuilder:
             }
         )
 
-    @property
-    def inner_pkg_top_level_src(self):
-        return self._repkg_paths.srepkg / \
-               self._orig_pkg_info.package_dir_path.relative_to(
-                   self._orig_pkg_info.root_path) / self._orig_pkg_info.pkg_name
+    # @property
+    # def inner_pkg_src(self):
+    #     return self._repkg_paths.srepkg / \
+    #            self._orig_pkg_info.package_dir_path.relative_to(
+    #                self._orig_pkg_info.root_path) / self._orig_pkg_info.pkg_name
 
     @property
     def orig_pkg_info(self):
@@ -206,7 +208,7 @@ class SrepkgBuilder:
             return
 
         inner_main =\
-            self.inner_pkg_top_level_src / '__main__.py'
+            self._inner_pkg_src / '__main__.py'
 
         inner_main_orig = inner_main.parent / 'orig_main.py'
 

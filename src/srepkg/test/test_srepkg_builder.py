@@ -6,7 +6,6 @@ import srepkg.test.t_data as t_data
 
 
 class TestSrepkgBuilder(unittest.TestCase):
-
     srepkg_root = t_data.t_proj_srepkg_info.srepkg_root
     orig_pkg_root = t_data.t_proj_info.pkg_root
 
@@ -14,13 +13,13 @@ class TestSrepkgBuilder(unittest.TestCase):
         if self.srepkg_root.exists():
             shutil.rmtree(t_data.t_proj_srepkg_info.srepkg_root)
 
-        self.builder_src_paths, self.builder_dest_paths = tpc.calc_test_paths(
-            self.orig_pkg_root
-        )
-
+        self.builder_src_paths, self.builder_dest_paths, \
+            self.inner_pkg_src = tpc.calc_test_paths(
+                self.orig_pkg_root)
         self.srepkg_builder = sb.SrepkgBuilder(
             tpc.calc_test_paths.locals['orig_pkg_info'],
-            self.builder_src_paths, self.builder_dest_paths)
+            self.builder_src_paths, self.builder_dest_paths,
+            self.inner_pkg_src)
 
     def tearDown(self) -> None:
         if t_data.t_proj_srepkg_info.test_srepkg_pkgs_dir.exists():
@@ -40,11 +39,11 @@ class TestSrepkgBuilder(unittest.TestCase):
     def test_build_inner_layer(self) -> None:
         self.srepkg_builder.build_inner_layer()
 
-        assert not self.srepkg_builder.repkg_paths.inner_setup_py_active\
+        assert not self.srepkg_builder.repkg_paths.inner_setup_py_active \
             .exists()
         assert (self.srepkg_builder.repkg_paths.inner_setup_cfg_active.parent /
                 'setup_off.py').exists()
-        assert not self.srepkg_builder.repkg_paths.inner_setup_cfg_active\
+        assert not self.srepkg_builder.repkg_paths.inner_setup_cfg_active \
             .exists()
         assert (self.srepkg_builder.repkg_paths.inner_setup_cfg_active.parent /
                 'setup_off.cfg').exists()
@@ -70,6 +69,7 @@ class TestSrepkgBuilder(unittest.TestCase):
         assert self.srepkg_builder.repkg_paths.srepkg_setup_py.exists()
         assert self.srepkg_builder.repkg_paths.pkg_names_outer.exists()
         assert self.srepkg_builder.repkg_paths.manifest.exists()
+
 
 # TODO add test to inspect contents of srepkg setup.cfg
 

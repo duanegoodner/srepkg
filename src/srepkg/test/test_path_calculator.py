@@ -27,10 +27,10 @@ def calc_test_paths(pkg_root: Path = t_data.t_proj_info.pkg_root):
     builder_paths_calculator.srepkg_pkgs_dir =\
         t_data.t_proj_srepkg_info.test_srepkg_pkgs_dir
 
-    builder_src_paths, builder_dest_paths =\
+    builder_src_paths, builder_dest_paths, inner_pkg_src = \
         builder_paths_calculator.calc_builder_paths()
 
-    return builder_src_paths, builder_dest_paths
+    return builder_src_paths, builder_dest_paths, inner_pkg_src
 
 
 class TestPathCalculator(unittest.TestCase):
@@ -50,7 +50,8 @@ class TestPathCalculator(unittest.TestCase):
         assert builder_src_paths.srepkg_init == repackaging_components / \
                'mid_layer' / 'srepkg_init.py'
         assert builder_src_paths.entry_module == repackaging_components / \
-               'mid_layer' / 'srepkg_control_components' / 'entry_points.py'
+               'mid_layer' / 'srepkg_control_components' /\
+               'entry_point_runner.py'
         assert builder_src_paths.entry_point_template == \
                repackaging_components / 'mid_layer' / 'generic_entry.py'
         assert builder_src_paths.srepkg_control_components == \

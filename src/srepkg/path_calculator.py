@@ -13,7 +13,7 @@ class BuilderPathsCalculator:
     # TODO validator method to confirm cur file structure matches paths classes
 
     # class variables for standard repackaging components location
-    _repackaging_components = Path(__file__).parent.absolute()\
+    _repackaging_components = Path(__file__).parent.absolute() \
                               / 'repackaging_components'
 
     # class variables to define default srepkg location and name
@@ -28,9 +28,14 @@ class BuilderPathsCalculator:
         self._srepkg_custom_name = srepkg_custom_name
 
     def calc_src_paths(self):
-        src_names, src_paths = pb.paths_class_builder.file_structure_walk(
-            file_structure=pb.file_structures.repackaging_components,
+        src_files_util = pb.class_builder.FileStructureUtil(
+            file_struct=pb.file_structures.repackaging_components,
             root_path=self._repackaging_components)
+        src_paths = src_files_util.get_path_names()
+
+        # src_names, src_paths = pb.class_builder.file_structure_walk(
+        #     file_structure=pb.file_structures.repackaging_components,
+        #     root_path=self._repackaging_components)
         return su.named_tuples.BuilderSrcPaths(*src_paths)
 
     def get_sre_pkg_info(self):
@@ -59,11 +64,26 @@ class BuilderPathsCalculator:
             srepkg_name=srepkg_info.pkg_name,
             inner_pkg_name=self._orig_pkg_info.pkg_name)
 
-        dest_names, dest_paths = pb.paths_class_builder.file_structure_walk(
-            file_structure=builder_dest_structure,
-            root_path=self.srepkg_pkgs_dir)
+        dest_file_util = pb.class_builder.FileStructureUtil(
+            file_struct=builder_dest_structure,
+            root_path=self.srepkg_pkgs_dir
+        )
+
+        dest_paths = dest_file_util.get_path_names()
+        #
+        #
+        # dest_names, dest_paths = pb.class_builder.file_structure_walk(
+        #     file_structure=builder_dest_structure,
+        #     root_path=self.srepkg_pkgs_dir)
 
         return su.named_tuples.BuilderDestPaths(*dest_paths)
 
     def calc_builder_paths(self):
-        return self.calc_src_paths(), self.calc_dest_paths()
+        src_paths = self.calc_src_paths()
+        dest_paths = self.calc_dest_paths()
+        inner_pkg_src = \
+            dest_paths.srepkg / self._orig_pkg_info.package_dir_path. \
+            relative_to(self._orig_pkg_info.root_path) / \
+            self._orig_pkg_info.pkg_name
+
+        return src_paths, dest_paths, inner_pkg_src

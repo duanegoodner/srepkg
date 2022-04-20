@@ -11,7 +11,7 @@ repackaging_components = \
          SCD(pname='srepkg_control_components', sc='srepkg_control_components',
              contents=[
                  SCF(pname='__init__.py', sc='srepkg_control_components_init'),
-                 SCF(pname='entry_points.py', sc='entry_module'),
+                 SCF(pname='entry_point_runner.py', sc='entry_module'),
                  SCF(pname='srepkg_control_paths.py',
                      sc='srepkg_control_paths'),
                  SCF(pname='srepkg_controller.py', sc='srepkg_controller')
@@ -52,11 +52,14 @@ def get_builder_dest(root_name: str = 'dummy_root',
                     contents=[
                         SCF(pname='__init__.py', sc='srepkg_entry_points_init')
                     ]),
-                SCD(pname=inner_pkg_name, sc='inner_pkg', contents=[
-                    # SCF(pname='__main__.py', sc='main_inner'),
-                    SCF(pname='orig_main.py', sc='main_inner_orig'),
-                    SCF(pname='pkg_names.py', sc='pkg_names_inner')
-                ]),
+                # path to inner_pkg depends on orig_pkg file structure so don't
+                # even try to predict it here.
+                # SCD(pname=inner_pkg_name, sc='inner_pkg', contents=[
+                #     SCF(pname='__main__.py', sc='main_inner'),
+                #
+                #     SCF(pname='orig_main.py', sc='main_inner_orig'),
+                #     SCF(pname='pkg_names.py', sc='pkg_names_inner')
+                # ]),
                 SCF(pname='__init__.py', sc='srepkg_init'),
                 SCF(pname='__main__.py', sc='main_outer'),
                 SCF(pname='pkg_names.py', sc='pkg_names_mid'),
