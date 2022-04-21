@@ -29,7 +29,7 @@ def orig_to_sr_line(orig_line: str, sr_entry_points: str):
     parsed_sr = CSEntry(
         command=parsed_orig.command + '_sr',
         module_path=Path(sr_entry_points).parent.name + '.' +
-                    Path(sr_entry_points).name + '.' + parsed_orig.funct,
+        Path(sr_entry_points).name + '.' + parsed_orig.funct,
         funct=parsed_orig.funct)
 
     return build_cs_line(parsed_sr)

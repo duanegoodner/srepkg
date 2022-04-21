@@ -8,9 +8,7 @@ import argparse
 def get_args(*args):
     """
     Collects and parses command line args.
-
-    Expected command line syntax:
-    $ python_interpreter -m srepkg orig_pkg_path [srepkg_name]
+    usage: srepkg [-h] [--srepkg_name [SREPKG_NAME]] orig_pkg_path
 
     :return: Namespace with orig_pkg_path and (if provided) srepkg_name
     """
