@@ -2,17 +2,17 @@ import unittest
 import shutil
 import srepkg.srepkg_builder as sb
 import srepkg.test.test_path_calculator as tpc
-import srepkg.test.t_data as t_data
+import srepkg.test.test_case_data as test_case_data
 
 
 class TestSrepkgBuilder(unittest.TestCase):
-    srepkg_root = t_data.package_test_cases.t_proj_srepkg_info.srepkg_root
-    orig_pkg_root = t_data.package_test_cases.t_proj_info.pkg_root
+    srepkg_root = test_case_data.package_test_cases.t_proj_srepkg_info.srepkg_root
+    orig_pkg_root = test_case_data.package_test_cases.t_proj_info.pkg_root
 
     def setUp(self) -> None:
         if self.srepkg_root.exists():
             shutil.rmtree(
-                t_data.package_test_cases.t_proj_srepkg_info.srepkg_root)
+                test_case_data.package_test_cases.t_proj_srepkg_info.srepkg_root)
 
         self.builder_src_paths, self.builder_dest_paths, \
             self.inner_pkg_src = tpc.calc_test_paths(
@@ -23,9 +23,9 @@ class TestSrepkgBuilder(unittest.TestCase):
             self.inner_pkg_src)
 
     def tearDown(self) -> None:
-        if t_data.package_test_cases.t_proj_srepkg_info.test_srepkg_pkgs_dir.\
+        if test_case_data.package_test_cases.t_proj_srepkg_info.test_srepkg_pkgs_dir.\
                 exists():
-            shutil.rmtree(t_data.package_test_cases.t_proj_srepkg_info.
+            shutil.rmtree(test_case_data.package_test_cases.t_proj_srepkg_info.
                           test_srepkg_pkgs_dir)
 
     def test_srepkg_builder_paths(self) -> None:
@@ -79,6 +79,6 @@ class TestSrepkgBuilder(unittest.TestCase):
 
 
 class TestSrepkgBuilderNonSrcLayout(TestSrepkgBuilder, unittest.TestCase):
-    srepkg_root = t_data.package_test_cases.t_proj_srepkg_info.srepkg_root
-    orig_pkg_root = t_data.package_test_cases.t_proj_info.\
+    srepkg_root = test_case_data.package_test_cases.t_proj_srepkg_info.srepkg_root
+    orig_pkg_root = test_case_data.package_test_cases.t_proj_info.\
         non_src_layout_pkg_root

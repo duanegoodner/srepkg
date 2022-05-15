@@ -54,3 +54,6 @@ def cfg_cs_list_to_cse_list(cfg_path: Path):
         print('Unable to parse console script entries')
 
     return cse_list
+
+
+
