@@ -16,10 +16,14 @@ class PkgInspectorMsg(NamedTuple):
 
 
 class PkgError(PkgInspectorMsg, Enum):
+    PkgPathNotFound = PkgInspectorMsg(msg='Original package path not found')
+    NoSetupFilesFound = PkgInspectorMsg(
+        msg='No setup.py file found, and no setup.cfg file found.\nsrepkg needs'
+            ' at least one of these files.')
     PkgNameNotFound = PkgInspectorMsg(
         msg='Unable to find package name in setup.cfg')
     InvalidPkgName = PkgInspectorMsg(msg='Invalid package name')
-    PkgPathNotFound = PkgInspectorMsg(msg='Original package path not found')
+
     SetupPyNotFound = PkgInspectorMsg(
         msg='Original package\'s setup.py file not found')
     SetupCfgNotFound = PkgInspectorMsg(
@@ -105,6 +109,7 @@ def filter_setup_data(orig: dict, setup_keys: SetupKeys):
     return {**single_key_params, **two_key_nested_params}
 
 
+# TODO consider making abstract Reader base class with py and cfg subclasses
 class SetupFilesReader:
 
     def __init__(self, orig_pkg_path: Path, cfg_keys: SetupKeys,
@@ -114,9 +119,6 @@ class SetupFilesReader:
         self._setup_data = SetupData(cfg={}, py={})
 
     def _read_raw_setup_py(self):
-        if not (self._orig_pkg_path / 'setup.py').exists():
-            sys.exit(PkgError.SetupPyNotFound.msg)
-
         try:
             sys.path.insert(0, str(self._orig_pkg_path))
             with mock.patch.object(setuptools, 'setup') as mock_setup:
@@ -150,16 +152,17 @@ class SetupFilesReader:
             getattr(self._setup_data, field).update(filtered_data)
 
     def _cfg_cs_str_to_list(self):
-        if type(self._setup_data.cfg['console_scripts']) == str:
+        if ('console_scripts' in self._setup_data.cfg)\
+                and (type(self._setup_data.cfg['console_scripts']) == str):
             self._setup_data.cfg['console_scripts'] =\
                 self._setup_data.cfg['console_scripts'].strip().splitlines()
 
-    def _cfg_pkg_dir_str_to_list(self):
+    def _cfg_pkg_dir_str_to_dict(self):
         dir_dict = {}
-        cfg_dir_data = self._setup_data.cfg['package_dir']
-
-        if cfg_dir_data and type(cfg_dir_data) == str:
-            pkg_dir_lines = cfg_dir_data.strip().split('\n')
+        if ('package_dir' in self._setup_data.cfg) and\
+                (type(self._setup_data.cfg['package_dir']) == str):
+            pkg_dir_lines = self._setup_data.cfg['package_dir'].strip()\
+                .split('\n')
             pkg_dir_lines_parsed = [[item.strip() for item in line] for line in
                                     [line.split('=') for line in pkg_dir_lines]]
 
@@ -181,6 +184,14 @@ class SetupFilesReader:
 
             self._setup_data.cfg['package_dir'] = dir_dict
 
+    def _format_null_package_dir(self):
+        for field in self._setup_data._fields:
+            if 'package_dir' not in getattr(self._setup_data, field):
+                getattr(self._setup_data, field)['package_dir'] = {'': ''}
+
+    def _validate_pkg_name_dir_combo(self):
+        pass
+
     def _cs_lists_to_cse_objs(self):
         for field in self._setup_data._fields:
             cs_data = getattr(self._setup_data, field).get('console_scripts')
@@ -197,7 +208,8 @@ class SetupFilesReader:
         self._read_raw_setup_cfg()
         self._filter_all_setup_data()
         self._cfg_cs_str_to_list()
-        self._cfg_pkg_dir_str_to_list()
+        self._cfg_pkg_dir_str_to_dict()
+        self._format_null_package_dir()
         self._cs_lists_to_cse_objs()
         return self._merge_cfg_and_py()
 
@@ -220,18 +232,14 @@ class OrigPkgInspector:
             sys.exit(PkgError.PkgPathNotFound.msg)
         return self
 
-    def validate_setup_cfg(self):
-        if not (self._orig_pkg_path.absolute() / 'setup.cfg').exists():
-            sys.exit(PkgError.SetupCfgNotFound.msg)
-        return self
-
-    def validate_setup_py(self):
-        if not (self._orig_pkg_path.absolute() / 'setup.py').exists():
-            sys.exit(PkgError.SetupPyNotFound)
+    def validate_setup_files(self):
+        if not (self._orig_pkg_path.absolute() / 'setup.cfg').exists() and not\
+                (self._orig_pkg_path.absolute() / 'setup.py').exists():
+            sys.exit(PkgError.NoSetupFilesFound.msg)
         return self
 
     def get_orig_pkg_info(self):
-        self.validate_orig_pkg_path().validate_setup_cfg().validate_setup_py()
+        self.validate_orig_pkg_path().validate_setup_files()
 
         setup_files_reader = SetupFilesReader(
             orig_pkg_path=self._orig_pkg_path,

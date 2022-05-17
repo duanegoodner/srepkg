@@ -2,7 +2,7 @@ import pytest
 from operator import attrgetter
 from typing import NamedTuple
 import srepkg.test.test_case_data as test_case_data
-import srepkg.orig_pkg_inspector as opi
+import src.srepkg.orig_pkg_inspector as opi
 
 
 ErrorTest = NamedTuple(
@@ -10,12 +10,12 @@ ErrorTest = NamedTuple(
 
 
 error_tests = [
-    ErrorTest(cfg_dir_name='non_existent_path',
-              expected_err=opi.PkgError.PkgPathNotFound),
-    ErrorTest(cfg_dir_name='setup_cfg_missing',
-              expected_err=opi.PkgError.SetupCfgNotFound),
-    # ErrorTest(cfg_dir_name='setup_cfg_empty',
-    #           expected_err=opi.PkgError.PkgNameNotFound),
+    # ErrorTest(cfg_dir_name='non_existent_path',
+    #           expected_err=opi.PkgError.PkgPathNotFound),
+    # ErrorTest(cfg_dir_name='setup_cfg_missing',
+    #           expected_err=opi.PkgError.NoSetupFilesFound),
+    ErrorTest(cfg_dir_name='setup_cfg_empty',
+              expected_err=opi.PkgError.PkgNameNotFound),
     # ErrorTest(cfg_dir_name='setup_cfg_empty_sections',
     #           expected_err=opi.PkgError.PkgNameNotFound),
     # ErrorTest(cfg_dir_name='setup_cfg_empty_values',

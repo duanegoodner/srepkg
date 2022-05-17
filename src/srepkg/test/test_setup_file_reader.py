@@ -1,74 +1,149 @@
+import abc
 import unittest
+from enum import Enum, auto
 from pathlib import Path
 
-import src.srepkg.orig_pkg_inspector as opi
-import src.srepkg.test.test_case_data.setup_file_reader.expected_vals as ev
+import src.srepkg.setup_file_reader as sfr
+import src.srepkg.test.test_case_data.setup_files.expected_vals as ev
 
 
-class SetupFileReaderBasic(unittest.TestCase):
-    _setup_files_path = Path(__file__).parent.absolute() / 'test_case_data' / \
-                        'setup_file_reader' / 'testproj_matched'
+class SetupFileType(Enum):
+    PY = auto()
+    CFG = auto()
 
-    _cfg_keys = opi.SetupKeys(
-        single_level=[],
-        two_level=[('metadata', 'name'), ('options', 'package_dir'),
-                   ('options.entry_points', 'console_scripts')])
 
-    _py_keys = opi.SetupKeys(single_level=['name', 'package_dir', 'dummy'],
-                             two_level=[('entry_points', 'console_scripts')])
+def build_file_reader(setup_dir: Path, setup_file_type: SetupFileType):
+    if setup_file_type == SetupFileType.PY:
+        file_reader = sfr.SetupPyFileReader(
+            setup_file=setup_dir / 'setup.py',
+            doi_keys=sfr.SetupKeys(
+                single_level=['name', 'package_dir', 'dummy'],
+                two_level=[('entry_points', 'console_scripts')]))
+    elif setup_file_type == SetupFileType.CFG:
+        file_reader = sfr.SetupCfgFileReader(
+            setup_file=setup_dir / 'setup.cfg',
+            doi_keys=sfr.SetupKeys(single_level=[],
+                                   two_level=[('metadata', 'name'),
+                                              ('options', 'package_dir'),
+                                              ('options.entry_points',
+                                               'console_scripts')]))
 
-    _expected_vals = ev.testproj_matched
+    return file_reader
+
+
+class SFRTester(unittest.TestCase, abc.ABC):
+
+    @property
+    @abc.abstractmethod
+    def setup_dir(self):
+        pass
+
+    @property
+    @abc.abstractmethod
+    def file_type(self):
+        pass
+
+    @property
+    @abc.abstractmethod
+    def expected_vals(self):
+        pass
 
     def setUp(self) -> None:
-        self._my_file_reader = opi.SetupFilesReader(
-            self._setup_files_path,
-            cfg_keys=self._cfg_keys,
-            py_keys=self._py_keys)
+        self._file_reader = build_file_reader(self.setup_dir, self.file_type)
 
-    def test_read_raw_setup_py(self):
-        self._my_file_reader._read_raw_setup_py()
-        assert self._my_file_reader._setup_data.py ==\
-               self._expected_vals['py_raw']
+    def test_read_raw(self):
+        self._file_reader._read_raw_data()
+        assert self._file_reader._data == self.expected_vals['raw']
 
-    def test_read_raw_setup_cfg(self):
-        self._my_file_reader._read_raw_setup_cfg()
-        assert self._my_file_reader._setup_data.cfg ==\
-               self._expected_vals['cfg_raw']
+    def test_filter(self):
+        self._file_reader._read_raw_data()._filter_raw_data()
+        assert self._file_reader._data == self.expected_vals['filtered']
 
-    def test_filter_all_setup_data(self):
-        self._my_file_reader._read_raw_setup_py()
-        self._my_file_reader._read_raw_setup_cfg()
-        self._my_file_reader._filter_all_setup_data()
-        assert self._my_file_reader._setup_data.py ==\
-               self._expected_vals['py_filtered']
-        assert self._my_file_reader._setup_data.cfg ==\
-               self._expected_vals['cfg_filtered']
+    def test_format_matched(self):
+        self._file_reader._read_raw_data()._filter_raw_data() \
+            ._match_to_py_format()
+        assert self._file_reader._data == self.expected_vals['format_matched']
 
-    def test_reformat_cfg_pkg_dir(self):
-        self._my_file_reader._read_raw_setup_py()
-        self._my_file_reader._read_raw_setup_cfg()
-        self._my_file_reader._filter_all_setup_data()
-        self._my_file_reader._cfg_cs_str_to_list()
-        self._my_file_reader._cfg_pkg_dir_str_to_list()
-        assert self._my_file_reader._setup_data.cfg ==\
-               self._expected_vals['cfg_format_matched']
+    def test_get_data(self):
+        collected_data = self._file_reader.get_data()
+        assert collected_data == self.expected_vals['format_matched']
 
-    def test_cs_string_to_cse(self):
-        self._my_file_reader._read_raw_setup_py()
-        self._my_file_reader._read_raw_setup_cfg()
-        self._my_file_reader._filter_all_setup_data()
-        self._my_file_reader._cfg_cs_str_to_list()
-        self._my_file_reader._cfg_pkg_dir_str_to_list()
-        self._my_file_reader._cs_lists_to_cse_objs()
-        assert self._my_file_reader._setup_data.py ==\
-               self._expected_vals['py_with_cse_objs']
-        assert self._my_file_reader._setup_data.cfg ==\
-               self._expected_vals['cfg_with_cse_objs']
-        assert self._my_file_reader._setup_data.py ==\
-               self._my_file_reader._setup_data.cfg
 
-    def test_get_setup_params(self):
-        setup_params = self._my_file_reader.get_setup_params()
-        assert setup_params == self._expected_vals['merged_params']
+class MatchSrcLayoutPy(SFRTester):
+    setup_dir = Path(__file__).parent.absolute() / 'test_case_data' / \
+                'setup_files' / 'match_src_layout'
+    file_type = SetupFileType.PY
+    expected_vals = ev.match_src_layout_py
+
+
+class MatchSrcLayoutCfg(SFRTester):
+    setup_dir = Path(__file__).parent.absolute() / 'test_case_data' / \
+                'setup_files' / 'match_src_layout'
+    file_type = SetupFileType.CFG
+    expected_vals = ev.match_src_layout_cfg
+
+
+class MatchNonSrcLayoutPy(SFRTester):
+    setup_dir = Path(__file__).parent.absolute() / 'test_case_data' / \
+                'setup_files' / 'match_non_src_layout'
+    file_type = SetupFileType.PY
+    expected_vals = ev.match_non_src_layout_py
+
+
+class SrcLayoutNoCfgPy(SFRTester):
+    setup_dir = Path(__file__).parent.absolute() / 'test_case_data' / \
+                'setup_files' / 'src_layout_no_cfg'
+    file_type = SetupFileType.PY
+    expected_vals = ev.src_layout_no_cfg_py
+
+
+class SrcLayoutNoCfgCfg(SFRTester):
+    setup_dir = Path(__file__).parent.absolute() / 'test_case_data' / \
+                'setup_files' / 'src_layout_no_cfg'
+    file_type = SetupFileType.CFG
+    expected_vals = ev.src_layout_no_cfg_cfg
+
+
+class SrcLayoutNoPyCfg(SFRTester):
+    setup_dir = Path(__file__).parent.absolute() / 'test_case_data' / \
+                'setup_files' / 'src_layout_no_py'
+    file_type = SetupFileType.CFG
+    expected_vals = ev.src_layout_no_py_cfg
+
+
+class SrcLayoutNoPyPy(SFRTester):
+    setup_dir = Path(__file__).parent.absolute() / 'test_case_data' / \
+                'setup_files' / 'src_layout_no_py'
+    file_type = SetupFileType.PY
+    expected_vals = ev.src_layout_no_py_py
+
+
+class MixedSrcLayoutValidPy(SFRTester):
+    setup_dir = Path(__file__).parent.absolute() / 'test_case_data' / \
+                'setup_files' / 'mixed_src_layout_valid'
+    file_type = SetupFileType.PY
+    expected_vals = ev.mixed_src_layout_valid_py
+
+
+class MixedSrcLayoutValidCfg(SFRTester):
+    setup_dir = Path(__file__).parent.absolute() / 'test_case_data' / \
+                'setup_files' / 'mixed_src_layout_valid'
+    file_type = SetupFileType.CFG
+    expected_vals = ev.mixed_src_layout_valid_cfg
+
+
+class MixedSrcLayoutInvalidPy(SFRTester):
+    setup_dir = Path(__file__).parent.absolute() / 'test_case_data' / \
+                'setup_files' / 'mixed_src_layout_invalid'
+    file_type = SetupFileType.PY
+    expected_vals = ev.mixed_src_layout_invalid_py
+
+
+class MixedSrcLayoutInvalidCfg(SFRTester):
+    setup_dir = Path(__file__).parent.absolute() / 'test_case_data' / \
+                'setup_files' / 'mixed_src_layout_invalid'
+    file_type = SetupFileType.CFG
+    expected_vals = ev.mixed_src_layout_invalid_cfg
+
 
 
