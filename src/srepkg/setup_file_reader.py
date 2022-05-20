@@ -2,7 +2,7 @@ import abc
 import configparser
 import setuptools
 import sys
-from enum import Enum
+from enum import Enum, auto
 from typing import NamedTuple, List
 from pathlib import Path
 from unittest import mock
@@ -10,15 +10,16 @@ from unittest import mock
 import srepkg.shared_utils as su
 
 
-class SetupFileReaderMsg(NamedTuple):
-    msg: str
-
-
-class SetupFileReaderError(SetupFileReaderMsg, Enum):
-    SetupCfgReadError = SetupFileReaderMsg(
+class SetupFileReaderError(su.named_tuples.ErrorMsg, Enum):
+    SetupCfgReadError = su.named_tuples.ErrorMsg(
         msg='Unable to read or parse setup.cfg')
-    InvalidPackageDirValue = SetupFileReaderMsg(
-        msg='Invalid package_dir value in [options] section of setup.cfg'
+    InvalidPackageDirValue = su.named_tuples.ErrorMsg(
+        msg='Invalid package_dir value in [options] section of setup.cfg')
+
+
+class SetupInfoError(su.named_tuples.ErrorMsg, Enum):
+    InvalidPkgDirValue = su.named_tuples.ErrorMsg(
+        msg='Invalid value for package_dir'
     )
 
 
@@ -27,30 +28,38 @@ class SetupKeys(NamedTuple):
     two_level: List[tuple[str, str]]
 
 
-def filter_and_flatten(orig: dict, setup_keys: SetupKeys):
-    single_key_params = {
-        key: orig.get(key) for key in setup_keys.single_level if key in orig
-    }
-    two_key_nested_params = {
-        keys[1]: orig.get(keys[0]).get(keys[1]) for keys in setup_keys.two_level
-        if (keys[0] in orig) and keys[1] in orig[keys[0]]
-    }
-
-    return {**single_key_params, **two_key_nested_params}
+class SetupFileType(Enum):
+    CFG = auto()
+    PY = auto()
 
 
 class SetupFileReader(abc.ABC):
-    def __init__(self, setup_file: Path, doi_keys: SetupKeys):
+    def __init__(self, setup_file: Path, file_type: SetupFileType,
+                 doi_keys: SetupKeys):
         self._setup_file = setup_file
+        self._file_type = file_type
         self._doi_keys = doi_keys
         self._data = {}
+
+    @staticmethod
+    def _filter_and_flatten(orig: dict, setup_keys: SetupKeys):
+        single_key_params = {
+            key: orig.get(key) for key in setup_keys.single_level if key in orig
+        }
+        two_key_nested_params = {
+            keys[1]: orig.get(keys[0]).get(keys[1]) for keys in
+            setup_keys.two_level
+            if (keys[0] in orig) and keys[1] in orig[keys[0]]
+        }
+
+        return {**single_key_params, **two_key_nested_params}
 
     @abc.abstractmethod
     def _read_raw_data(self):
         return self
 
     def _filter_raw_data(self):
-        filtered_data = filter_and_flatten(self._data, self._doi_keys)
+        filtered_data = self._filter_and_flatten(self._data, self._doi_keys)
         self._data.clear()
         self._data.update(filtered_data)
         return self
@@ -66,16 +75,17 @@ class SetupFileReader(abc.ABC):
                         self._data['console_scripts']]
             self._data['console_scripts'] = cse_list
 
-    def get_data(self):
+    def get_setup_info(self):
         self._read_raw_data()._filter_raw_data()._match_to_py_format()
-
-        return self._data
+        self._data['file_type'] = self._file_type
+        return SetupFileInfo(**self._data)
 
 
 class SetupCfgFileReader(SetupFileReader):
 
-    def __init__(self, setup_file: Path, doi_keys: SetupKeys):
-        super().__init__(setup_file, doi_keys)
+    def __init__(self, setup_file: Path, file_type: SetupFileType,
+                 doi_keys: SetupKeys):
+        super().__init__(setup_file, file_type, doi_keys)
 
     def _read_raw_data(self):
         config = configparser.ConfigParser()
@@ -93,9 +103,9 @@ class SetupCfgFileReader(SetupFileReader):
         return self
 
     def _convert_cs_str_to_list(self):
-        if ('console_scripts' in self._data)\
+        if ('console_scripts' in self._data) \
                 and (type(self._data['console_scripts']) == str):
-            self._data['console_scripts'] =\
+            self._data['console_scripts'] = \
                 self._data['console_scripts'].strip().splitlines()
 
         return self
@@ -136,8 +146,10 @@ class SetupCfgFileReader(SetupFileReader):
 
 
 class SetupPyFileReader(SetupFileReader):
-    def __init__(self, setup_file: Path, doi_keys: SetupKeys):
-        super().__init__(setup_file, doi_keys)
+
+    def __init__(self, setup_file: Path, file_type: SetupFileType,
+                 doi_keys: SetupKeys):
+        super().__init__(setup_file, file_type, doi_keys)
 
     def _read_raw_data(self):
         try:
@@ -158,21 +170,69 @@ class SetupPyFileReader(SetupFileReader):
         return self  # setup.py data already in py format
 
 
-class SetupInfo:
-    def __init__(self, pkg_name: str = None, package_dir: str = None,
-                 console_scripts=None):
+class PkgDirInfoExtractor:
+
+    def __init__(self, package_dir_dict: dict, pkg_name: str):
+        self._dir_dict = package_dir_dict
+        self._pkg_name = pkg_name
+
+    def _validate_dir_dict(self):
+        if '' in self._dir_dict and len(self._dir_dict) > 1:
+            sys.exit(PkgDirInfoError.InvalidPkgDirValue.msg)
+
+    def get_top_level_pkg_dir(self):
+
+        # dir_dict = self.parse_pkg_dir_entry()
+        self._validate_dir_dict()
+
+        if '' in self._dir_dict:
+            return self._dir_dict['']
+
+        if self._pkg_name in self._dir_dict:
+            return self._dir_dict[self._pkg_name]
+
+        return ''
+
+
+class SetupFileInfo:
+
+    _file_priority = [SetupFileType.PY, SetupFileType.CFG]
+
+    def __init__(self, name: str = None, package_dir=None,
+                 console_scripts=None, file_type: SetupFileType = None):
         if console_scripts is None:
             console_scripts = []
-        self._pkg_name = pkg_name
+        if package_dir is None:
+            package_dir = {}
+        # TODO raise Exception if file_type is None
+        self._name = name
         self._package_dir = package_dir
         self._console_scripts = console_scripts
+        self._file_type = file_type
 
-    @classmethod
-    def from_setup_file_reader_data(cls, sfr_data: dict):
-        pkg_name = sfr_data['name'] if 'name' in sfr_data else None
-        package_dir = sfr_data['package_dir'] if 'package_dir' \
-                                                 in sfr_data else None
-        console_scripts = sfr_data['console_scripts'] if 'console_scripts' \
-                                                         in sfr_data else None
-        return cls(pkg_name=pkg_name, package_dir=package_dir,
-                   console_scripts=console_scripts)
+    def __eq__(self, other):
+        return self.__dict__ == other.__dict__
+
+    @property
+    def _priority(self):
+        return self._file_priority.index(self._file_type)
+
+    def _validate_package_dir(self):
+        if '' in self._package_dir and len(self._package_dir) > 1:
+            sys.exit(SetupInfoError.InvalidPkgDirValue.msg)
+
+    def get_top_level_rel_pkg_dir(self) -> str:
+        self._validate_package_dir()
+
+        if '' in self._package_dir:
+            return self._package_dir['']
+
+        if self._name in self._package_dir:
+            return self._package_dir[self._name]
+
+        return ''
+
+
+
+
+

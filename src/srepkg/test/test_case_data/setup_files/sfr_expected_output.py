@@ -1,4 +1,16 @@
 from srepkg.shared_utils.named_tuples import CSEntry
+from src.srepkg.setup_file_reader import SetupFileType
+
+
+file_type_only_py = {
+    'raw': {}, 'filtered': {}, 'format_matched': {},
+    'final_data': {'file_type': SetupFileType.PY}
+}
+
+file_type_only_cfg = {
+    'raw': {}, 'filtered': {}, 'format_matched': {},
+    'final_data': {'file_type': SetupFileType.CFG}
+}
 
 match_src_layout_py = {
     'raw': {
@@ -31,6 +43,12 @@ match_src_layout_py = {
         'console_scripts': ['my_project = testproj.app:run',
                             'my_test = testproj.test:simple_test']
     },
+    'final_data': {
+        'name': 'testproj', 'package_dir': {'': 'src'},
+        'console_scripts': ['my_project = testproj.app:run',
+                            'my_test = testproj.test:simple_test'],
+        'file_type': SetupFileType.PY
+    }
 }
 
 match_src_layout_cfg = {
@@ -65,6 +83,17 @@ match_src_layout_cfg = {
             'my_project = testproj.app:run',
             'my_test = testproj.test:simple_test'
         ]},
+    'final_data': {
+        'name': 'testproj',
+        'package_dir': {
+            '': 'src'
+        },
+        'console_scripts': [
+            'my_project = testproj.app:run',
+            'my_test = testproj.test:simple_test'
+        ],
+        'file_type': SetupFileType.CFG
+    }
 }
 
 match_non_src_layout_py = {
@@ -95,7 +124,12 @@ match_non_src_layout_py = {
         'console_scripts': ['my_project = testproj.app:run',
                             'my_test = testproj.test:simple_test']
     },
-
+    'final_data': {
+        'name': 'testproj',
+        'console_scripts': ['my_project = testproj.app:run',
+                            'my_test = testproj.test:simple_test'],
+        'file_type': SetupFileType.PY
+    }
 }
 
 match_non_src_layout_cfg = {
@@ -121,18 +155,30 @@ match_non_src_layout_cfg = {
             'my_project = testproj.app:run',
             'my_test = testproj.test:simple_test'
         ]},
+    'final_data': {
+        'name': 'testproj',
+        'console_scripts': [
+            'my_project = testproj.app:run',
+            'my_test = testproj.test:simple_test'
+        ],
+        'file_type': SetupFileType.CFG
+    }
 }
 
 src_layout_no_cfg_py = match_src_layout_py
 
 src_layout_no_cfg_cfg = {
-    'raw': {}, 'filtered': {}, 'format_matched': {}
+    'raw': {},
+    'filtered': {},
+    'format_matched': {},
+    'final_data': {'file_type': SetupFileType.CFG}
 }
 
 src_layout_no_py_cfg = match_src_layout_cfg
 
 src_layout_no_py_py = {
-    'raw': {}, 'filtered': {}, 'format_matched': {}
+    'raw': {}, 'filtered': {}, 'format_matched': {},
+    'final_data': {'file_type': SetupFileType.PY}
 }
 
 mixed_src_layout_valid_cfg = {
@@ -158,6 +204,14 @@ mixed_src_layout_valid_cfg = {
             'my_project = testproj.app:run',
             'my_test = testproj.test:simple_test'
         ]},
+    'final_data': {
+        'name': 'testproj',
+        'console_scripts': [
+            'my_project = testproj.app:run',
+            'my_test = testproj.test:simple_test'
+        ],
+        'file_type': SetupFileType.CFG
+    }
 }
 
 mixed_src_layout_valid_py = {
@@ -181,6 +235,10 @@ mixed_src_layout_valid_py = {
     'format_matched': {
         'name': 'testproj', 'package_dir': {'': 'src'}
     },
+    'final_data': {
+        'name': 'testproj', 'package_dir': {'': 'src'},
+        'file_type': SetupFileType.PY
+    }
 }
 
 mixed_src_layout_invalid_cfg = {
@@ -215,6 +273,17 @@ mixed_src_layout_invalid_cfg = {
             'my_project = testproj.app:bad_run',
             'my_test = testproj.test:bad_test'
         ]},
+    'final_data': {
+        'name': 'testproj',
+        'package_dir': {
+            '': 'src'
+        },
+        'console_scripts': [
+            'my_project = testproj.app:bad_run',
+            'my_test = testproj.test:bad_test'
+        ],
+        'file_type': SetupFileType.CFG
+    }
 }
 
 mixed_src_layout_invalid_py = match_src_layout_py

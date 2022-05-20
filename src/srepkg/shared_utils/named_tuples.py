@@ -22,3 +22,7 @@ class SrePkgInfo(NamedTuple):
     pkg_name: str
     root_path: Path
 
+
+class ErrorMsg(NamedTuple):
+    msg: str
+

@@ -9,6 +9,7 @@ from enum import Enum
 from unittest import mock
 import sys
 import srepkg.shared_utils as su
+import src.srepkg.setup_file_reader as sfr
 
 
 class PkgInspectorMsg(NamedTuple):
@@ -109,111 +110,6 @@ def filter_setup_data(orig: dict, setup_keys: SetupKeys):
     return {**single_key_params, **two_key_nested_params}
 
 
-# TODO consider making abstract Reader base class with py and cfg subclasses
-class SetupFilesReader:
-
-    def __init__(self, orig_pkg_path: Path, cfg_keys: SetupKeys,
-                 py_keys: SetupKeys):
-        self._orig_pkg_path = orig_pkg_path
-        self._data_keys = SetupDataKeys(cfg=cfg_keys, py=py_keys)
-        self._setup_data = SetupData(cfg={}, py={})
-
-    def _read_raw_setup_py(self):
-        try:
-            sys.path.insert(0, str(self._orig_pkg_path))
-            with mock.patch.object(setuptools, 'setup') as mock_setup:
-                import setup
-                setup_params = mock_setup.call_args[1]
-        finally:
-            sys.path.remove(str(self._orig_pkg_path))
-            sys.modules.pop('setup')
-
-        self._setup_data.py.update(setup_params)
-
-    def _read_raw_setup_cfg(self):
-        config = configparser.ConfigParser()
-
-        try:
-            config.read(self._orig_pkg_path / 'setup.cfg')
-        except (configparser.ParsingError,
-                configparser.MissingSectionHeaderError):
-            sys.exit(PkgError.SetupCfgReadError.msg)
-
-        self._setup_data.cfg.update({sect: dict(config.items(sect)) for sect in
-                                     config.sections()})
-
-    def _filter_all_setup_data(self):
-        for field in self._data_keys._fields:
-            filtered_data = filter_setup_data(
-                getattr(self._setup_data, field),
-                getattr(self._data_keys, field))
-
-            getattr(self._setup_data, field).clear()
-            getattr(self._setup_data, field).update(filtered_data)
-
-    def _cfg_cs_str_to_list(self):
-        if ('console_scripts' in self._setup_data.cfg)\
-                and (type(self._setup_data.cfg['console_scripts']) == str):
-            self._setup_data.cfg['console_scripts'] =\
-                self._setup_data.cfg['console_scripts'].strip().splitlines()
-
-    def _cfg_pkg_dir_str_to_dict(self):
-        dir_dict = {}
-        if ('package_dir' in self._setup_data.cfg) and\
-                (type(self._setup_data.cfg['package_dir']) == str):
-            pkg_dir_lines = self._setup_data.cfg['package_dir'].strip()\
-                .split('\n')
-            pkg_dir_lines_parsed = [[item.strip() for item in line] for line in
-                                    [line.split('=') for line in pkg_dir_lines]]
-
-            for line in pkg_dir_lines_parsed:
-                if len(line) == 2:
-                    pkg_name = line[0]
-                    pkg_dir = line[1]
-                elif len(line) == 1:
-                    pkg_name = ''
-                    pkg_dir = line[0]
-                else:
-                    sys.exit(PkgError.InvalidPackageDirValue.msg)
-
-                # guard against repeat entry (val overwrite) of key already in dict
-                if pkg_name in dir_dict:
-                    sys.exit(PkgError.InvalidPackageDirValue.msg)
-                else:
-                    dir_dict[pkg_name] = pkg_dir
-
-            self._setup_data.cfg['package_dir'] = dir_dict
-
-    def _format_null_package_dir(self):
-        for field in self._setup_data._fields:
-            if 'package_dir' not in getattr(self._setup_data, field):
-                getattr(self._setup_data, field)['package_dir'] = {'': ''}
-
-    def _validate_pkg_name_dir_combo(self):
-        pass
-
-    def _cs_lists_to_cse_objs(self):
-        for field in self._setup_data._fields:
-            cs_data = getattr(self._setup_data, field).get('console_scripts')
-            if cs_data and type(cs_data[0]) == str:
-                cse_list = [su.ep_console_script.parse_cs_line(entry)
-                            for entry in cs_data]
-                getattr(self._setup_data, field)['console_scripts'] = cse_list
-
-    def _merge_cfg_and_py(self):
-        return {**self._setup_data.py, **self._setup_data.cfg}
-
-    def get_setup_params(self):
-        self._read_raw_setup_py()
-        self._read_raw_setup_cfg()
-        self._filter_all_setup_data()
-        self._cfg_cs_str_to_list()
-        self._cfg_pkg_dir_str_to_dict()
-        self._format_null_package_dir()
-        self._cs_lists_to_cse_objs()
-        return self._merge_cfg_and_py()
-
-
 class OrigPkgInspector:
     _cfg_keys = SetupKeys(
         single_level=[],
@@ -221,25 +117,44 @@ class OrigPkgInspector:
                    ('options.entry_points', 'console_scripts')])
 
     _py_keys = SetupKeys(
-        single_level=['name', 'package_dir', 'dummy'],
+        single_level=['name', 'package_dir'],
         two_level=[('entry_points', 'console_scripts')])
 
     def __init__(self, orig_pkg_path: str):
         self._orig_pkg_path = Path(orig_pkg_path)
+        self._all_setup_file_info = []
 
-    def validate_orig_pkg_path(self):
+    def _validate_orig_pkg_path(self):
         if not self._orig_pkg_path.exists():
             sys.exit(PkgError.PkgPathNotFound.msg)
         return self
 
-    def validate_setup_files(self):
+    def _validate_setup_files(self):
         if not (self._orig_pkg_path.absolute() / 'setup.cfg').exists() and not\
                 (self._orig_pkg_path.absolute() / 'setup.py').exists():
             sys.exit(PkgError.NoSetupFilesFound.msg)
         return self
 
-    def get_orig_pkg_info(self):
-        self.validate_orig_pkg_path().validate_setup_files()
+    @staticmethod
+    def merge_setup_info(all_setup_info: List[sfr.SetupFileInfo]):
+
+
+        def get_orig_pkg_info(self):
+            self._validate_orig_pkg_path()_.validate_setup_files()
+
+            cfg_setup_info = sfr.SetupCfgFileReader(
+                setup_file=self._orig_pkg_path / 'setup.cfg',
+                file_type=sfr.SetupFileType.CFG,
+                doi_keys=self._cfg_keys).get_setup_info()
+
+            py_setup_info = sfr.SetupPyFileReader(
+                setup_file=self._orig_pkg_path / 'setup.py',
+                file_type=sfr.SetupFileType.PY,
+                doi_keys=self._py_keys).get_setup_info()
+
+
+
+
 
         setup_files_reader = SetupFilesReader(
             orig_pkg_path=self._orig_pkg_path,
