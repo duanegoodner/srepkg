@@ -11,21 +11,13 @@ class SFRTester(unittest.TestCase):
     @staticmethod
     def build_file_reader(setup_dir: Path, setup_file_type: sfr.SetupFileType):
         if setup_file_type == sfr.SetupFileType.PY:
-            file_reader = sfr.SetupPyFileReader(
+            file_reader = sfr._SetupPyFileReader(
                 setup_file=setup_dir / 'setup.py',
-                file_type=setup_file_type,
-                doi_keys=sfr.SetupKeys(
-                    single_level=['name', 'package_dir', 'dummy'],
-                    two_level=[('entry_points', 'console_scripts')]))
+                file_type=setup_file_type)
         elif setup_file_type == sfr.SetupFileType.CFG:
-            file_reader = sfr.SetupCfgFileReader(
+            file_reader = sfr._SetupCfgFileReader(
                 setup_file=setup_dir / 'setup.cfg',
-                file_type=setup_file_type,
-                doi_keys=sfr.SetupKeys(single_level=[],
-                                       two_level=[('metadata', 'name'),
-                                                  ('options', 'package_dir'),
-                                                  ('options.entry_points',
-                                                   'console_scripts')]))
+                file_type=setup_file_type)
 
         return file_reader
 

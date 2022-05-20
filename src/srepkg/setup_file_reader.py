@@ -33,13 +33,16 @@ class SetupFileType(Enum):
     PY = auto()
 
 
-class SetupFileReader(abc.ABC):
-    def __init__(self, setup_file: Path, file_type: SetupFileType,
-                 doi_keys: SetupKeys):
+class _SetupFileReader(abc.ABC):
+    def __init__(self, setup_file: Path, file_type: SetupFileType):
         self._setup_file = setup_file
         self._file_type = file_type
-        self._doi_keys = doi_keys
         self._data = {}
+
+    @property
+    @abc.abstractmethod
+    def _doi_keys(self):
+        return SetupKeys(single_level=[], two_level=[])
 
     @staticmethod
     def _filter_and_flatten(orig: dict, setup_keys: SetupKeys):
@@ -81,11 +84,14 @@ class SetupFileReader(abc.ABC):
         return SetupFileInfo(**self._data)
 
 
-class SetupCfgFileReader(SetupFileReader):
+class _SetupCfgFileReader(_SetupFileReader):
+    _doi_keys = SetupKeys(
+        single_level=[],
+        two_level=[('metadata', 'name'), ('options', 'package_dir'),
+                   ('options.entry_points', 'console_scripts')])
 
-    def __init__(self, setup_file: Path, file_type: SetupFileType,
-                 doi_keys: SetupKeys):
-        super().__init__(setup_file, file_type, doi_keys)
+    def __init__(self, setup_file: Path, file_type: SetupFileType):
+        super().__init__(setup_file, file_type)
 
     def _read_raw_data(self):
         config = configparser.ConfigParser()
@@ -145,11 +151,14 @@ class SetupCfgFileReader(SetupFileReader):
         return self
 
 
-class SetupPyFileReader(SetupFileReader):
+class _SetupPyFileReader(_SetupFileReader):
 
-    def __init__(self, setup_file: Path, file_type: SetupFileType,
-                 doi_keys: SetupKeys):
-        super().__init__(setup_file, file_type, doi_keys)
+    _doi_keys = SetupKeys(
+                    single_level=['name', 'package_dir', 'dummy'],
+                    two_level=[('entry_points', 'console_scripts')])
+
+    def __init__(self, setup_file: Path, file_type: SetupFileType):
+        super().__init__(setup_file, file_type)
 
     def _read_raw_data(self):
         try:
@@ -195,7 +204,6 @@ class PkgDirInfoExtractor:
 
 
 class SetupFileInfo:
-
     _file_priority = [SetupFileType.PY, SetupFileType.CFG]
 
     def __init__(self, name: str = None, package_dir=None,
@@ -231,8 +239,3 @@ class SetupFileInfo:
             return self._package_dir[self._name]
 
         return ''
-
-
-
-
-
