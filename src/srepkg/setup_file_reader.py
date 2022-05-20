@@ -15,12 +15,25 @@ class SetupFileReaderError(su.named_tuples.ErrorMsg, Enum):
         msg='Unable to read or parse setup.cfg')
     InvalidPackageDirValue = su.named_tuples.ErrorMsg(
         msg='Invalid package_dir value in [options] section of setup.cfg')
+    UnsupportedSetupFileType = su.named_tuples.ErrorMsg(
+        msg='Unsupported setup file type'
+    )
 
 
 class SetupInfoError(su.named_tuples.ErrorMsg, Enum):
     InvalidPkgDirValue = su.named_tuples.ErrorMsg(
         msg='Invalid value for package_dir'
     )
+
+
+class UnsupportedSetupFileType(Exception):
+    def __init__(self, file_name: str, message="File type is not supported"):
+        self.file_name = file_name
+        self.message = message
+        super().__init__(self.message)
+
+    def __str__(self):
+        return f'{self.file_name} -> {self.message}'
 
 
 class SetupKeys(NamedTuple):
@@ -90,8 +103,8 @@ class _SetupCfgFileReader(_SetupFileReader):
         two_level=[('metadata', 'name'), ('options', 'package_dir'),
                    ('options.entry_points', 'console_scripts')])
 
-    def __init__(self, setup_file: Path, file_type: SetupFileType):
-        super().__init__(setup_file, file_type)
+    def __init__(self, setup_file: Path):
+        super().__init__(setup_file, SetupFileType.CFG)
 
     def _read_raw_data(self):
         config = configparser.ConfigParser()
@@ -157,8 +170,8 @@ class _SetupPyFileReader(_SetupFileReader):
                     single_level=['name', 'package_dir', 'dummy'],
                     two_level=[('entry_points', 'console_scripts')])
 
-    def __init__(self, setup_file: Path, file_type: SetupFileType):
-        super().__init__(setup_file, file_type)
+    def __init__(self, setup_file: Path):
+        super().__init__(setup_file, SetupFileType.PY)
 
     def _read_raw_data(self):
         try:
@@ -177,6 +190,33 @@ class _SetupPyFileReader(_SetupFileReader):
 
     def _match_to_py_format(self):
         return self  # setup.py data already in py format
+
+
+class SetupFileReader:
+    _file_type_readers = {
+        '.cfg': _SetupCfgFileReader,
+        '.py': _SetupPyFileReader
+    }
+
+    def __init__(self, setup_file: Path):
+        self._setup_file = setup_file
+
+    @property
+    def _implemented_reader(self) -> _SetupFileReader:
+        return self._file_type_readers[self._setup_file.suffix](
+            self._setup_file)
+
+    def _validate_file_type(self):
+        if self._setup_file.suffix not in self._file_type_readers:
+            raise UnsupportedSetupFileType(self._setup_file.name)
+
+    def get_setup_info(self):
+        try:
+            self._validate_file_type()
+        except UnsupportedSetupFileType:
+            return
+
+        return self._implemented_reader.get_setup_info()
 
 
 class PkgDirInfoExtractor:

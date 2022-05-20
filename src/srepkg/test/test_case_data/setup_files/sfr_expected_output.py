@@ -149,7 +149,7 @@ match_non_src_layout_cfg = {
     'filtered': {
         'name': 'testproj',
         'console_scripts': '\nmy_project = testproj.app:run\nmy_test = testproj.test:simple_test'},
-    'cfg_format_matched': {
+    'format_matched': {
         'name': 'testproj',
         'console_scripts': [
             'my_project = testproj.app:run',
