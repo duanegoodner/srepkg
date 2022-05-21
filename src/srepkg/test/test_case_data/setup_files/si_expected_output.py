@@ -2,13 +2,13 @@ import src.srepkg.setup_file_reader as sfr
 
 file_type_only = {
     'init': {
-        'py': {
+        sfr.SetupFileType.PY: {
             'console_scripts': [],
             'file_type': sfr.SetupFileType.PY,
             'package_dir': {},
             'name': None
         },
-        'cfg': {
+        sfr.SetupFileType.CFG: {
             'console_scripts': [],
             'file_type': sfr.SetupFileType.CFG,
             'package_dir': {},
@@ -19,14 +19,14 @@ file_type_only = {
 
 match_src_layout = {
     'init': {
-        'py': {
+        sfr.SetupFileType.PY: {
             'console_scripts': ['my_project = testproj.app:run',
                                 'my_test = testproj.test:simple_test'],
             'file_type': sfr.SetupFileType.PY,
             'package_dir': {'': 'src'},
             'name': 'testproj'
         },
-        'cfg': {
+        sfr.SetupFileType.CFG: {
             'console_scripts': ['my_project = testproj.app:run',
                                 'my_test = testproj.test:simple_test'],
             'file_type': sfr.SetupFileType.CFG,
@@ -38,14 +38,14 @@ match_src_layout = {
 
 match_non_src_layout = {
     'init': {
-        'py': {
+        sfr.SetupFileType.PY: {
             'console_scripts': ['my_project = testproj.app:run',
                                 'my_test = testproj.test:simple_test'],
             'file_type': sfr.SetupFileType.PY,
             'package_dir': {},
             'name': 'testproj'
         },
-        'cfg': {
+        sfr.SetupFileType.CFG: {
             'console_scripts': ['my_project = testproj.app:run',
                                 'my_test = testproj.test:simple_test'],
             'file_type': sfr.SetupFileType.CFG,
@@ -57,14 +57,14 @@ match_non_src_layout = {
 
 src_layout_no_cfg = {
     'init': {
-        'py': {
+        sfr.SetupFileType.PY: {
             'console_scripts': ['my_project = testproj.app:run',
                                 'my_test = testproj.test:simple_test'],
             'file_type': sfr.SetupFileType.PY,
             'package_dir': {'': 'src'},
             'name': 'testproj'
         },
-        'cfg': {
+        sfr.SetupFileType.CFG: {
             'console_scripts': [],
             'file_type': sfr.SetupFileType.CFG,
             'package_dir': {},
@@ -75,13 +75,13 @@ src_layout_no_cfg = {
 
 src_layout_no_py = {
     'init': {
-        'py': {
+        sfr.SetupFileType.PY: {
             'console_scripts': [],
             'file_type': sfr.SetupFileType.PY,
             'package_dir': {},
             'name': None
         },
-        'cfg': {
+        sfr.SetupFileType.CFG: {
             'console_scripts': ['my_project = testproj.app:run',
                                 'my_test = testproj.test:simple_test'],
             'file_type': sfr.SetupFileType.CFG,
@@ -91,15 +91,15 @@ src_layout_no_py = {
     }
 }
 
-mixed_src_valid = {
+mixed_src_layout_valid = {
     'init': {
-        'py': {
+        sfr.SetupFileType.PY: {
             'console_scripts': [],
             'file_type': sfr.SetupFileType.PY,
             'package_dir': {'': 'src'},
             'name': 'testproj'
         },
-        'cfg': {
+        sfr.SetupFileType.CFG: {
             'console_scripts': ['my_project = testproj.app:run',
                                 'my_test = testproj.test:simple_test'],
             'file_type': sfr.SetupFileType.CFG,

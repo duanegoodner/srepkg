@@ -22,7 +22,10 @@ class PkgError(PkgInspectorMsg, Enum):
         msg='No setup.py file found, and no setup.cfg file found.\nsrepkg needs'
             ' at least one of these files.')
     PkgNameNotFound = PkgInspectorMsg(
-        msg='Unable to find package name in setup.cfg')
+        msg='Unable to find package name in any setup file')
+    ConflictingPkgNames = PkgInspectorMsg(
+        msg='Package name conflicts. More than one package name found in setup '
+            'files')
     InvalidPkgName = PkgInspectorMsg(msg='Invalid package name')
 
     SetupPyNotFound = PkgInspectorMsg(
@@ -111,18 +114,12 @@ def filter_setup_data(orig: dict, setup_keys: SetupKeys):
 
 
 class OrigPkgInspector:
-    _cfg_keys = SetupKeys(
-        single_level=[],
-        two_level=[('metadata', 'name'), ('options', 'package_dir'),
-                   ('options.entry_points', 'console_scripts')])
-
-    _py_keys = SetupKeys(
-        single_level=['name', 'package_dir'],
-        two_level=[('entry_points', 'console_scripts')])
+    _setup_filenames = ['setup.cfg', 'setup.py']
 
     def __init__(self, orig_pkg_path: str):
         self._orig_pkg_path = Path(orig_pkg_path)
-        self._all_setup_file_info = []
+        self._all_setup_file_info = {}
+        self._merged_data = {}
 
     def _validate_orig_pkg_path(self):
         if not self._orig_pkg_path.exists():
@@ -130,60 +127,62 @@ class OrigPkgInspector:
         return self
 
     def _validate_setup_files(self):
-        if not (self._orig_pkg_path.absolute() / 'setup.cfg').exists() and not\
-                (self._orig_pkg_path.absolute() / 'setup.py').exists():
+        setup_paths_found = [(self._orig_pkg_path / filename).exists() for
+                             filename in self._setup_filenames]
+        if not any(setup_paths_found):
             sys.exit(PkgError.NoSetupFilesFound.msg)
         return self
 
-    @staticmethod
-    def merge_setup_info(all_setup_info: List[sfr.SetupFileInfo]):
+    def _get_orig_pkg_info(self):
+        self._validate_orig_pkg_path()._validate_setup_files()
+
+        for filename in self._setup_filenames:
+            self._all_setup_file_info[filename] = sfr.SetupFileReader(
+                self._orig_pkg_path / filename
+            ).get_setup_info()
+
+    def _get_package_name(self):
+        name_list = [
+            setup_file_info.name for setup_file_info in
+            self._all_setup_file_info if setup_file_info.name is not None
+        ]
+        if len(name_list) == 0:
+            sys.exit(PkgError.PkgNameNotFound.msg)
+        if len(name_list) > 1:
+            sys.exit(PkgError.ConflictingPkgNames.msg)
+
+        self._merged_data['name'] = name_list[0]
 
 
-        def get_orig_pkg_info(self):
-            self._validate_orig_pkg_path()_.validate_setup_files()
 
-            cfg_setup_info = sfr.SetupCfgFileReader(
-                setup_file=self._orig_pkg_path / 'setup.cfg',
-                file_type=sfr.SetupFileType.CFG,
-                doi_keys=self._cfg_keys).get_setup_info()
-
-            py_setup_info = sfr.SetupPyFileReader(
-                setup_file=self._orig_pkg_path / 'setup.py',
-                file_type=sfr.SetupFileType.PY,
-                doi_keys=self._py_keys).get_setup_info()
+    def _get_top_level_pkg_dir(self):
+        pass
 
 
 
-
-
-        setup_files_reader = SetupFilesReader(
-            orig_pkg_path=self._orig_pkg_path,
-            cfg_keys=self._cfg_keys,
-            py_keys=self._py_keys)
-        setup_params = setup_files_reader.get_setup_params()
 
         # TODO add method for validating setup_params
 
-        pkg_dir_extractor = PkgDirInfoExtractor(
-            setup_params['package_dir'], setup_params['name'])
-        package_dir = pkg_dir_extractor.get_top_level_pkg_dir()
-
-        package_dir_path = self._orig_pkg_path / package_dir
+        # pkg_dir_extractor = PkgDirInfoExtractor(
+        #     setup_params['package_dir'], setup_params['name'])
+        # package_dir = pkg_dir_extractor.get_top_level_pkg_dir()
+        #
+        # package_dir_path = self._orig_pkg_path / package_dir
 
         # leftover comment from prev implementation. info may still be useful:
         # must run get_pkg_name() before get_cse_list() b/c former exits on an
         # Exception type that the latter allows
 
-        has_main = (package_dir_path / setup_params['name']
-                    / '__main__.py').exists()
-
-        if not has_main and len(setup_params['console_scripts']) == 0:
-            sys.exit(PkgError.NoCommandLineAccess.msg)
-
-        return su.named_tuples.OrigPkgInfo(
-            pkg_name=setup_params['name'],
-            root_path=self._orig_pkg_path,
-            package_dir_path=package_dir_path,
-            entry_pts=setup_params['console_scripts'],
-            has_main=has_main
-        )
+        # has_main = (package_dir_path / setup_params['name']
+        #             / '__main__.py').exists()
+        #
+        # if not has_main and len(setup_params['console_scripts']) == 0:
+        #     sys.exit(PkgError.NoCommandLineAccess.msg)
+        #
+        # return su.named_tuples.OrigPkgInfo(
+        #     pkg_name=setup_params['name'],
+        #     root_path=self._orig_pkg_path,
+        #     package_dir_path=package_dir_path,
+        #     entry_pts=setup_params['console_scripts'],
+        #     has_main=has_main
+        # )

@@ -93,8 +93,7 @@ class _SetupFileReader(abc.ABC):
 
     def get_setup_info(self):
         self._read_raw_data()._filter_raw_data()._match_to_py_format()
-        self._data['file_type'] = self._file_type
-        return SetupFileInfo(**self._data)
+        return self._data
 
 
 class _SetupCfgFileReader(_SetupFileReader):
@@ -219,63 +218,34 @@ class SetupFileReader:
         return self._implemented_reader.get_setup_info()
 
 
-class PkgDirInfoExtractor:
-
-    def __init__(self, package_dir_dict: dict, pkg_name: str):
-        self._dir_dict = package_dir_dict
-        self._pkg_name = pkg_name
-
-    def _validate_dir_dict(self):
-        if '' in self._dir_dict and len(self._dir_dict) > 1:
-            sys.exit(PkgDirInfoError.InvalidPkgDirValue.msg)
-
-    def get_top_level_pkg_dir(self):
-
-        # dir_dict = self.parse_pkg_dir_entry()
-        self._validate_dir_dict()
-
-        if '' in self._dir_dict:
-            return self._dir_dict['']
-
-        if self._pkg_name in self._dir_dict:
-            return self._dir_dict[self._pkg_name]
-
-        return ''
-
-
 class SetupFileInfo:
     _file_priority = [SetupFileType.PY, SetupFileType.CFG]
 
     def __init__(self, name: str = None, package_dir=None,
-                 console_scripts=None, file_type: SetupFileType = None):
+                 console_scripts=None):
         if console_scripts is None:
             console_scripts = []
         if package_dir is None:
             package_dir = {}
-        # TODO raise Exception if file_type is None
         self._name = name
         self._package_dir = package_dir
         self._console_scripts = console_scripts
-        self._file_type = file_type
 
     def __eq__(self, other):
         return self.__dict__ == other.__dict__
 
     @property
-    def _priority(self):
-        return self._file_priority.index(self._file_type)
+    def name(self):
+        return self._name
+
+    @property
+    def package_dir(self):
+        return self._package_dir
+
+    @property
+    def console_scripts(self):
+        return self._console_scripts
 
     def _validate_package_dir(self):
         if '' in self._package_dir and len(self._package_dir) > 1:
             sys.exit(SetupInfoError.InvalidPkgDirValue.msg)
-
-    def get_top_level_rel_pkg_dir(self) -> str:
-        self._validate_package_dir()
-
-        if '' in self._package_dir:
-            return self._package_dir['']
-
-        if self._name in self._package_dir:
-            return self._package_dir[self._name]
-
-        return ''
