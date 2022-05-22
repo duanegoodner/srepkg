@@ -70,20 +70,15 @@ class BuilderPathsCalculator:
         )
 
         dest_paths = dest_file_util.get_path_names()
-        #
-        #
-        # dest_names, dest_paths = pb.class_builder.file_structure_walk(
-        #     file_structure=builder_dest_structure,
-        #     root_path=self.srepkg_pkgs_dir)
 
         return su.named_tuples.BuilderDestPaths(*dest_paths)
 
     def calc_builder_paths(self):
         src_paths = self.calc_src_paths()
         dest_paths = self.calc_dest_paths()
-        inner_pkg_src = \
-            dest_paths.srepkg / self._orig_pkg_info.package_dir_path. \
-            relative_to(self._orig_pkg_info.root_path) / \
-            self._orig_pkg_info.pkg_name
+        # inner_pkg_src = \
+        #     dest_paths.srepkg / self._orig_pkg_info.package_dir_path. \
+        #     relative_to(self._orig_pkg_info.root_path) / \
+        #     self._orig_pkg_info.pkg_name
 
-        return src_paths, dest_paths, inner_pkg_src
+        return src_paths, dest_paths#, inner_pkg_src

@@ -109,14 +109,9 @@ class MixedSrcLayoutValidCfg(PrivateSFRTester):
     file_type = sfr.SetupFileType.CFG
 
 
-class MixedSrcLayoutInvalidPy(PrivateSFRTester):
-    dataset_name = 'mixed_src_layout_invalid'
+class MixedSrcLayoutCSEOverride(PrivateSFRTester):
+    dataset_name = 'mixed_src_layout_cse_override'
     file_type = sfr.SetupFileType.PY
-
-
-class MixedSrcLayoutInvalidCfg(PrivateSFRTester):
-    dataset_name = 'mixed_src_layout_invalid'
-    file_type = sfr.SetupFileType.CFG
 
 
 class PublicSFRTester(unittest.TestCase):
@@ -129,23 +124,25 @@ class PublicSFRTester(unittest.TestCase):
         'setup_files'
 
     test_case_data = [
-        ('file_type_only/setup.py', ev.file_type_only_py),
-        ('file_type_only/setup.cfg', ev.file_type_only_cfg),
-        ('match_src_layout/setup.py', ev.match_src_layout_py),
-        ('match_src_layout/setup.cfg', ev.match_src_layout_cfg),
-        ('match_non_src_layout/setup.py', ev.match_non_src_layout_py),
-        ('match_non_src_layout/setup.cfg', ev.match_non_src_layout_cfg),
-        ('src_layout_no_cfg/setup.py', ev.src_layout_no_cfg_py),
-        ('src_layout_no_cfg/setup.cfg', ev.src_layout_no_cfg_cfg),
-        ('src_layout_no_py/setup.py', ev.src_layout_no_py_py),
-        ('src_layout_no_py/setup.cfg', ev.src_layout_no_py_cfg)
+        ('file_type_only', ev.file_type_only),
+        ('match_src_layout', ev.match_src_layout),
+        ('match_non_src_layout', ev.match_non_src_layout),
+        ('src_layout_no_cfg', ev.src_layout_no_cfg),
+        ('src_layout_no_py', ev.src_layout_no_py),
     ]
 
-    def run_test(self, setup_file_rel_path: str, private_data: dict):
-        setup_file = self.base_path / setup_file_rel_path
-        public_sfr = sfr.SetupFileReader(setup_file)
-        setup_info = public_sfr.get_setup_info()
-        assert setup_info == private_data['format_matched']
+    def run_test(self, dataset_name: str, private_data: dict):
+        cfg_setup_file = self.base_path / dataset_name / 'setup.cfg'
+        py_setup_file = self.base_path / dataset_name / 'setup.py'
+
+        public_sfr_cfg = sfr.SetupFileReader(cfg_setup_file)
+        public_sfr_py = sfr.SetupFileReader(py_setup_file)
+        cfg_setup_info = public_sfr_cfg.get_setup_info()
+        py_setup_info = public_sfr_py.get_setup_info()
+        assert cfg_setup_info ==\
+               private_data[sfr.SetupFileType.CFG]['format_matched']
+        assert py_setup_info ==\
+               private_data[sfr.SetupFileType.PY]['format_matched']
 
     def test_all_cases(self):
         for test_case in self.test_case_data:

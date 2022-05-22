@@ -16,10 +16,10 @@ def calc_test_paths(pkg_root: Path = test_case_data.package_test_cases.t_proj_in
                     pkg_root):
     args = ci.get_args([str(pkg_root)])
 
-    orig_pkg_info = opi.OrigPkgInspector(args.orig_pkg_path) \
-        .validate_orig_pkg_path() \
-        .validate_setup_cfg() \
-        .get_orig_pkg_info()
+    orig_pkg_info = opi.OrigPkgInspector(args.orig_pkg_path).get_orig_pkg_info()
+        # ._validate_orig_pkg_path() \
+        # .validate_setup_cfg() \
+        # .get_orig_pkg_info()
 
     builder_paths_calculator = pc.BuilderPathsCalculator(
         orig_pkg_info, args.srepkg_name)
@@ -28,10 +28,10 @@ def calc_test_paths(pkg_root: Path = test_case_data.package_test_cases.t_proj_in
     builder_paths_calculator.srepkg_pkgs_dir = \
         test_case_data.package_test_cases.t_proj_srepkg_info.test_srepkg_pkgs_dir
 
-    builder_src_paths, builder_dest_paths, inner_pkg_src = \
+    builder_src_paths, builder_dest_paths = \
         builder_paths_calculator.calc_builder_paths()
 
-    return builder_src_paths, builder_dest_paths, inner_pkg_src
+    return builder_src_paths, builder_dest_paths
 
 
 class TestPathCalculator(unittest.TestCase):

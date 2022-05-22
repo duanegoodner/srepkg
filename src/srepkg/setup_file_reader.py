@@ -2,32 +2,32 @@ import abc
 import configparser
 import setuptools
 import sys
+import warnings
 from enum import Enum, auto
 from typing import NamedTuple, List
 from pathlib import Path
 from unittest import mock
-
 import srepkg.shared_utils as su
 
 
-class SetupFileReaderError(su.named_tuples.ErrorMsg, Enum):
-    SetupCfgReadError = su.named_tuples.ErrorMsg(
+class SetupFileReaderError(su.nt.ErrorMsg, Enum):
+    SetupCfgReadError = su.nt.ErrorMsg(
         msg='Unable to read or parse setup.cfg')
-    InvalidPackageDirValue = su.named_tuples.ErrorMsg(
+    InvalidPackageDirValue = su.nt.ErrorMsg(
         msg='Invalid package_dir value in [options] section of setup.cfg')
-    UnsupportedSetupFileType = su.named_tuples.ErrorMsg(
+    UnsupportedSetupFileType = su.nt.ErrorMsg(
         msg='Unsupported setup file type'
     )
 
 
-class SetupInfoError(su.named_tuples.ErrorMsg, Enum):
-    InvalidPkgDirValue = su.named_tuples.ErrorMsg(
+class SetupInfoError(su.nt.ErrorMsg, Enum):
+    InvalidPkgDirValue = su.nt.ErrorMsg(
         msg='Invalid value for package_dir'
     )
 
 
 class UnsupportedSetupFileType(Exception):
-    def __init__(self, file_name: str, message="File type is not supported"):
+    def __init__(self, file_name: str, message='File type is not supported'):
         self.file_name = file_name
         self.message = message
         super().__init__(self.message)
@@ -112,7 +112,10 @@ class _SetupCfgFileReader(_SetupFileReader):
         except (configparser.ParsingError,
                 configparser.MissingSectionHeaderError):
             # TODO consider changing this to just a warning
-            sys.exit(SetupFileReaderError.SetupCfgReadError.msg)
+            # sys.exit(SetupFileReaderError.SetupCfgReadError.msg)
+            warnings.warn(
+                SetupFileReaderError.SetupCfgReadError.msg,
+                UserWarning)
 
         self._data.clear()
         self._data.update({sect: dict(config.items(sect)) for sect in
