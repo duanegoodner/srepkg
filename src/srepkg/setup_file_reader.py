@@ -47,9 +47,8 @@ class SetupFileType(Enum):
 
 
 class _SetupFileReader(abc.ABC):
-    def __init__(self, setup_file: Path, file_type: SetupFileType):
+    def __init__(self, setup_file: Path):
         self._setup_file = setup_file
-        self._file_type = file_type
         self._data = {}
 
     @property
@@ -103,7 +102,7 @@ class _SetupCfgFileReader(_SetupFileReader):
                    ('options.entry_points', 'console_scripts')])
 
     def __init__(self, setup_file: Path):
-        super().__init__(setup_file, SetupFileType.CFG)
+        super().__init__(setup_file)
 
     def _read_raw_data(self):
         config = configparser.ConfigParser()
@@ -170,7 +169,7 @@ class _SetupPyFileReader(_SetupFileReader):
                     two_level=[('entry_points', 'console_scripts')])
 
     def __init__(self, setup_file: Path):
-        super().__init__(setup_file, SetupFileType.PY)
+        super().__init__(setup_file)
 
     def _read_raw_data(self):
         try:

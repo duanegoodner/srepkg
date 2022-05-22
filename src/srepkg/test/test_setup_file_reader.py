@@ -61,9 +61,7 @@ class PrivateSFRTester(unittest.TestCase):
 
     def test_get_data(self):
         setup_info = self._file_reader.get_setup_info()
-        assert setup_info == sfr.SetupFileInfo(
-            **{**self.expected_vals['format_matched'],
-               **{'file_type': self.file_type}})
+        assert setup_info == self.expected_vals['format_matched']
 
 
 class MatchSrcLayoutPy(PrivateSFRTester):
@@ -147,9 +145,7 @@ class PublicSFRTester(unittest.TestCase):
         setup_file = self.base_path / setup_file_rel_path
         public_sfr = sfr.SetupFileReader(setup_file)
         setup_info = public_sfr.get_setup_info()
-        file_type = self.file_types[setup_file.suffix]
-        assert setup_info == sfr.SetupFileInfo(
-            **{**private_data['format_matched'], **{'file_type': file_type}})
+        assert setup_info == private_data['format_matched']
 
     def test_all_cases(self):
         for test_case in self.test_case_data:

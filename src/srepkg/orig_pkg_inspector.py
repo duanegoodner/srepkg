@@ -155,10 +155,6 @@ class OrigPkgInspector:
 
 
 
-    def _get_top_level_pkg_dir(self):
-        pass
-
-
 
 
         # TODO add method for validating setup_params
