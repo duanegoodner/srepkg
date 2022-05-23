@@ -221,7 +221,6 @@ class SetupFileReader:
 
 
 class SetupFileInfo:
-    _file_priority = [SetupFileType.PY, SetupFileType.CFG]
 
     def __init__(self, name: str = None, package_dir=None,
                  console_scripts=None):

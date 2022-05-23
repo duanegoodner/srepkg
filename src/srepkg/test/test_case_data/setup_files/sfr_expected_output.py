@@ -2,18 +2,18 @@ from srepkg.shared_utils.named_tuples import CSEntry
 from srepkg.setup_file_reader import SetupFileType
 
 file_type_only = {
-    SetupFileType.CFG: {
+    '.cfg': {
         'raw': {}, 'filtered': {}, 'format_matched': {},
-        'final_data': {'file_type': SetupFileType.CFG}
+        'final_data': {'file_type': '.cfg'}
     },
-    SetupFileType.PY: {
+    '.py': {
         'raw': {}, 'filtered': {}, 'format_matched': {},
-        'final_data': {'file_type': SetupFileType.PY}
+        'final_data': {'file_type': '.py'}
     }
 }
 
 match_src_layout = {
-    SetupFileType.CFG: {
+    '.cfg': {
         'raw': {
             'metadata':
                 {
@@ -54,10 +54,10 @@ match_src_layout = {
                 'my_project = testproj.app:run',
                 'my_test = testproj.test:simple_test'
             ],
-            'file_type': SetupFileType.CFG
+            'file_type': '.cfg'
         }
     },
-    SetupFileType.PY: {
+    '.py': {
         'raw': {
             'name': 'testproj',
             'package_dir': {
@@ -92,13 +92,13 @@ match_src_layout = {
             'name': 'testproj', 'package_dir': {'': 'src'},
             'console_scripts': ['my_project = testproj.app:run',
                                 'my_test = testproj.test:simple_test'],
-            'file_type': SetupFileType.PY
+            'file_type': '.py'
         }
     }
 }
 
 match_non_src_layout = {
-    SetupFileType.CFG: {
+    '.cfg': {
         'raw': {
             'metadata':
                 {
@@ -127,10 +127,10 @@ match_non_src_layout = {
                 'my_project = testproj.app:run',
                 'my_test = testproj.test:simple_test'
             ],
-            'file_type': SetupFileType.CFG
+            'file_type': '.cfg'
         }
     },
-    SetupFileType.PY: {
+    '.py': {
         'raw': {
             'name': 'testproj',
             'packages': [
@@ -162,31 +162,31 @@ match_non_src_layout = {
             'name': 'testproj',
             'console_scripts': ['my_project = testproj.app:run',
                                 'my_test = testproj.test:simple_test'],
-            'file_type': SetupFileType.PY
+            'file_type': '.py'
         }
     }
 }
 
 src_layout_no_cfg = {
-    SetupFileType.CFG: {
+    '.cfg': {
         'raw': {},
         'filtered': {},
         'format_matched': {},
-        'final_data': {'file_type': SetupFileType.CFG}
+        'final_data': {'file_type': '.cfg'}
     },
-    SetupFileType.PY: match_src_layout[SetupFileType.PY]
+    '.py': match_src_layout['.py']
 }
 
 src_layout_no_py = {
-    SetupFileType.CFG: match_src_layout[SetupFileType.CFG],
-    SetupFileType.PY: {
+    '.cfg': match_src_layout['.cfg'],
+    '.py': {
         'raw': {}, 'filtered': {}, 'format_matched': {},
-        'final_data': {'file_type': SetupFileType.PY}
+        'final_data': {'file_type': '.py'}
     }
 }
 
 mixed_src_layout_valid = {
-    SetupFileType.CFG: {
+    '.cfg': {
         'raw': {
             'metadata':
                 {
@@ -215,10 +215,10 @@ mixed_src_layout_valid = {
                 'my_project = testproj.app:run',
                 'my_test = testproj.test:simple_test'
             ],
-            'file_type': SetupFileType.CFG
+            'file_type': '.cfg'
         }
     },
-    SetupFileType.PY: {
+    '.py': {
         'raw': {
             'name': 'testproj',
             'package_dir': {
@@ -241,13 +241,13 @@ mixed_src_layout_valid = {
         },
         'final_data': {
             'name': 'testproj', 'package_dir': {'': 'src'},
-            'file_type': SetupFileType.PY
+            'file_type': '.py'
         }
     }
 }
 
 mixed_src_layout_cse_override = {
-    SetupFileType.CFG: {
+    '.cfg': {
         'raw': {
             'metadata':
                 {
@@ -288,8 +288,8 @@ mixed_src_layout_cse_override = {
                 'my_project = testproj.app:bad_run',
                 'my_test = testproj.test:bad_test'
             ],
-            'file_type': SetupFileType.CFG
+            'file_type': '.cfg'
         }
     },
-    SetupFileType.PY: match_src_layout[SetupFileType.PY]
+    '.py': match_src_layout['.py']
 }

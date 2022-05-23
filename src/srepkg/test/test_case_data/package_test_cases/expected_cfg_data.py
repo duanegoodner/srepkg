@@ -1,7 +1,7 @@
 from srepkg.setup_file_reader import SetupFileType
 
 t_nonsrc = {
-    SetupFileType.CFG: {
+    '.cfg': {
         'format_matched': {
             'name': 't_nonsrc',
             'console_scripts': [
@@ -11,13 +11,13 @@ t_nonsrc = {
             ]
         }
     },
-    SetupFileType.PY: {
+    '.py': {
         'format_matched': {}
     }
 }
 
 t_proj = {
-    SetupFileType.CFG: {
+    '.cfg': {
         'format_matched': {
             'name': 't_proj',
             'console_scripts': [
@@ -27,7 +27,7 @@ t_proj = {
             ]
         }
     },
-    SetupFileType.PY: {
+    '.py': {
         'format_matched': {}
     }
 }

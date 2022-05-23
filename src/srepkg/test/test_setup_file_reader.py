@@ -9,11 +9,11 @@ import src.srepkg.test.test_case_data.setup_files.sfr_expected_output as ev
 class PrivateSFRTester(unittest.TestCase):
 
     @staticmethod
-    def build_file_reader(setup_dir: Path, setup_file_type: sfr.SetupFileType):
-        if setup_file_type == sfr.SetupFileType.PY:
+    def build_file_reader(setup_dir: Path, setup_file_type: str):
+        if setup_file_type == '.py':
             file_reader = sfr._SetupPyFileReader(
                 setup_file=setup_dir / 'setup.py')
-        elif setup_file_type == sfr.SetupFileType.CFG:
+        elif setup_file_type == '.cfg':
             file_reader = sfr._SetupCfgFileReader(
                 setup_file=setup_dir / 'setup.cfg')
 
@@ -27,7 +27,7 @@ class PrivateSFRTester(unittest.TestCase):
     @property
     @abc.abstractmethod
     def file_type(self):
-        return sfr.SetupFileType.PY
+        return '.py'
 
     @property
     def base_dir(self):
@@ -66,58 +66,58 @@ class PrivateSFRTester(unittest.TestCase):
 
 class MatchSrcLayoutPy(PrivateSFRTester):
     dataset_name = 'match_src_layout'
-    file_type = sfr.SetupFileType.PY
+    file_type = '.py'
 
 
 class MatchSrcLayoutCfg(PrivateSFRTester):
     dataset_name = 'match_src_layout'
-    file_type = sfr.SetupFileType.CFG
+    file_type = '.cfg'
 
 
 class MatchNonSrcLayoutPy(PrivateSFRTester):
     dataset_name = 'match_non_src_layout'
-    file_type = sfr.SetupFileType.PY
+    file_type = '.py'
 
 
 class SrcLayoutNoCfgPy(PrivateSFRTester):
     dataset_name = 'src_layout_no_cfg'
-    file_type = sfr.SetupFileType.PY
+    file_type = '.py'
 
 
 class SrcLayoutNoCfgCfg(PrivateSFRTester):
     dataset_name = 'src_layout_no_cfg'
-    file_type = sfr.SetupFileType.CFG
+    file_type = '.cfg'
 
 
 class SrcLayoutNoPyCfg(PrivateSFRTester):
     dataset_name = 'src_layout_no_py'
-    file_type = sfr.SetupFileType.CFG
+    file_type = '.cfg'
 
 
 class SrcLayoutNoPyPy(PrivateSFRTester):
     dataset_name = 'src_layout_no_py'
-    file_type = sfr.SetupFileType.PY
+    file_type = '.py'
 
 
 class MixedSrcLayoutValidPy(PrivateSFRTester):
     dataset_name = 'mixed_src_layout_valid'
-    file_type = sfr.SetupFileType.PY
+    file_type = '.py'
 
 
 class MixedSrcLayoutValidCfg(PrivateSFRTester):
     dataset_name = 'mixed_src_layout_valid'
-    file_type = sfr.SetupFileType.CFG
+    file_type = '.cfg'
 
 
 class MixedSrcLayoutCSEOverride(PrivateSFRTester):
     dataset_name = 'mixed_src_layout_cse_override'
-    file_type = sfr.SetupFileType.PY
+    file_type = '.py'
 
 
 class PublicSFRTester(unittest.TestCase):
     file_types = {
-        '.cfg': sfr.SetupFileType.CFG,
-        '.py': sfr.SetupFileType.PY
+        '.cfg': '.cfg',
+        '.py': '.py'
     }
 
     base_path = Path(__file__).parent.absolute() / 'test_case_data' / \
@@ -140,9 +140,9 @@ class PublicSFRTester(unittest.TestCase):
         cfg_setup_info = public_sfr_cfg.get_setup_info()
         py_setup_info = public_sfr_py.get_setup_info()
         assert cfg_setup_info ==\
-               private_data[sfr.SetupFileType.CFG]['format_matched']
+               private_data['.cfg']['format_matched']
         assert py_setup_info ==\
-               private_data[sfr.SetupFileType.PY]['format_matched']
+               private_data['.py']['format_matched']
 
     def test_all_cases(self):
         for test_case in self.test_case_data:

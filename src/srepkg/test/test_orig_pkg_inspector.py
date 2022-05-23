@@ -92,14 +92,14 @@ class TestOPI(unittest.TestCase):
     @property
     def expected_data(self):
         return {
-            sfr.SetupFileType.CFG: getattr(
+            '.cfg': getattr(
                 ev,
                 self.dataset_name
-            )[sfr.SetupFileType.CFG]['format_matched'],
-            sfr.SetupFileType.PY: getattr(
+            )['.cfg']['format_matched'],
+            '.py': getattr(
                 ev,
                 self.dataset_name
-            )[sfr.SetupFileType.PY]['format_matched']
+            )['.py']['format_matched']
         }
 
     def setUp(self) -> None:
@@ -108,23 +108,23 @@ class TestOPI(unittest.TestCase):
     def test_get_all_setup_data(self):
         self._orig_pkg_inspector._get_all_setup_data()
         assert self._orig_pkg_inspector._all_setup_data['setup.cfg'] == \
-               self.expected_data[sfr.SetupFileType.CFG]
+               self.expected_data['.cfg']
         assert self._orig_pkg_inspector._all_setup_data['setup.py'] == \
-               self.expected_data[sfr.SetupFileType.PY]
+               self.expected_data['.py']
 
     def test_merge_all_setup_data(self):
         self._orig_pkg_inspector._get_all_setup_data()._merge_all_setup_data()
 
         assert self._orig_pkg_inspector._merged_data == {
-            **self.expected_data[sfr.SetupFileType.CFG],
-            **self.expected_data[sfr.SetupFileType.PY]
+            **self.expected_data['.cfg'],
+            **self.expected_data['.py']
         }
 
     def test_get_orig_pkg_info(self):
         orig_pkg_info = self._orig_pkg_inspector.get_orig_pkg_info()
         expected_merged_data = {
-            **self.expected_data[sfr.SetupFileType.CFG],
-            **self.expected_data[sfr.SetupFileType.PY]
+            **self.expected_data['.cfg'],
+            **self.expected_data['.py']
         }
         assert orig_pkg_info.pkg_name == expected_merged_data['name']
         assert orig_pkg_info.root_path == self._orig_pkg_inspector. \
@@ -159,9 +159,9 @@ class TestOPIFullPkgTNonSrc(TestOPI):
         'package_test_cases'
     full_expected_data = getattr(ecd, dataset_name)
     expected_data = {
-        sfr.SetupFileType.CFG: full_expected_data[sfr.SetupFileType.CFG][
+        '.cfg': full_expected_data['.cfg'][
             'format_matched'],
-        sfr.SetupFileType.PY: full_expected_data[sfr.SetupFileType.PY][
+        '.py': full_expected_data['.py'][
             'format_matched']
     }
 

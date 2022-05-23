@@ -17,9 +17,6 @@ def calc_test_paths(pkg_root: Path = test_case_data.package_test_cases.t_proj_in
     args = ci.get_args([str(pkg_root)])
 
     orig_pkg_info = opi.OrigPkgInspector(args.orig_pkg_path).get_orig_pkg_info()
-        # ._validate_orig_pkg_path() \
-        # .validate_setup_cfg() \
-        # .get_orig_pkg_info()
 
     builder_paths_calculator = pc.BuilderPathsCalculator(
         orig_pkg_info, args.srepkg_name)
