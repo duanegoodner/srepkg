@@ -1,14 +1,11 @@
-from srepkg.shared_utils.named_tuples import CSEntry
-from srepkg.setup_file_reader import SetupFileType
+import srepkg.shared_utils.ep_console_script as epcs
 
 file_type_only = {
     '.cfg': {
-        'raw': {}, 'filtered': {}, 'format_matched': {},
-        'final_data': {'file_type': '.cfg'}
+        'raw': {}, 'filtered': {}, 'format_matched': {}
     },
     '.py': {
-        'raw': {}, 'filtered': {}, 'format_matched': {},
-        'final_data': {'file_type': '.py'}
+        'raw': {}, 'filtered': {}, 'format_matched': {}
     }
 }
 
@@ -44,18 +41,7 @@ match_src_layout = {
             'console_scripts': [
                 'my_project = testproj.app:run',
                 'my_test = testproj.test:simple_test'
-            ]},
-        'final_data': {
-            'name': 'testproj',
-            'package_dir': {
-                '': 'src'
-            },
-            'console_scripts': [
-                'my_project = testproj.app:run',
-                'my_test = testproj.test:simple_test'
-            ],
-            'file_type': '.cfg'
-        }
+            ]}
     },
     '.py': {
         'raw': {
@@ -87,12 +73,6 @@ match_src_layout = {
             'name': 'testproj', 'package_dir': {'': 'src'},
             'console_scripts': ['my_project = testproj.app:run',
                                 'my_test = testproj.test:simple_test']
-        },
-        'final_data': {
-            'name': 'testproj', 'package_dir': {'': 'src'},
-            'console_scripts': ['my_project = testproj.app:run',
-                                'my_test = testproj.test:simple_test'],
-            'file_type': '.py'
         }
     }
 }
@@ -120,15 +100,7 @@ match_non_src_layout = {
             'console_scripts': [
                 'my_project = testproj.app:run',
                 'my_test = testproj.test:simple_test'
-            ]},
-        'final_data': {
-            'name': 'testproj',
-            'console_scripts': [
-                'my_project = testproj.app:run',
-                'my_test = testproj.test:simple_test'
-            ],
-            'file_type': '.cfg'
-        }
+            ]}
     },
     '.py': {
         'raw': {
@@ -157,12 +129,6 @@ match_non_src_layout = {
             'name': 'testproj',
             'console_scripts': ['my_project = testproj.app:run',
                                 'my_test = testproj.test:simple_test']
-        },
-        'final_data': {
-            'name': 'testproj',
-            'console_scripts': ['my_project = testproj.app:run',
-                                'my_test = testproj.test:simple_test'],
-            'file_type': '.py'
         }
     }
 }
@@ -171,8 +137,7 @@ src_layout_no_cfg = {
     '.cfg': {
         'raw': {},
         'filtered': {},
-        'format_matched': {},
-        'final_data': {'file_type': '.cfg'}
+        'format_matched': {}
     },
     '.py': match_src_layout['.py']
 }
@@ -180,8 +145,7 @@ src_layout_no_cfg = {
 src_layout_no_py = {
     '.cfg': match_src_layout['.cfg'],
     '.py': {
-        'raw': {}, 'filtered': {}, 'format_matched': {},
-        'final_data': {'file_type': '.py'}
+        'raw': {}, 'filtered': {}, 'format_matched': {}
     }
 }
 
@@ -208,15 +172,7 @@ mixed_src_layout_valid = {
             'console_scripts': [
                 'my_project = testproj.app:run',
                 'my_test = testproj.test:simple_test'
-            ]},
-        'final_data': {
-            'name': 'testproj',
-            'console_scripts': [
-                'my_project = testproj.app:run',
-                'my_test = testproj.test:simple_test'
-            ],
-            'file_type': '.cfg'
-        }
+            ]}
     },
     '.py': {
         'raw': {
@@ -238,10 +194,6 @@ mixed_src_layout_valid = {
         },
         'format_matched': {
             'name': 'testproj', 'package_dir': {'': 'src'}
-        },
-        'final_data': {
-            'name': 'testproj', 'package_dir': {'': 'src'},
-            'file_type': '.py'
         }
     }
 }
@@ -278,18 +230,28 @@ mixed_src_layout_cse_override = {
             'console_scripts': [
                 'my_project = testproj.app:bad_run',
                 'my_test = testproj.test:bad_test'
-            ]},
-        'final_data': {
-            'name': 'testproj',
-            'package_dir': {
-                '': 'src'
-            },
-            'console_scripts': [
-                'my_project = testproj.app:bad_run',
-                'my_test = testproj.test:bad_test'
-            ],
-            'file_type': '.cfg'
-        }
+            ]}
     },
     '.py': match_src_layout['.py']
 }
+
+
+def get_final_data(file_type_dataset: dict):
+    """
+    Helper function for use with testing.
+    file_type_dataset is one of above dicts' '.py' or '.cfg' entries
+    """
+    exact_item_keys = ['name', 'package_dir']
+    pre_final_data = file_type_dataset['format_matched']
+    final_data = {key: pre_final_data[key] for key in exact_item_keys if key in
+                  pre_final_data}
+    if 'console_scripts' in pre_final_data:
+        final_data['console_scripts'] = [
+            epcs.parse_cs_line(entry) for entry in
+            pre_final_data['console_scripts']
+        ]
+
+    return final_data
+
+
+get_final_data(match_non_src_layout['.py'])

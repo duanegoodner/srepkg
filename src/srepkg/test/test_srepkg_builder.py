@@ -14,13 +14,12 @@ class TestSrepkgBuilder(unittest.TestCase):
             shutil.rmtree(
                 test_case_data.package_test_cases.t_proj_srepkg_info.srepkg_root)
 
-        self.builder_src_paths, self.builder_dest_paths, \
-            self.inner_pkg_src = tpc.calc_test_paths(
+        self.builder_src_paths, self.builder_dest_paths =\
+            tpc.calc_test_paths(
                 self.orig_pkg_root)
         self.srepkg_builder = sb.SrepkgBuilder(
             tpc.calc_test_paths.locals['orig_pkg_info'],
-            self.builder_src_paths, self.builder_dest_paths,
-            self.inner_pkg_src)
+            self.builder_src_paths, self.builder_dest_paths)
 
     def tearDown(self) -> None:
         if test_case_data.package_test_cases.t_proj_srepkg_info.test_srepkg_pkgs_dir.\

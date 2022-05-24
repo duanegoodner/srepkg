@@ -2,8 +2,8 @@ import abc
 import unittest
 from pathlib import Path
 
-import src.srepkg.setup_file_reader as sfr
-import src.srepkg.test.test_case_data.setup_files.sfr_expected_output as ev
+import srepkg.setup_file_reader as sfr
+import srepkg.test.test_case_data.setup_files.sfr_expected_output as ev
 
 
 class PrivateSFRTester(unittest.TestCase):
@@ -61,7 +61,8 @@ class PrivateSFRTester(unittest.TestCase):
 
     def test_get_data(self):
         setup_info = self._file_reader.get_setup_info()
-        assert setup_info == self.expected_vals['format_matched']
+
+        assert setup_info == ev.get_final_data(self.expected_vals)
 
 
 class MatchSrcLayoutPy(PrivateSFRTester):
@@ -139,10 +140,8 @@ class PublicSFRTester(unittest.TestCase):
         public_sfr_py = sfr.SetupFileReader(py_setup_file)
         cfg_setup_info = public_sfr_cfg.get_setup_info()
         py_setup_info = public_sfr_py.get_setup_info()
-        assert cfg_setup_info ==\
-               private_data['.cfg']['format_matched']
-        assert py_setup_info ==\
-               private_data['.py']['format_matched']
+        assert cfg_setup_info == ev.get_final_data(private_data['.cfg'])
+        assert py_setup_info == ev.get_final_data(private_data['.py'])
 
     def test_all_cases(self):
         for test_case in self.test_case_data:

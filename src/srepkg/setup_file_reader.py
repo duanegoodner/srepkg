@@ -84,14 +84,15 @@ class _SetupFileReader(abc.ABC):
         return self
 
     def _cs_lists_to_cse_objs(self):
-        if self._data['console_scripts'] and \
-                (type(self._data['console_scripts']) == str):
+        if ('console_scripts' in self._data) and self._data['console_scripts']:
             cse_list = [su.ep_console_script.parse_cs_line(entry) for entry in
                         self._data['console_scripts']]
             self._data['console_scripts'] = cse_list
+        return self
 
     def get_setup_info(self):
-        self._read_raw_data()._filter_raw_data()._match_to_py_format()
+        self._read_raw_data()._filter_raw_data()._match_to_py_format()\
+            ._cs_lists_to_cse_objs()
         return self._data
 
 
@@ -218,35 +219,3 @@ class SetupFileReader:
             return
 
         return self._implemented_reader.get_setup_info()
-
-
-class SetupFileInfo:
-
-    def __init__(self, name: str = None, package_dir=None,
-                 console_scripts=None):
-        if console_scripts is None:
-            console_scripts = []
-        if package_dir is None:
-            package_dir = {}
-        self._name = name
-        self._package_dir = package_dir
-        self._console_scripts = console_scripts
-
-    def __eq__(self, other):
-        return self.__dict__ == other.__dict__
-
-    @property
-    def name(self):
-        return self._name
-
-    @property
-    def package_dir(self):
-        return self._package_dir
-
-    @property
-    def console_scripts(self):
-        return self._console_scripts
-
-    def _validate_package_dir(self):
-        if '' in self._package_dir and len(self._package_dir) > 1:
-            sys.exit(SetupInfoError.InvalidPkgDirValue.msg)

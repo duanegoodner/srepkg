@@ -66,8 +66,7 @@ class SrepkgBuilder:
 
     def __init__(self, orig_pkg_info: su.named_tuples.OrigPkgInfo,
                  src_paths: su.named_tuples.BuilderSrcPaths,
-                 repkg_paths: su.named_tuples.BuilderDestPaths,
-                 inner_pkg_src: Path):
+                 repkg_paths: su.named_tuples.BuilderDestPaths):
         """
         Construct a new SrepkgBuilder
         :param src_paths: BuilderSrcPaths namedtuple
@@ -77,19 +76,13 @@ class SrepkgBuilder:
         self._orig_pkg_info = orig_pkg_info
         self._src_paths = src_paths
         self._repkg_paths = repkg_paths
-        self._inner_pkg_src = inner_pkg_src
+        # self._inner_pkg_src = inner_pkg_src
         self._template_file_writer = TemplateFileWriter(
             substitution_map={
                 'inner_pkg_name': self._orig_pkg_info.pkg_name,
                 'sre_pkg_name': self._repkg_paths.srepkg.name,
             }
         )
-
-    # @property
-    # def inner_pkg_src(self):
-    #     return self._repkg_paths.srepkg / \
-    #            self._orig_pkg_info.package_dir_path.relative_to(
-    #                self._orig_pkg_info.root_path) / self._orig_pkg_info.pkg_name
 
     @property
     def orig_pkg_info(self):
@@ -102,13 +95,6 @@ class SrepkgBuilder:
     @property
     def repkg_paths(self):
         return self._repkg_paths
-
-    # @property
-    # def pkg_names_subs(self):
-    #     return {
-    #         'inner_pkg_name': self._orig_pkg_info.pkg_name,
-    #         'sre_pkg_name': self._repkg_paths.srepkg.name,
-    #     }
 
     def copy_inner_package(self):
         """Copies original package to SRE-package directory"""
@@ -135,7 +121,7 @@ class SrepkgBuilder:
         return su.named_tuples.CSEntry(
             command=orig_cse.command,
             module_path=self._repkg_paths.srepkg.name + '.' +
-                        self._repkg_paths.srepkg_entry_points.name + '.' + orig_cse.command,
+            self._repkg_paths.srepkg_entry_points.name + '.' + orig_cse.command,
             funct='entry_funct'
         )
 
@@ -202,49 +188,6 @@ class SrepkgBuilder:
         for entry_pt in self._orig_pkg_info.entry_pts:
             self.write_entry_point_file(entry_pt)
 
-    def reroute_dash_m_entry(self):
-
-        if not self._orig_pkg_info.has_main:
-            return
-
-        inner_main =\
-            self._inner_pkg_src / '__main__.py'
-
-        inner_main_orig = inner_main.parent / 'orig_main.py'
-
-        inner_main.rename(inner_main_orig)
-
-        shutil.copy2(self._src_paths.main_inner, inner_main)
-
-        pkg_names_inner = inner_main.parent / 'pkg_names.py'
-
-        self._template_file_writer.write_file(
-            template_file=self._src_paths.pkg_names_template,
-            dest_path=pkg_names_inner)
-
-        self.rebuild_inner_cfg_cse()
-
-    def rebuild_inner_cs_lines(self):
-        orig_inner_main = self._orig_pkg_info.pkg_name + '.' + '__main__'
-
-        return [
-            su.ep_console_script.build_cs_line(entry_pt) if
-            entry_pt.module_path != orig_inner_main else
-            su.ep_console_script.build_cs_line(
-                entry_pt, with_redirect=True,
-                new_path=self._orig_pkg_info.pkg_name + '.' + 'orig_main')
-            for entry_pt in self._orig_pkg_info.entry_pts
-        ]
-
-    def rebuild_inner_cfg_cse(self):
-        inner_config = configparser.ConfigParser()
-        inner_config.read(self._repkg_paths.inner_setup_cfg_inactive)
-        inner_config['options.entry_points']['console_scripts'] = \
-            '\n' + '\n'.join(self.rebuild_inner_cs_lines())
-        with open(self._repkg_paths.inner_setup_cfg_inactive,
-                  'w') as inner_cf_file:
-            inner_config.write(inner_cf_file)
-
     def build_srepkg_layer(
             self,
             call_methods: List[Callable] = None,
@@ -266,8 +209,7 @@ class SrepkgBuilder:
     def build_inner_layer(self):
         self.build_srepkg_layer(
             call_methods=[self.copy_inner_package,
-                          self.inner_pkg_setup_off,
-                          self.reroute_dash_m_entry])
+                          self.inner_pkg_setup_off])
 
     def build_mid_layer(self):
         self.build_srepkg_layer(

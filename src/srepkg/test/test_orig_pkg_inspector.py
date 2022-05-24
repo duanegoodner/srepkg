@@ -92,14 +92,8 @@ class TestOPI(unittest.TestCase):
     @property
     def expected_data(self):
         return {
-            '.cfg': getattr(
-                ev,
-                self.dataset_name
-            )['.cfg']['format_matched'],
-            '.py': getattr(
-                ev,
-                self.dataset_name
-            )['.py']['format_matched']
+            '.cfg': ev.get_final_data(getattr(ev, self.dataset_name)['.cfg']),
+            '.py': ev.get_final_data(getattr(ev, self.dataset_name)['.py'])
         }
 
     def setUp(self) -> None:
@@ -156,26 +150,9 @@ class TestOPISrcLayoutNoPy(TestOPI):
 class TestOPIFullPkgTNonSrc(TestOPI):
     dataset_name = 't_nonsrc'
     base_dir = Path(__file__).parent.absolute() / 'test_case_data' / \
-        'package_test_cases'
+               'package_test_cases'
     full_expected_data = getattr(ecd, dataset_name)
     expected_data = {
-        '.cfg': full_expected_data['.cfg'][
-            'format_matched'],
-        '.py': full_expected_data['.py'][
-            'format_matched']
+        '.cfg': ev.get_final_data(full_expected_data['.cfg']),
+        '.py': ev.get_final_data(full_expected_data['.py'])
     }
-
-# def test_valid_pkg_with_cse():
-#     orig_pkg_info = opi.OrigPkgInspector(
-#         test_case_data.package_test_cases.t_proj_info.pkg_root) \
-#         .validate_orig_pkg_path() \
-#         .validate_setup_cfg() \
-#         .get_orig_pkg_info()
-#
-#     assert orig_pkg_info.pkg_name == test_case_data.package_test_cases.t_proj_info. \
-#         pkg_name
-#     assert orig_pkg_info.root_path == test_case_data.package_test_cases.t_proj_info. \
-#         pkg_root
-#     assert orig_pkg_info.entry_pts.sort(key=attrgetter('command')) == \
-#            test_case_data.package_test_cases.t_proj_info.cse_list.sort(
-#                key=attrgetter('command'))
