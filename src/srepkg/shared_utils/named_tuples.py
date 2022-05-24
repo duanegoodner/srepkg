@@ -13,9 +13,7 @@ class CSEntry(NamedTuple):
 class OrigPkgInfo(NamedTuple):
     pkg_name: str
     root_path: Path
-    # package_dir_path: Path
     entry_pts: List[CSEntry]
-    # has_main: bool
 
 
 class SrePkgInfo(NamedTuple):

@@ -249,6 +249,18 @@ class SrepkgBuilder:
                     dest=self._repkg_paths.manifest)
             ])
 
+    def output_summary(self):
+        print(f'Original package \'{self._orig_pkg_info.pkg_name}\' has been '
+              f're-packaged as \'{self._repkg_paths.srepkg.name}\'\n')
+        print(f'The re-packaged version has been saved in:\n'
+              f'{self._repkg_paths.root}\n')
+        print(f'\'{self._repkg_paths.srepkg.name}\' can be installed using:\n'
+              f'\'pip install {self._repkg_paths.root}\'\n')
+        print(f'After installation, \'{self._repkg_paths.srepkg.name}\' will '
+              f'provide command line access to the following commands:')
+        for cse in self._orig_pkg_info.entry_pts:
+            print(cse.command)
+
     def build_srepkg(self):
         """
         Encapsulates all steps needed to build SRE-package, and displays
@@ -258,7 +270,4 @@ class SrepkgBuilder:
         self.build_inner_layer()
         self.build_mid_layer()
         self.build_outer_layer()
-
-        print(f'SRE-package built from:'
-              f'{self._orig_pkg_info.root_path / self._orig_pkg_info.pkg_name}'
-              f'\nRE-package saved in: {self._repkg_paths.root}\n')
+        self.output_summary()

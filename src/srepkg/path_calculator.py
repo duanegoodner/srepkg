@@ -61,8 +61,7 @@ class BuilderPathsCalculator:
 
         builder_dest_structure = pb.file_structures.get_builder_dest(
             root_name=srepkg_info.root_path.name,
-            srepkg_name=srepkg_info.pkg_name,
-            inner_pkg_name=self._orig_pkg_info.pkg_name)
+            srepkg_name=srepkg_info.pkg_name)
 
         dest_file_util = pb.class_builder.FileStructureUtil(
             file_struct=builder_dest_structure,

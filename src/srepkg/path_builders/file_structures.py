@@ -32,8 +32,7 @@ repackaging_components = \
 
 
 def get_builder_dest(root_name: str = 'dummy_root',
-                     srepkg_name: str = 'dummy_srepkg',
-                     inner_pkg_name: str = 'dummy_inner_pkg'):
+                     srepkg_name: str = 'dummy_srepkg'):
     return [
         SCD(pname=root_name, sc='root', contents=[
             SCD(pname=srepkg_name, sc='srepkg', contents=[
@@ -54,12 +53,6 @@ def get_builder_dest(root_name: str = 'dummy_root',
                     ]),
                 # path to inner_pkg depends on orig_pkg file structure so don't
                 # even try to predict it here.
-                # SCD(pname=inner_pkg_name, sc='inner_pkg', contents=[
-                #     SCF(pname='__main__.py', sc='main_inner'),
-                #
-                #     SCF(pname='orig_main.py', sc='main_inner_orig'),
-                #     SCF(pname='pkg_names.py', sc='pkg_names_inner')
-                # ]),
                 SCF(pname='__init__.py', sc='srepkg_init'),
                 SCF(pname='__main__.py', sc='main_outer'),
                 SCF(pname='pkg_names.py', sc='pkg_names_mid'),

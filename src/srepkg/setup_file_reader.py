@@ -112,8 +112,6 @@ class _SetupCfgFileReader(_SetupFileReader):
             config.read(self._setup_file)
         except (configparser.ParsingError,
                 configparser.MissingSectionHeaderError):
-            # TODO consider changing this to just a warning
-            # sys.exit(SetupFileReaderError.SetupCfgReadError.msg)
             warnings.warn(
                 SetupFileReaderError.SetupCfgReadError.msg,
                 UserWarning)
@@ -150,7 +148,7 @@ class _SetupCfgFileReader(_SetupFileReader):
                 else:
                     sys.exit(SetupFileReaderError.InvalidPackageDirValue.msg)
 
-                # guard against repeat entry (val overwrite) of key already in dict
+                # guard against repeat entry of key already in dict
                 if pkg_name in dir_dict:
                     sys.exit(SetupFileReaderError.InvalidPackageDirValue.msg)
                 else:

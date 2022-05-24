@@ -74,19 +74,6 @@ def create_builder_paths_class_files():
     dest_files_util.build_paths_class(class_name='BuilderDestPaths',
                                       write_file_path=builder_dest_class_file)
 
-    # src_names, src_paths = file_structure_walk(
-    #     fs.repackaging_components, Path(__file__).parent.parent.absolute() /
-    #     'repackaging_components')
-    # builder_src_paths_path = Path(__file__).parent.parent.absolute() / \
-    #     'shared_utils' / 'builder_src_paths.py'
-    # build_paths_class(src_names, 'BuilderSrcPaths', builder_src_paths_path)
-    #
-    # dest_names, dest_paths = file_structure_walk(fs.get_builder_dest(),
-    #                                              Path('srepkg_pkgs'))
-    # builder_dest_paths_path = Path(__file__).parent.parent.absolute() / \
-    #     'shared_utils' / 'builder_dest_paths.py'
-    # build_paths_class(dest_names, 'BuilderDestPaths', builder_dest_paths_path)
-
 
 if __name__ == '__main__':
     create_builder_paths_class_files()
