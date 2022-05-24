@@ -176,11 +176,13 @@ class SrepkgBuilder:
         inside the SRE-package.
         """
 
-        self._repkg_paths.inner_setup_py_active.rename(
-            self._repkg_paths.inner_setup_py_inactive)
+        if self._repkg_paths.inner_setup_py_active.exists():
+            self._repkg_paths.inner_setup_py_active.rename(
+                self._repkg_paths.inner_setup_py_inactive)
 
-        self._repkg_paths.inner_setup_cfg_active.rename(
-            self._repkg_paths.inner_setup_cfg_inactive)
+        if self._repkg_paths.inner_setup_cfg_active.exists():
+            self._repkg_paths.inner_setup_cfg_active.rename(
+                self._repkg_paths.inner_setup_cfg_inactive)
 
     def build_srepkg_entry_pts(self):
         self._repkg_paths.srepkg_entry_points.mkdir()
