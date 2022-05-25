@@ -5,7 +5,7 @@ package.
 """
 import sys
 from pathlib import Path
-import srepkg.shared_utils as su
+import custom_datatypes as cd
 import srepkg.path_builders as pb
 
 
@@ -21,7 +21,7 @@ class BuilderPathsCalculator:
     auto_srepkg_suffix = 'srepkg'
 
     def __init__(self,
-                 orig_pkg_info: su.named_tuples.OrigPkgInfo,
+                 orig_pkg_info: cd.named_tuples.OrigPkgInfo,
                  srepkg_custom_name: str = None):
 
         self._orig_pkg_info = orig_pkg_info
@@ -33,10 +33,7 @@ class BuilderPathsCalculator:
             root_path=self._repackaging_components)
         src_paths = src_files_util.get_path_names()
 
-        # src_names, src_paths = pb.class_builder.file_structure_walk(
-        #     file_structure=pb.file_structures.repackaging_components,
-        #     root_path=self._repackaging_components)
-        return su.named_tuples.BuilderSrcPaths(*src_paths)
+        return cd.named_tuples.BuilderSrcPaths(*src_paths)
 
     def get_sre_pkg_info(self):
 
@@ -52,8 +49,8 @@ class BuilderPathsCalculator:
             err_msg = f'Destination path {str(dest_root_path)} already exists'
             sys.exit(err_msg)
 
-        return su.named_tuples.SrePkgInfo(pkg_name=srepkg_name,
-                                          root_path=dest_root_path)
+        return cd.named_tuples.SrePkgInfo(pkg_name=srepkg_name,
+                                                        root_path=dest_root_path)
 
     def calc_dest_paths(self):
 
@@ -70,14 +67,10 @@ class BuilderPathsCalculator:
 
         dest_paths = dest_file_util.get_path_names()
 
-        return su.named_tuples.BuilderDestPaths(*dest_paths)
+        return cd.named_tuples.BuilderDestPaths(*dest_paths)
 
     def calc_builder_paths(self):
         src_paths = self.calc_src_paths()
         dest_paths = self.calc_dest_paths()
-        # inner_pkg_src = \
-        #     dest_paths.srepkg / self._orig_pkg_info.package_dir_path. \
-        #     relative_to(self._orig_pkg_info.root_path) / \
-        #     self._orig_pkg_info.pkg_name
 
-        return src_paths, dest_paths#, inner_pkg_src
+        return src_paths, dest_paths

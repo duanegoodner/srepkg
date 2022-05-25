@@ -1,4 +1,4 @@
-import srepkg.shared_utils.ep_console_script as epcs
+import srepkg.setup_file_reader as sfr
 
 file_type_only = {
     '.cfg': {
@@ -247,7 +247,7 @@ def get_final_data(file_type_dataset: dict):
                   pre_final_data}
     if 'console_scripts' in pre_final_data:
         final_data['console_scripts'] = [
-            epcs.parse_cs_line(entry) for entry in
+            sfr._SetupFileReader._parse_cs_line(entry) for entry in
             pre_final_data['console_scripts']
         ]
 

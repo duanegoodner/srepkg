@@ -37,7 +37,7 @@ class FileStructureUtil:
         return file_structure_walk(self._file_struct, self._root_path)[1]
 
     def build_paths_class(self, class_name: str, write_file_path: Path):
-        shortcut_names= self.get_sc_names()
+        shortcut_names = self.get_sc_names()
         with write_file_path.open(mode='w') as class_file:
             class_file.write('from typing import NamedTuple\n'
                              'from pathlib import Path\n\n\n'
@@ -46,31 +46,21 @@ class FileStructureUtil:
                 class_file.write(f'    {name}: Path\n')
 
 
-def build_paths_class(shortcut_names: List[str], class_name: str,
-                      write_path: Path):
-    with write_path.open(mode='w') as class_file:
-        class_file.write('from typing import NamedTuple\n'
-                         'from pathlib import Path\n\n\n'
-                         f'class {class_name}(NamedTuple):\n')
-        for name in shortcut_names:
-            class_file.write(f'    {name}: Path\n')
-
-
 def create_builder_paths_class_files():
     src_files_util = FileStructureUtil(
         file_struct=fs.repackaging_components,
         root_path=Path(__file__).parent.parent.absolute() /
         'repackaging_components')
-    builder_src_class_file = Path(__file__).parent.parent.absolute() / \
-        'shared_utils' / 'builder_src_paths.py'
+    builder_src_class_file = Path(__file__).parent.parent.parent.absolute() / \
+        'custom_datatypes' / 'builder_src_paths.py'
     src_files_util.build_paths_class(class_name='BuilderSrcPaths',
                                      write_file_path=builder_src_class_file)
 
     dest_files_util = FileStructureUtil(
         file_struct=fs.get_builder_dest(), root_path=Path('srepkg_pkgs')
     )
-    builder_dest_class_file = Path(__file__).parent.parent.absolute() / \
-        'shared_utils' / 'builder_dest_paths.py'
+    builder_dest_class_file = Path(__file__).parent.parent.parent.absolute() / \
+        'custom_datatypes' / 'builder_dest_paths.py'
     dest_files_util.build_paths_class(class_name='BuilderDestPaths',
                                       write_file_path=builder_dest_class_file)
 

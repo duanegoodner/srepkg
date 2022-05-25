@@ -11,8 +11,8 @@ import string
 import shutil
 import sys
 import configparser
-import srepkg.shared_utils as su
 import srepkg.entry_points_builder as epb
+import custom_datatypes as cd
 
 
 class SrepkgBuilderErrorMsg(NamedTuple):
@@ -65,9 +65,9 @@ class SrepkgBuilder:
     _ignore_types = ['*.git', '*.gitignore', '*.idea', '*__pycache__']
     _build_errors = SrepkgBuilderErrors
 
-    def __init__(self, orig_pkg_info: su.named_tuples.OrigPkgInfo,
-                 src_paths: su.named_tuples.BuilderSrcPaths,
-                 repkg_paths: su.named_tuples.BuilderDestPaths):
+    def __init__(self, orig_pkg_info: cd.named_tuples.OrigPkgInfo,
+                 src_paths: cd.named_tuples.BuilderSrcPaths,
+                 repkg_paths: cd.named_tuples.BuilderDestPaths):
         """
         Construct a new SrepkgBuilder
         :param src_paths: BuilderSrcPaths namedtuple
@@ -122,26 +122,11 @@ class SrepkgBuilder:
         except FileExistsError:
             sys.exit(self._build_errors.ControlComponentsExist.msg)
 
-    def orig_cse_to_sr_cse(self, orig_cse: su.named_tuples.CSEntry):
-        return su.named_tuples.CSEntry(
-            command=orig_cse.command,
-            module_path=self._repkg_paths.srepkg.name + '.' +
-                        self._repkg_paths.srepkg_entry_points.name + '.' + orig_cse.command,
-            funct='entry_funct'
-        )
-
     def build_sr_cfg(self):
         sr_config = configparser.ConfigParser()
         sr_config.read(self._src_paths.srepkg_setup_cfg)
 
-        # sr_config_ep_cs_list = [self.orig_cse_to_sr_cse(orig_cse) for orig_cse
-        #                         in self._orig_pkg_info.entry_pts]
-        # sr_config_cs_lines = [su.ep_console_script.build_cs_line(sr_cse) for
-        #                       sr_cse in sr_config_ep_cs_list]
-        # sr_config['options.entry_points']['console_scripts'] = \
-        #     '\n' + '\n'.join(sr_config_cs_lines)
-
-        sr_config['options.entry_points']['console_scripts'] =\
+        sr_config['options.entry_points']['console_scripts'] = \
             self._entry_points_builder.get_cfg_cse_str()
 
         sr_config['metadata']['name'] = self._repkg_paths.srepkg.name
@@ -149,22 +134,11 @@ class SrepkgBuilder:
         with open(self._repkg_paths.srepkg_setup_cfg, 'w') as sr_configfile:
             sr_config.write(sr_configfile)
 
-    def write_entry_point_file(self, orig_cse: su.named_tuples.CSEntry):
+    def write_entry_point_file(self, orig_cse: cd.named_tuples.CSEntry):
 
         shutil.copy2(self._src_paths.entry_point_template,
                      self._repkg_paths.srepkg_entry_points /
                      (orig_cse.command + '.py'))
-
-    def write_entry_point_init(self):
-        entry_pt_imports = [
-            f'import {self._repkg_paths.srepkg.name}.srepkg_entry_points.'
-            f'{cse.command}' for cse in self._orig_pkg_info.entry_pts
-        ]
-
-        with open(self._repkg_paths.srepkg_entry_points_init, 'w') as ent_init:
-            for import_entry in entry_pt_imports:
-                ent_init.write(import_entry + '\n')
-            ent_init.write('\n')
 
     def simple_file_copy(self, src_dest: SrcDestPair):
         """Copies file from source to SRE-package based on attribute name
@@ -192,13 +166,6 @@ class SrepkgBuilder:
         if self._repkg_paths.inner_setup_cfg_active.exists():
             self._repkg_paths.inner_setup_cfg_active.rename(
                 self._repkg_paths.inner_setup_cfg_inactive)
-
-    # def build_srepkg_entry_pts(self):
-    #     self._entry_points_builder.build_entry_pts()
-        # self._repkg_paths.srepkg_entry_points.mkdir()
-        # self.write_entry_point_init()
-        # for entry_pt in self._orig_pkg_info.entry_pts:
-        #     self.write_entry_point_file(entry_pt)
 
     def build_srepkg_layer(
             self,

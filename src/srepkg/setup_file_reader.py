@@ -7,21 +7,21 @@ from enum import Enum, auto
 from typing import NamedTuple, List
 from pathlib import Path
 from unittest import mock
-import srepkg.shared_utils as su
+import custom_datatypes as cd
 
 
-class SetupFileReaderError(su.nt.ErrorMsg, Enum):
-    SetupCfgReadError = su.nt.ErrorMsg(
+class SetupFileReaderError(cd.nt.ErrorMsg, Enum):
+    SetupCfgReadError = cd.nt.ErrorMsg(
         msg='Unable to read or parse setup.cfg')
-    InvalidPackageDirValue = su.nt.ErrorMsg(
+    InvalidPackageDirValue = cd.nt.ErrorMsg(
         msg='Invalid package_dir value in [options] section of setup.cfg')
-    UnsupportedSetupFileType = su.nt.ErrorMsg(
+    UnsupportedSetupFileType = cd.nt.ErrorMsg(
         msg='Unsupported setup file type'
     )
 
 
-class SetupInfoError(su.nt.ErrorMsg, Enum):
-    InvalidPkgDirValue = su.nt.ErrorMsg(
+class SetupInfoError(cd.nt.ErrorMsg, Enum):
+    InvalidPkgDirValue = cd.nt.ErrorMsg(
         msg='Invalid value for package_dir'
     )
 
@@ -69,6 +69,16 @@ class _SetupFileReader(abc.ABC):
 
         return {**single_key_params, **two_key_nested_params}
 
+    @staticmethod
+    def _parse_cs_line(cs_line: str):
+        [command, full_call] = cs_line.split('=')
+        command = command.strip()
+        full_call = full_call.strip()
+        [module_path, funct] = full_call.split(':')
+
+        return cd.nt.CSEntry(
+            command=command, module_path=module_path, funct=funct)
+
     @abc.abstractmethod
     def _read_raw_data(self):
         return self
@@ -85,7 +95,7 @@ class _SetupFileReader(abc.ABC):
 
     def _cs_lists_to_cse_objs(self):
         if ('console_scripts' in self._data) and self._data['console_scripts']:
-            cse_list = [su.ep_console_script.parse_cs_line(entry) for entry in
+            cse_list = [self._parse_cs_line(entry) for entry in
                         self._data['console_scripts']]
             self._data['console_scripts'] = cse_list
         return self

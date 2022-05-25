@@ -3,24 +3,24 @@ from typing import NamedTuple, List
 from enum import Enum
 
 import sys
-import srepkg.shared_utils as su
+import custom_datatypes as cd
 import srepkg.setup_file_reader as sfr
 
 
-class PkgError(su.nt.ErrorMsg, Enum):
-    PkgPathNotFound = su.nt.ErrorMsg(msg='Original package path not found')
-    NoSetupFilesFound = su.nt.ErrorMsg(
+class PkgError(cd.nt.ErrorMsg, Enum):
+    PkgPathNotFound = cd.nt.ErrorMsg(msg='Original package path not found')
+    NoSetupFilesFound = cd.nt.ErrorMsg(
         msg='No setup.py file found, and no setup.cfg file found.\nsrepkg needs'
             ' at least one of these files.')
-    PkgNameNotFound = su.nt.ErrorMsg(
+    PkgNameNotFound = cd.nt.ErrorMsg(
         msg='Unable to find package name in any setup file')
-    InvalidPkgName = su.nt.ErrorMsg(msg='Invalid package name')
-    SetupCfgReadError = su.nt.ErrorMsg(msg='Unable to read or parse setup.cfg')
-    NoCSE = su.nt.ErrorMsg(msg='No console script entry points found')
+    InvalidPkgName = cd.nt.ErrorMsg(msg='Invalid package name')
+    SetupCfgReadError = cd.nt.ErrorMsg(msg='Unable to read or parse setup.cfg')
+    NoCSE = cd.nt.ErrorMsg(msg='No console script entry points found')
 
 
-class PkgWarning(su.nt.ErrorMsg, Enum):
-    SetupCfgReadError = su.nt.ErrorMsg(
+class PkgWarning(cd.nt.ErrorMsg, Enum):
+    SetupCfgReadError = cd.nt.ErrorMsg(
         msg='Problem reading setup.cfg. srepkg is unable to obtain any data '
             'from this file')
 
@@ -90,7 +90,7 @@ class OrigPkgInspector:
         self._get_all_setup_data()._merge_all_setup_data() \
             ._validate_merged_data()
 
-        return su.named_tuples.OrigPkgInfo(
+        return cd.nt.OrigPkgInfo(
             pkg_name=self._merged_data['name'],
             root_path=self._orig_pkg_path,
             entry_pts=self._merged_data['console_scripts'])

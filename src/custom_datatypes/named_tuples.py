@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import NamedTuple, List
-from srepkg.shared_utils.builder_dest_paths import BuilderDestPaths
-from srepkg.shared_utils.builder_src_paths import BuilderSrcPaths
+from custom_datatypes.builder_src_paths import BuilderSrcPaths
+from custom_datatypes.builder_dest_paths import BuilderDestPaths
 
 
 class CSEntry(NamedTuple):

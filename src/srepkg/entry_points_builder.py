@@ -1,7 +1,8 @@
 import shutil
 from pathlib import Path
 from typing import List
-import srepkg.shared_utils as su
+
+import custom_datatypes as cd
 
 
 class EntryPointsBuilder:
@@ -10,7 +11,7 @@ class EntryPointsBuilder:
     def __init__(
             self,
             srepkg_name: str,
-            orig_entry_pts: List[su.named_tuples.CSEntry],
+            orig_entry_pts: List[cd.named_tuples.CSEntry],
             entry_point_template: Path,
             srepkg_entry_pt_dir: Path):
         self._srepkg_name = srepkg_name
@@ -21,9 +22,9 @@ class EntryPointsBuilder:
     @classmethod
     def from_srepkg_builder_init_args(
             cls,
-            orig_pkg_info: su.named_tuples.OrigPkgInfo,
-            src_paths: su.named_tuples.BuilderSrcPaths,
-            repkg_paths: su.named_tuples.BuilderDestPaths):
+            orig_pkg_info: cd.named_tuples.OrigPkgInfo,
+            src_paths: cd.named_tuples.BuilderSrcPaths,
+            repkg_paths: cd.named_tuples.BuilderDestPaths):
 
         return cls(srepkg_name=repkg_paths.srepkg.name,
                    orig_entry_pts=orig_pkg_info.entry_pts,
@@ -32,7 +33,7 @@ class EntryPointsBuilder:
 
     def get_cfg_cse_str(self):
         srepkg_cse_list = [
-            su.named_tuples.CSEntry(
+            cd.named_tuples.CSEntry(
                 command=orig_cse.command,
                 module_path='.'.join([
                     self._srepkg_name, self._srepkg_entry_pt_dir.name,
