@@ -12,6 +12,7 @@ import shutil
 import sys
 import configparser
 import srepkg.shared_utils as su
+import srepkg.entry_points_builder as epb
 
 
 class SrepkgBuilderErrorMsg(NamedTuple):
@@ -76,13 +77,17 @@ class SrepkgBuilder:
         self._orig_pkg_info = orig_pkg_info
         self._src_paths = src_paths
         self._repkg_paths = repkg_paths
-        # self._inner_pkg_src = inner_pkg_src
         self._template_file_writer = TemplateFileWriter(
             substitution_map={
                 'inner_pkg_name': self._orig_pkg_info.pkg_name,
                 'sre_pkg_name': self._repkg_paths.srepkg.name,
             }
         )
+        self._entry_points_builder = epb.EntryPointsBuilder \
+            .from_srepkg_builder_init_args(
+                orig_pkg_info=orig_pkg_info,
+                src_paths=src_paths,
+                repkg_paths=repkg_paths)
 
     @property
     def orig_pkg_info(self):
@@ -121,19 +126,23 @@ class SrepkgBuilder:
         return su.named_tuples.CSEntry(
             command=orig_cse.command,
             module_path=self._repkg_paths.srepkg.name + '.' +
-            self._repkg_paths.srepkg_entry_points.name + '.' + orig_cse.command,
+                        self._repkg_paths.srepkg_entry_points.name + '.' + orig_cse.command,
             funct='entry_funct'
         )
 
     def build_sr_cfg(self):
         sr_config = configparser.ConfigParser()
         sr_config.read(self._src_paths.srepkg_setup_cfg)
-        sr_config_ep_cs_list = [self.orig_cse_to_sr_cse(orig_cse) for orig_cse
-                                in self._orig_pkg_info.entry_pts]
-        sr_config_cs_lines = [su.ep_console_script.build_cs_line(sr_cse) for
-                              sr_cse in sr_config_ep_cs_list]
-        sr_config['options.entry_points']['console_scripts'] = \
-            '\n' + '\n'.join(sr_config_cs_lines)
+
+        # sr_config_ep_cs_list = [self.orig_cse_to_sr_cse(orig_cse) for orig_cse
+        #                         in self._orig_pkg_info.entry_pts]
+        # sr_config_cs_lines = [su.ep_console_script.build_cs_line(sr_cse) for
+        #                       sr_cse in sr_config_ep_cs_list]
+        # sr_config['options.entry_points']['console_scripts'] = \
+        #     '\n' + '\n'.join(sr_config_cs_lines)
+
+        sr_config['options.entry_points']['console_scripts'] =\
+            self._entry_points_builder.get_cfg_cse_str()
 
         sr_config['metadata']['name'] = self._repkg_paths.srepkg.name
 
@@ -184,11 +193,12 @@ class SrepkgBuilder:
             self._repkg_paths.inner_setup_cfg_active.rename(
                 self._repkg_paths.inner_setup_cfg_inactive)
 
-    def build_srepkg_entry_pts(self):
-        self._repkg_paths.srepkg_entry_points.mkdir()
-        self.write_entry_point_init()
-        for entry_pt in self._orig_pkg_info.entry_pts:
-            self.write_entry_point_file(entry_pt)
+    # def build_srepkg_entry_pts(self):
+    #     self._entry_points_builder.build_entry_pts()
+        # self._repkg_paths.srepkg_entry_points.mkdir()
+        # self.write_entry_point_init()
+        # for entry_pt in self._orig_pkg_info.entry_pts:
+        #     self.write_entry_point_file(entry_pt)
 
     def build_srepkg_layer(
             self,
@@ -216,7 +226,7 @@ class SrepkgBuilder:
     def build_mid_layer(self):
         self.build_srepkg_layer(
             call_methods=[self.copy_srepkg_control_components,
-                          self.build_srepkg_entry_pts],
+                          self._entry_points_builder.build_entry_pts],
             direct_copy_files=[
                 SrcDestPair(src=self._src_paths.srepkg_init,
                             dest=self._repkg_paths.srepkg_init),
