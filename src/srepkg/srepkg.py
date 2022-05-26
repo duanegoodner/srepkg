@@ -1,7 +1,9 @@
-import srepkg.srepkg_builder as sb
+# import srepkg.srepkg_builder as sb
 import srepkg.command_input as ci
-import srepkg.orig_pkg_inspector as opi
-import srepkg.path_calculator as pc
+# import srepkg.orig_pkg_inspector as opi
+# import srepkg.path_calculator as pc
+
+import srepkg.repackager as re
 
 
 def main():
@@ -18,14 +20,18 @@ def main():
      ~/srepkg_pkgs/<orig_pkg_name>_srepkg/<srepkg_name>
     """
     args = ci.get_args()
+    re.repackage(orig_pkg_path=args.orig_pkg_path, srepkg_name=args.srepkg_name)
 
-    orig_pkg_info = opi.OrigPkgInspector(args.orig_pkg_path).get_orig_pkg_info()
 
-    builder_src_paths, builder_dest_paths = pc.BuilderPathsCalculator(
-        orig_pkg_info, args.srepkg_name).calc_builder_paths()
 
-    sb.SrepkgBuilder(orig_pkg_info, builder_src_paths,
-                     builder_dest_paths).build_srepkg()
+
+    # orig_pkg_info = opi.OrigPkgInspector(args.orig_pkg_path).get_orig_pkg_info()
+    #
+    # builder_src_paths, builder_dest_paths = pc.BuilderPathsCalculator(
+    #     orig_pkg_info, args.srepkg_name).calc_builder_paths()
+    #
+    # sb.SrepkgBuilder(orig_pkg_info, builder_src_paths,
+    #                  builder_dest_paths).build_srepkg()
 
 
 if __name__ == '__main__':

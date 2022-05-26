@@ -1,7 +1,4 @@
-from typing import NamedTuple, List
-
-SCF = NamedTuple('SCF', [('pname', str), ('sc', str)])
-SCD = NamedTuple('SCD', [('pname', str), ('sc', str), ('contents', List)])
+from custom_datatypes.named_tuples import SCF, SCD
 
 repackaging_components = \
     [SCD(pname='inner_layer', sc='inner_layer', contents=[

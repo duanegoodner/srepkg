@@ -3,10 +3,11 @@ Uses args namespace from command_input module to calculate and validate source
 and destination paths used when building a new sre-package from an existing
 package.
 """
+
 import sys
 from pathlib import Path
 import custom_datatypes as cd
-import srepkg.path_builders as pb
+import srepkg.file_structure as pb
 
 
 class BuilderPathsCalculator:
@@ -28,8 +29,8 @@ class BuilderPathsCalculator:
         self._srepkg_custom_name = srepkg_custom_name
 
     def calc_src_paths(self):
-        src_files_util = pb.class_builder.FileStructureUtil(
-            file_struct=pb.file_structures.repackaging_components,
+        src_files_util = pb.fs_util.FileStructureUtil(
+            file_struct=pb.fs_specs.repackaging_components,
             root_path=self._repackaging_components)
         src_paths = src_files_util.get_path_names()
 
@@ -50,17 +51,17 @@ class BuilderPathsCalculator:
             sys.exit(err_msg)
 
         return cd.named_tuples.SrePkgInfo(pkg_name=srepkg_name,
-                                                        root_path=dest_root_path)
+                                          root_path=dest_root_path)
 
     def calc_dest_paths(self):
 
         srepkg_info = self.get_sre_pkg_info()
 
-        builder_dest_structure = pb.file_structures.get_builder_dest(
+        builder_dest_structure = pb.fs_specs.get_builder_dest(
             root_name=srepkg_info.root_path.name,
             srepkg_name=srepkg_info.pkg_name)
 
-        dest_file_util = pb.class_builder.FileStructureUtil(
+        dest_file_util = pb.fs_util.FileStructureUtil(
             file_struct=builder_dest_structure,
             root_path=self.srepkg_pkgs_dir
         )

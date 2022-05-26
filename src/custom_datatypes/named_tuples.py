@@ -24,3 +24,7 @@ class SrePkgInfo(NamedTuple):
 class ErrorMsg(NamedTuple):
     msg: str
 
+
+SCF = NamedTuple('SCF', [('pname', str), ('sc', str)])
+SCD = NamedTuple('SCD', [('pname', str), ('sc', str), ('contents', List)])
+
