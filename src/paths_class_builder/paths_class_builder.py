@@ -23,7 +23,7 @@ class PathsClassBuilder:
                 class_file.write(f'    {name}: Path\n')
 
 
-if __name__ == '__main__':
+def build_for_srepkg():
     cd_path = Path(__file__).parent.parent.absolute() / 'custom_datatypes'
 
     PathsClassBuilder(
@@ -40,6 +40,3 @@ if __name__ == '__main__':
         class_name='BuilderDestPaths',
         write_file_path=cd_path / 'builder_dest_paths.py') \
         .write_class_file()
-
-
-

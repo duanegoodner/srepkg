@@ -23,16 +23,5 @@ def main():
     re.repackage(orig_pkg_path=args.orig_pkg_path, srepkg_name=args.srepkg_name)
 
 
-
-
-    # orig_pkg_info = opi.OrigPkgInspector(args.orig_pkg_path).get_orig_pkg_info()
-    #
-    # builder_src_paths, builder_dest_paths = pc.BuilderPathsCalculator(
-    #     orig_pkg_info, args.srepkg_name).calc_builder_paths()
-    #
-    # sb.SrepkgBuilder(orig_pkg_info, builder_src_paths,
-    #                  builder_dest_paths).build_srepkg()
-
-
 if __name__ == '__main__':
     main()
