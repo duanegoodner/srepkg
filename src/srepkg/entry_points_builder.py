@@ -2,7 +2,9 @@ import shutil
 from pathlib import Path
 from typing import List
 
-import custom_datatypes as cd
+import custom_datatypes.builder_dest_paths as bdp
+import custom_datatypes.builder_src_paths as bsp
+import custom_datatypes.named_tuples as nt
 
 
 class EntryPointsBuilder:
@@ -11,7 +13,7 @@ class EntryPointsBuilder:
     def __init__(
             self,
             srepkg_name: str,
-            orig_entry_pts: List[cd.named_tuples.CSEntry],
+            orig_entry_pts: List[nt.CSEntry],
             entry_point_template: Path,
             srepkg_entry_pt_dir: Path):
         self._srepkg_name = srepkg_name
@@ -22,9 +24,9 @@ class EntryPointsBuilder:
     @classmethod
     def from_srepkg_builder_init_args(
             cls,
-            orig_pkg_info: cd.named_tuples.OrigPkgInfo,
-            src_paths: cd.named_tuples.BuilderSrcPaths,
-            repkg_paths: cd.named_tuples.BuilderDestPaths):
+            orig_pkg_info: nt.OrigPkgInfo,
+            src_paths: bsp.BuilderSrcPaths,
+            repkg_paths: bdp.BuilderDestPaths):
 
         return cls(srepkg_name=repkg_paths.srepkg.name,
                    orig_entry_pts=orig_pkg_info.entry_pts,
@@ -33,7 +35,7 @@ class EntryPointsBuilder:
 
     def get_cfg_cse_str(self):
         srepkg_cse_list = [
-            cd.named_tuples.CSEntry(
+            nt.CSEntry(
                 command=orig_cse.command,
                 module_path='.'.join([
                     self._srepkg_name, self._srepkg_entry_pt_dir.name,

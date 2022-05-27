@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import NamedTuple, List
-from custom_datatypes.builder_src_paths import BuilderSrcPaths
-from custom_datatypes.builder_dest_paths import BuilderDestPaths
+
+# TODO divide up into more specific modules
 
 
 class CSEntry(NamedTuple):

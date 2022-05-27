@@ -6,7 +6,9 @@ package.
 
 import sys
 from pathlib import Path
-import custom_datatypes as cd
+import custom_datatypes.builder_dest_paths as bdp
+import custom_datatypes.builder_src_paths as bsp
+import custom_datatypes.named_tuples as nt
 import srepkg.file_structure as pb
 
 
@@ -22,7 +24,7 @@ class BuilderPathsCalculator:
     auto_srepkg_suffix = 'srepkg'
 
     def __init__(self,
-                 orig_pkg_info: cd.named_tuples.OrigPkgInfo,
+                 orig_pkg_info: nt.OrigPkgInfo,
                  srepkg_custom_name: str = None):
 
         self._orig_pkg_info = orig_pkg_info
@@ -34,7 +36,7 @@ class BuilderPathsCalculator:
             root_path=self._repackaging_components)
         src_paths = src_files_util.get_path_names()
 
-        return cd.named_tuples.BuilderSrcPaths(*src_paths)
+        return bsp.BuilderSrcPaths(*src_paths)
 
     def get_sre_pkg_info(self):
 
@@ -50,7 +52,7 @@ class BuilderPathsCalculator:
             err_msg = f'Destination path {str(dest_root_path)} already exists'
             sys.exit(err_msg)
 
-        return cd.named_tuples.SrePkgInfo(pkg_name=srepkg_name,
+        return nt.SrePkgInfo(pkg_name=srepkg_name,
                                           root_path=dest_root_path)
 
     def calc_dest_paths(self):
@@ -68,7 +70,7 @@ class BuilderPathsCalculator:
 
         dest_paths = dest_file_util.get_path_names()
 
-        return cd.named_tuples.BuilderDestPaths(*dest_paths)
+        return bdp.BuilderDestPaths(*dest_paths)
 
     def calc_builder_paths(self):
         src_paths = self.calc_src_paths()

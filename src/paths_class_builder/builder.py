@@ -40,3 +40,7 @@ def build_for_srepkg():
         class_name='BuilderDestPaths',
         write_file_path=cd_path / 'builder_dest_paths.py') \
         .write_class_file()
+
+
+if __name__ == '__main__':
+    build_for_srepkg()

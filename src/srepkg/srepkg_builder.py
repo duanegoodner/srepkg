@@ -12,7 +12,9 @@ import shutil
 import sys
 import configparser
 import srepkg.entry_points_builder as epb
-import custom_datatypes as cd
+import custom_datatypes.builder_src_paths as bsp
+import custom_datatypes.builder_dest_paths as bdp
+import custom_datatypes.named_tuples as nt
 
 
 class SrepkgBuilderErrorMsg(NamedTuple):
@@ -65,9 +67,9 @@ class SrepkgBuilder:
     _ignore_types = ['*.git', '*.gitignore', '*.idea', '*__pycache__']
     _build_errors = SrepkgBuilderErrors
 
-    def __init__(self, orig_pkg_info: cd.named_tuples.OrigPkgInfo,
-                 src_paths: cd.named_tuples.BuilderSrcPaths,
-                 repkg_paths: cd.named_tuples.BuilderDestPaths):
+    def __init__(self, orig_pkg_info: nt.OrigPkgInfo,
+                 src_paths: bsp.BuilderSrcPaths,
+                 repkg_paths: bdp.BuilderDestPaths):
         """
         Construct a new SrepkgBuilder
         :param src_paths: BuilderSrcPaths namedtuple
@@ -134,7 +136,7 @@ class SrepkgBuilder:
         with open(self._repkg_paths.srepkg_setup_cfg, 'w') as sr_configfile:
             sr_config.write(sr_configfile)
 
-    def write_entry_point_file(self, orig_cse: cd.named_tuples.CSEntry):
+    def write_entry_point_file(self, orig_cse: nt.CSEntry):
 
         shutil.copy2(self._src_paths.entry_point_template,
                      self._repkg_paths.srepkg_entry_points /
