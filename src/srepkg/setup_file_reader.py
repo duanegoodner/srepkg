@@ -191,7 +191,8 @@ class _SetupPyFileReader(_SetupFileReader):
                 setup_params = mock_setup.call_args[1]
         finally:
             sys.path.remove(str(self._setup_file.parent.absolute()))
-            sys.modules.pop('setup')
+            if 'setup' in sys.modules:
+                sys.modules.pop('setup')
 
         self._data.clear()
         self._data.update(setup_params)

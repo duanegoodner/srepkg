@@ -14,9 +14,10 @@ def get_args(*args):
     """
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        'orig_pkg_path',
+        'pkg_ref',
         type=str,
-        help="Path to directory containing original package's setup.cfg file")
+        help="Original package to be repackaged. Can be a local path, PyPI "
+             "package name, or Github repo.")
 
     parser.add_argument(
         '--srepkg_name',

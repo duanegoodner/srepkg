@@ -1,8 +1,6 @@
-# import srepkg.srepkg_builder as sb
+import tempfile
+from pathlib import Path
 import srepkg.command_input as ci
-# import srepkg.orig_pkg_inspector as opi
-# import srepkg.path_calculator as pc
-
 import srepkg.repackager as re
 
 
@@ -20,7 +18,8 @@ def main():
      ~/srepkg_pkgs/<orig_pkg_name>_srepkg/<srepkg_name>
     """
     args = ci.get_args()
-    re.repackage(orig_pkg_path=args.orig_pkg_path, srepkg_name=args.srepkg_name)
+    re.Repackager(pkg_ref=args.pkg_ref, srepkg_name=args.srepkg_name)\
+        .repackage()
 
 
 if __name__ == '__main__':

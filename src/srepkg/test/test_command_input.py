@@ -13,23 +13,23 @@ def test_zero_args(capsys):
     stderr = capsys.readouterr().err
     expected_msg_components = [
         'usage',
-        '[-h] [--srepkg_name [SREPKG_NAME]] orig_pkg_path',
+        '[-h] [--srepkg_name [SREPKG_NAME]] pkg_ref',
         'error: the following arguments are required: '
-        'orig_pkg_path'
+        'pkg_ref'
     ]
     assert all([component in stderr for component in expected_msg_components])
 
 
 def test_one_arg():
     args = ci.get_args([arg_1])
-    assert args.orig_pkg_path == \
+    assert args.pkg_ref == \
            str(Path.home() / 'dproj' / 'my_project')
     assert args.srepkg_name is None
 
 
 def test_valid_custom_name():
     args = ci.get_args([arg_1, '--srepkg_name', arg_2])
-    assert args.orig_pkg_path == str(Path.home() / 'dproj' / 'my_project')
+    assert args.pkg_ref == str(Path.home() / 'dproj' / 'my_project')
     assert args.srepkg_name == 'custom_package_name'
 
 
@@ -39,7 +39,7 @@ def test_too_many_args(capsys):
     stderr = capsys.readouterr().err
     expected_msg_components = [
         'usage:',
-        '[-h] [--srepkg_name [SREPKG_NAME]] orig_pkg_path',
+        '[-h] [--srepkg_name [SREPKG_NAME]] pkg_ref',
         'error: unrecognized arguments:',
         'extra_arg'
     ]
