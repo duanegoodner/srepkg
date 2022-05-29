@@ -26,4 +26,12 @@ def get_args(*args):
         action='store',
         help="Custom name to be used for repackaged package."
     )
+
+    parser.add_argument(
+        '--srepkg_location',
+        type=str,
+        nargs='?',
+        action='store',
+        help='Directory where srepkg will be saved. Default is ~/srepkg_pkgs.'
+    )
     return parser.parse_args(*args)

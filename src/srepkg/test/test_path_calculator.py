@@ -16,14 +16,14 @@ def calc_test_paths(pkg_root: Path = test_case_data.package_test_cases.t_proj_in
                     pkg_root):
     args = ci.get_args([str(pkg_root)])
 
-    orig_pkg_info = opi.OrigPkgInspector(args.orig_pkg).get_orig_pkg_info()
+    orig_pkg_info = opi.OrigPkgInspector(args.pkg_ref).get_orig_pkg_info()
 
     builder_paths_calculator = pc.BuilderPathsCalculator(
-        orig_pkg_info, args.srepkg_name)
-
-    # use non-standard path for srepkgs_pkgs to avoid unwanted overwrite
-    builder_paths_calculator.srepkg_pkgs_dir = \
-        test_case_data.package_test_cases.t_proj_srepkg_info.test_srepkg_pkgs_dir
+        orig_pkg_info=orig_pkg_info,
+        srepkg_custom_name=args.srepkg_name,
+        srepkg_custom_parent_dir=test_case_data.package_test_cases.t_proj_srepkg_info
+        .test_srepkg_pkgs_dir
+    )
 
     builder_src_paths, builder_dest_paths = \
         builder_paths_calculator.calc_builder_paths()

@@ -15,20 +15,29 @@ import srepkg.file_structure as pb
 class BuilderPathsCalculator:
     # TODO validator method to confirm cur file structure matches paths classes
 
-    # class variables for standard repackaging components location
+    # standard repackaging components location
     _repackaging_components = Path(__file__).parent.absolute() \
                               / 'repackaging_components'
 
-    # class variables to define default srepkg location and name
-    srepkg_pkgs_dir = Path.home() / 'srepkg_pkgs'
-    auto_srepkg_suffix = 'srepkg'
+    # srepkg name suffix when default naming is used
+    _auto_srepkg_suffix = 'srepkg'
 
-    def __init__(self,
-                 orig_pkg_info: nt.OrigPkgInfo,
-                 srepkg_custom_name: str = None):
+    def __init__(
+            self,
+            orig_pkg_info: nt.OrigPkgInfo,
+            srepkg_custom_name: str = None,
+            srepkg_custom_parent_dir: Path = None):
 
         self._orig_pkg_info = orig_pkg_info
         self._srepkg_custom_name = srepkg_custom_name
+        self._srepkg_custom_parent_dir = srepkg_custom_parent_dir
+
+    @property
+    def _srepkg_parent_dir(self):
+        if self._srepkg_custom_parent_dir:
+            return self._srepkg_custom_parent_dir
+        else:
+            return Path.home() / 'srepkg_pkgs'
 
     def calc_src_paths(self):
         src_files_util = pb.fs_util.FileStructureUtil(
@@ -43,17 +52,17 @@ class BuilderPathsCalculator:
         if self._srepkg_custom_name:
             srepkg_name = self._srepkg_custom_name
         else:
-            srepkg_name = self._orig_pkg_info.pkg_name + self.auto_srepkg_suffix
+            srepkg_name = self._orig_pkg_info.pkg_name + self._auto_srepkg_suffix
 
-        dest_root_path = self.srepkg_pkgs_dir / (self._orig_pkg_info.pkg_name +
-                                                 '_as_' + srepkg_name)
+        srepkg_root = self._srepkg_parent_dir / \
+            (self._orig_pkg_info.pkg_name + '_as_' + srepkg_name)
 
-        if dest_root_path.exists():
-            err_msg = f'Destination path {str(dest_root_path)} already exists'
+        if srepkg_root.exists():
+            err_msg = f'Destination path {str(srepkg_root)} already exists'
             sys.exit(err_msg)
 
         return nt.SrePkgInfo(pkg_name=srepkg_name,
-                                          root_path=dest_root_path)
+                             root_path=srepkg_root)
 
     def calc_dest_paths(self):
 
@@ -65,7 +74,7 @@ class BuilderPathsCalculator:
 
         dest_file_util = pb.fs_util.FileStructureUtil(
             file_struct=builder_dest_structure,
-            root_path=self.srepkg_pkgs_dir
+            root_path=self._srepkg_parent_dir
         )
 
         dest_paths = dest_file_util.get_path_names()

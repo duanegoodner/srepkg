@@ -18,8 +18,11 @@ def main():
      ~/srepkg_pkgs/<orig_pkg_name>_srepkg/<srepkg_name>
     """
     args = ci.get_args()
-    re.Repackager(pkg_ref=args.pkg_ref, srepkg_name=args.srepkg_name)\
-        .repackage()
+    re.Repackager(
+        pkg_ref=args.pkg_ref,
+        srepkg_name=args.srepkg_name,
+        srepkg_location=args.srepkg_location
+    ).repackage()
 
 
 if __name__ == '__main__':

@@ -11,15 +11,18 @@ import srepkg.srepkg_builder as sb
 
 class _Repackager(abc.ABC):
 
-    def __init__(self, pkg_ref: str, srepkg_name: str):
+    def __init__(self, pkg_ref: str, srepkg_name: str = None,
+                 srepkg_custom_location: Path = None):
         self._pkg_ref = pkg_ref
         self._srepkg_name = srepkg_name
+        self._srepkg_custom_location = srepkg_custom_location
 
     def _repackage_local(self, orig_pkg: Path):
         orig_pkg_info = opi.OrigPkgInspector(str(orig_pkg)).get_orig_pkg_info()
 
         builder_src_paths, builder_dest_paths = pc.BuilderPathsCalculator(
-            orig_pkg_info, self._srepkg_name).calc_builder_paths()
+            orig_pkg_info, self._srepkg_name, self._srepkg_custom_location)\
+            .calc_builder_paths()
 
         sb.SrepkgBuilder(orig_pkg_info, builder_src_paths,
                          builder_dest_paths).build_srepkg()
@@ -79,9 +82,11 @@ class _RemoteRepackager(_Repackager):
 
 
 class Repackager:
-    def __init__(self, pkg_ref: str, srepkg_name: str):
+    def __init__(self, pkg_ref: str, srepkg_name: str = None,
+                 srepkg_location: Path = None):
         self._pkg_ref = pkg_ref
         self._srepkg_name = srepkg_name
+        self._srepkg_location = srepkg_location
 
     @property
     def _is_local(self):
@@ -90,9 +95,17 @@ class Repackager:
 
     def repackage(self):
         if self._is_local:
-            _LocalRepackager(self._pkg_ref, self._srepkg_name).repackage()
+            _LocalRepackager(
+                self._pkg_ref,
+                self._srepkg_name,
+                self._srepkg_location
+            ).repackage()
         else:
-            _RemoteRepackager(self._pkg_ref, self._srepkg_name).repackage()
+            _RemoteRepackager(
+                self._pkg_ref,
+                self._srepkg_name,
+                self._srepkg_location
+            ).repackage()
 
 
 # def repackage_local(orig_pkg: str, srepkg_name: str):
