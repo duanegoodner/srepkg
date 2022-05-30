@@ -1,2 +1,0 @@
-[console_scripts]
-srepkg = srepkg.srepkg:main
