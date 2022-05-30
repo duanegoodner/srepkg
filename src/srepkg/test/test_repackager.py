@@ -25,6 +25,9 @@ class TestRepackager(unittest.TestCase):
             pkg_ref, srepkg_location=self._srepkg_location)
         my_repackager.repackage()
 
+    def test_testproj(self):
+        self.run_single_pkg_test('/Users/duane/dproj/testproj')
+
     def test_howdoi(self):
         self.run_single_pkg_test('howdoi')
 
@@ -34,27 +37,31 @@ class TestRepackager(unittest.TestCase):
     def test_cowsay(self):
         self.run_single_pkg_test('cowsay')
 
+    # def test_pandas(self):
+    #     self.run_single_pkg_test('pandas')
 
-#
-# my_pkg_refs = ['howdoi', 'numpy', 'cowsay']
-# my_srepkg_location = Path(__file__).parent.absolute() / 'test_srepkg_pkgs'
-#
-#
-# def run_single_test(pkg_ref: str, srepkg_location: Path):
-#     if srepkg_location.exists():
-#         shutil.rmtree(srepkg_location)
-#
-#     my_repackager = repackager.Repackager(
-#         pkg_ref=pkg_ref, srepkg_location=srepkg_location)
-#     my_repackager.repackage()
-#
-#     if srepkg_location.exists():
-#         shutil.rmtree(srepkg_location)
-#
-#
-# def test_multiple_packages():
-#     for pkg in my_pkg_refs:
-#         run_single_test(pkg_ref=pkg, srepkg_location=my_srepkg_location)
+    def test_requests(self):
+        self.run_single_pkg_test('requests')
+
+    def test_scrape(self):
+        self.run_single_pkg_test('scrape')
+
+    def test_mechanize(self):
+        self.run_single_pkg_test('mechanize')
+
+    def test_pyquery(self):
+        self.run_single_pkg_test('pyquery')
+
+    def test_mypy(self):
+        self.run_single_pkg_test('mypy')
+
+    def test_flake8(self):
+        self.run_single_pkg_test('flake8')
+
+    def test_black(self):
+        self.run_single_pkg_test('black')
+
+
 
 
 

@@ -1,5 +1,8 @@
 import abc
 import configparser
+import os
+import runpy
+
 import setuptools
 import sys
 import warnings
@@ -182,22 +185,64 @@ class _SetupPyFileReader(_SetupFileReader):
 
     def __init__(self, setup_file: Path):
         super().__init__(setup_file)
+        self._mock_pkgs = []
+
+    def _add_mock_pkg(self, mock_pkg_name: str):
+        pkg_mock = mock.MagicMock()
+        pkg_mock.__name__ = mock_pkg_name
+        pkg_mock.__version__ = '0.0.1'
+        pkg_mock.get_version.return_value = '0.0.1'
+        sys.modules[mock_pkg_name] = pkg_mock
+        self._mock_pkgs.append(mock_pkg_name)
+
+    def _clean_up_mock_pkgs(self):
+        for mock_pkg in self._mock_pkgs:
+            sys.modules.pop(mock_pkg)
 
     def _read_raw_data(self):
-        try:
-            sys.path.insert(0, str(self._setup_file.parent.absolute()))
-            with mock.patch.object(setuptools, 'setup') as mock_setup:
-                import setup
-                setup_params = mock_setup.call_args[1]
-        finally:
-            sys.path.remove(str(self._setup_file.parent.absolute()))
-            if 'setup' in sys.modules:
-                sys.modules.pop('setup')
 
-        self._data.clear()
-        self._data.update(setup_params)
+        cwd = Path.cwd()
+        os.chdir(str(self._setup_file.parent))
+
+        all_imports_available = False
+
+        if self._setup_file.exists():
+
+            while not all_imports_available:
+                try:
+                    with mock.patch.object(setuptools, 'setup') as mock_setup:
+                        runpy.run_path(str(self._setup_file), {}, '__main__')
+                        all_imports_available = True
+                        if mock_setup.call_args:
+                            setup_params = mock_setup.call_args[1]
+                except ModuleNotFoundError:
+                    e_type, value, traceback = sys.exc_info()
+                    self._add_mock_pkg(value.name)
+
+            self._clean_up_mock_pkgs()
+            self._data.clear()
+            if setup_params:
+                self._data.update(setup_params)
+
+        os.chdir(cwd)
 
         return self
+
+    # def _read_raw_data(self):
+    #     try:
+    #         sys.path.insert(0, str(self._setup_file.parent.absolute()))
+    #         with mock.patch.object(setuptools, 'setup') as mock_setup:
+    #             import setup
+    #             setup_params = mock_setup.call_args[1]
+    #     finally:
+    #         sys.path.remove(str(self._setup_file.parent.absolute()))
+    #         if 'setup' in sys.modules:
+    #             sys.modules.pop('setup')
+    #
+    #     self._data.clear()
+    #     self._data.update(setup_params)
+    #
+    #     return self
 
     def _match_to_py_format(self):
         return self  # setup.py data already in py format
