@@ -37,8 +37,8 @@ class TestRepackager(unittest.TestCase):
     def test_cowsay(self):
         self.run_single_pkg_test('cowsay')
 
-    # def test_pandas(self):
-    #     self.run_single_pkg_test('pandas')
+    def test_pandas(self):
+        self.run_single_pkg_test('pandas')
 
     def test_requests(self):
         self.run_single_pkg_test('requests')

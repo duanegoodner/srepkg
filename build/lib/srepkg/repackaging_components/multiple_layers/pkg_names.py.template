@@ -1,0 +1,2 @@
+inner_pkg_name = '$inner_pkg_name'
+sre_pkg_name = '$sre_pkg_name'
