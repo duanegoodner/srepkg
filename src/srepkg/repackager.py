@@ -89,8 +89,8 @@ class Repackager:
 
     @property
     def _is_local(self):
-        return (Path(self._pkg_ref).is_dir()) and \
-               (('/' in self._pkg_ref) or ('.' in self._pkg_ref))
+        return (Path(self._pkg_ref).is_dir()) and\
+               not all([letter.isalnum for letter in self._pkg_ref])
 
     def repackage(self):
         if self._is_local:

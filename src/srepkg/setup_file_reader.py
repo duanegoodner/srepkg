@@ -30,10 +30,11 @@ class SetupInfoError(cd.nt.ErrorMsg, Enum):
 
 
 class UnsupportedSetupFileType(Exception):
-    def __init__(self, file_name: str, message='File type is not supported'):
-        self.file_name = file_name
-        self.message = message
-        super().__init__(self.message)
+    def __init__(self, file_name: str,
+                 msg=SetupFileReaderError.UnsupportedSetupFileType.msg):
+        self._file_name = file_name
+        self._msg = msg
+        super().__init__(self._msg)
 
     def __str__(self):
         return f'{self.file_name} -> {self.message}'
