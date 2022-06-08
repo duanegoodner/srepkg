@@ -38,7 +38,6 @@ class ArchiveRetrieverError(cd.nt.ErrorMsg, Enum):
 
 
 class ValidationCondition(NamedTuple):
-    name: str
     criteria: bool
     error_on_fail: ArchiveRetrieverError
 
@@ -90,7 +89,8 @@ class _LocalCommitArchiveRetriever(_ArchiveRetriever):
         return [head.name for head in self._repo.heads]
 
     def _commits_for_branch(self, branch_name: str):
-        return list(self._repo.iter_commits(branch_name))
+        return [commit.hexsha for commit in
+                list(self._repo.iter_commits(branch_name))]
 
     @property
     def _all_commits(self) -> dict[str, List[str]]:
@@ -113,11 +113,11 @@ class _LocalCommitArchiveRetriever(_ArchiveRetriever):
 
     @property
     def _valid_input_sha(self) -> ValidationCondition:
+
         return ValidationCondition(
-            criteria=
-            (not self._commit_sha) or
-            any([self._commit_sha in self._all_commits[branch_name] for
-                 branch_name in self._all_commits]),
+            criteria=(not self._commit_sha) or
+            (self._commit_sha in set().union(
+                *list(self._all_commits.values()))),
             error_on_fail=ArchiveRetrieverError.CommitSHANotFound)
 
     @property
@@ -130,66 +130,16 @@ class _LocalCommitArchiveRetriever(_ArchiveRetriever):
 
     def _validate_identifiers(self):
 
+        # use getter functions for Validation Conditions instead of just
+        # defining here so we have option for intermediate variables if
+        # criteria function is complicated
+
         validation_conditions = [
-            ValidationCondition(
-                name='identifier_provided',
-                criteria=bool(self._branch) or bool(self._commit_sha),
-                error_on_fail=ArchiveRetrieverError.NoGitCommitIdentifyingInfo),
-            ValidationCondition(
-                name='valid_input_branch',
-                criteria=(not self._branch) or
-                         (self._branch in [head.name for head in
-                                           self._repo.heads]),
-                error_on_fail=ArchiveRetrieverError.BranchNameNotFound),
-            ValidationCondition(
-                name='valid_input_sha',
-                criteria=
-                (not self._commit_sha) or
-                (self._commit_sha in set().union(
-                    *[[commit.hexsha for commit in self._all_commits[branch]]
-                      for branch in self._all_commits])),
-                error_on_fail=ArchiveRetrieverError.CommitSHANotFound),
-            ValidationCondition(
-                name='branch_and_sha_consistent',
-                criteria=(not self._branch) or (not self._commit_sha) or
-                         (self._commit_sha in self._all_commits[self._branch]),
-                error_on_fail=ArchiveRetrieverError.BranchNameSHAMismatch)
+            self._identifier_provided,
+            self._valid_input_branch,
+            self._valid_input_sha,
+            self._branch_and_sha_consistent
         ]
-
-        # validation_conditions = {
-        #     'identifier_provided': ValidationCondition(
-        #         criteria=(not self._branch) or (not self._commit_sha) or
-        #                   (self._commit_sha in self._all_commits[self._branch]),
-        #         error_on_fail=ArchiveRetrieverError.BranchNameSHAMismatch),
-        #
-        #     'valid_input_branch': ValidationCondition(
-        #         criteria=(not self._branch) or
-        #                   (self._branch in [head.name for head in
-        #                                     self._repo.heads]),
-        #         error_on_fail=ArchiveRetrieverError.BranchNameNotFound),
-        #
-        #     'valid_input_sha': ValidationCondition(
-        #         criteria=(not self._commit_sha) or any(
-        #             [self._commit_sha in self._all_commits[branch_name] for
-        #              branch_name in self._all_commits]),
-        #         error_on_fail=ArchiveRetrieverError.CommitSHANotFound),
-        #
-        #     'branch_and_sha_consistent': ValidationCondition(
-        #         criteria=(not self._branch) or (not self._commit_sha) or
-        #                   (self._commit_sha in self._all_commits[self._branch]),
-        #         error_on_fail=ArchiveRetrieverError.BranchNameSHAMismatch)
-        # }
-
-        # validation_map = {
-        #     self._identifier_provided:
-        #         ArchiveRetrieverError.NoGitCommitIdentifyingInfo,
-        #     self._valid_input_branch:
-        #         ArchiveRetrieverError.BranchNameNotFound,
-        #     self._valid_input_sha:
-        #         ArchiveRetrieverError.CommitSHANotFound,
-        #     self._branch_and_sha_consistent:
-        #         ArchiveRetrieverError.BranchNameSHAMismatch
-        # }
 
         for condition in validation_conditions:
             if not condition.criteria:
