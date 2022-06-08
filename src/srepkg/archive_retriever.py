@@ -145,6 +145,9 @@ class _LocalCommitArchiveRetriever(_ArchiveRetriever):
             if not condition.criteria:
                 sys.exit(condition.error_on_fail.msg)
 
+    def _write_archive(self):
+        self._repo.git.archive('-o')
+
     def retrieve_archive(self):
         pass  # implementation TBD
 

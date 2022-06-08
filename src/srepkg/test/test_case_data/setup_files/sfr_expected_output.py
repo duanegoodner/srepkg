@@ -49,10 +49,7 @@ match_src_layout = {
             'package_dir': {
                 '': 'src'
             },
-            'packages': [
-                'test_case_data',
-                't_utils'
-            ],
+            'packages': [],
             'install_requires': [
                 'numpy >= 1.22',
                 'pandas'
@@ -105,10 +102,7 @@ match_non_src_layout = {
     '.py': {
         'raw': {
             'name': 'testproj',
-            'packages': [
-                'test_case_data',
-                't_utils'
-            ],
+            'packages': [],
             'install_requires': [
                 'numpy >= 1.22',
                 'pandas'
@@ -180,10 +174,7 @@ mixed_src_layout_valid = {
             'package_dir': {
                 '': 'src'
             },
-            'packages': [
-                'test_case_data',
-                't_utils'
-            ],
+            'packages': [],
             'install_requires': [
                 'numpy >= 1.22',
                 'pandas'
