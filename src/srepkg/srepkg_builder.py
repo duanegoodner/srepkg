@@ -11,7 +11,9 @@ import string
 import shutil
 import sys
 import configparser
+import srepkg.custom_env_builder as ceb
 import srepkg.entry_points_builder as epb
+import srepkg.venv_controller as vc
 import custom_datatypes.builder_src_paths as bsp
 import custom_datatypes.builder_dest_paths as bdp
 import custom_datatypes.named_tuples as nt
@@ -90,6 +92,7 @@ class SrepkgBuilder:
                 orig_pkg_info=orig_pkg_info,
                 src_paths=src_paths,
                 repkg_paths=repkg_paths)
+
 
     @property
     def orig_pkg_info(self):
@@ -187,27 +190,31 @@ class SrepkgBuilder:
             for write_op in template_file_writes:
                 self._template_file_writer.write_file(*write_op)
 
+    def create_venv(self):
+        venv_builder = ceb.CustomEnvBuilder()
+        venv_builder.create(self._repkg_paths.root / 'venv_for_orig')
+
+        return venv_builder.context
+
     def build_inner_layer(self):
-        self.build_srepkg_layer(
-            call_methods=[self.copy_inner_package,
-                          self.inner_pkg_setup_off])
+
+        venv_context = self.create_venv()
+
+
+
+        venv_controller = vc.VenvManager(
+            srepkg_path=self._repkg_paths.root,
+            orig_pkg_info=self._orig_pkg_info)
+
+        venv_controller.build_venv_with_orig_pkg()
 
     def build_mid_layer(self):
         self.build_srepkg_layer(
             call_methods=[self.copy_srepkg_control_components],
-                          # self._entry_points_builder.build_entry_pts],
             direct_copy_files=[
                 SrcDestPair(src=self._src_paths.srepkg_init,
                             dest=self._repkg_paths.srepkg_init),
-                # SrcDestPair(
-                #     src=self._src_paths.main_outer,
-                #     dest=self._repkg_paths.main_outer)
             ],
-            # template_file_writes=[
-            #     SrcDestPair(
-            #         src=self._src_paths.pkg_names_template,
-            #         dest=self._repkg_paths.pkg_names_mid)
-            # ]
         )
 
     def build_outer_layer(self):
