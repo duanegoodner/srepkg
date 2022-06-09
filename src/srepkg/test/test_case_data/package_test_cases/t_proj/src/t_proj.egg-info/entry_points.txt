@@ -1,0 +1,4 @@
+[console_scripts]
+main_entry = t_proj.__main__:main
+my_project = t_proj.app:run
+my_test = t_proj.test:first_test

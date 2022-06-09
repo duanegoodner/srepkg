@@ -194,20 +194,21 @@ class SrepkgBuilder:
 
     def build_mid_layer(self):
         self.build_srepkg_layer(
-            call_methods=[self.copy_srepkg_control_components,
-                          self._entry_points_builder.build_entry_pts],
+            call_methods=[self.copy_srepkg_control_components],
+                          # self._entry_points_builder.build_entry_pts],
             direct_copy_files=[
                 SrcDestPair(src=self._src_paths.srepkg_init,
                             dest=self._repkg_paths.srepkg_init),
-                SrcDestPair(
-                    src=self._src_paths.main_outer,
-                    dest=self._repkg_paths.main_outer)
+                # SrcDestPair(
+                #     src=self._src_paths.main_outer,
+                #     dest=self._repkg_paths.main_outer)
             ],
-            template_file_writes=[
-                SrcDestPair(
-                    src=self._src_paths.pkg_names_template,
-                    dest=self._repkg_paths.pkg_names_mid)
-            ])
+            # template_file_writes=[
+            #     SrcDestPair(
+            #         src=self._src_paths.pkg_names_template,
+            #         dest=self._repkg_paths.pkg_names_mid)
+            # ]
+        )
 
     def build_outer_layer(self):
         self.build_srepkg_layer(

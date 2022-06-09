@@ -1,5 +1,7 @@
 import unittest
 import shutil
+
+import srepkg.inner_pkg_installer as ipi
 import srepkg.srepkg_builder as sb
 import srepkg.test.test_path_calculator as tpc
 import srepkg.test.test_case_data as test_case_data
@@ -14,18 +16,18 @@ class TestSrepkgBuilder(unittest.TestCase):
             shutil.rmtree(
                 test_case_data.package_test_cases.t_proj_srepkg_info.srepkg_root)
 
-        self.builder_src_paths, self.builder_dest_paths =\
+        self.builder_src_paths, self.builder_dest_paths = \
             tpc.calc_test_paths(
                 self.orig_pkg_root)
         self.srepkg_builder = sb.SrepkgBuilder(
             tpc.calc_test_paths.locals['orig_pkg_info'],
             self.builder_src_paths, self.builder_dest_paths)
 
-    def tearDown(self) -> None:
-        if test_case_data.package_test_cases.t_proj_srepkg_info.test_srepkg_pkgs_dir.\
-                exists():
-            shutil.rmtree(test_case_data.package_test_cases.t_proj_srepkg_info.
-                          test_srepkg_pkgs_dir)
+    # def tearDown(self) -> None:
+    #     if test_case_data.package_test_cases.t_proj_srepkg_info.test_srepkg_pkgs_dir.\
+    #             exists():
+    #         shutil.rmtree(test_case_data.package_test_cases.t_proj_srepkg_info.
+    #                       test_srepkg_pkgs_dir)
 
     def test_srepkg_builder_paths(self) -> None:
         assert self.srepkg_builder.src_paths == self.builder_src_paths
@@ -52,15 +54,61 @@ class TestSrepkgBuilder(unittest.TestCase):
 
     #  TODO add test that creates ...entry.py files & checks existence / content
     def test_build_mid_layer(self):
-        self.srepkg_builder.build_inner_layer()
+        # self.srepkg_builder.build_inner_layer()
         self.srepkg_builder.build_mid_layer()
 
-        assert self.srepkg_builder.repkg_paths.srepkg_control_components.\
+        assert self.srepkg_builder.repkg_paths.srepkg_control_components. \
             exists()
-        assert self.srepkg_builder.repkg_paths.srepkg_entry_points.exists()
+        # assert self.srepkg_builder.repkg_paths.srepkg_entry_points.exists()
         assert self.srepkg_builder.repkg_paths.srepkg_init.exists()
-        assert self.srepkg_builder.repkg_paths.main_outer.exists()
-        assert self.srepkg_builder.repkg_paths.pkg_names_mid.exists()
+        # assert self.srepkg_builder.repkg_paths.main_outer.exists()
+        # assert self.srepkg_builder.repkg_paths.pkg_names_mid.exists()
+
+    def test_venv_creation(self):
+        self.srepkg_builder.build_mid_layer()
+        assert self.srepkg_builder.repkg_paths.srepkg_control_components. \
+            exists()
+        assert self.srepkg_builder.repkg_paths.srepkg_init.exists()
+
+        inner_pkg_installer = ipi \
+            .InnerPkgInstaller.from_srepkg_path_and_orig_pkg_info(
+                srepkg_path=self.srepkg_builder.repkg_paths.root,
+                orig_pkg_info=self.srepkg_builder.orig_pkg_info)
+
+        inner_pkg_installer.build_venv()
+
+    def test_venv_upgrade_pip(self):
+        self.srepkg_builder.build_mid_layer()
+        assert self.srepkg_builder.repkg_paths.srepkg_control_components. \
+            exists()
+        assert self.srepkg_builder.repkg_paths.srepkg_init.exists()
+
+        inner_pkg_installer = ipi \
+            .InnerPkgInstaller.from_srepkg_path_and_orig_pkg_info(
+                srepkg_path=self.srepkg_builder.repkg_paths.root,
+                orig_pkg_info=self.srepkg_builder.orig_pkg_info)
+
+        inner_pkg_installer.build_venv()
+        inner_pkg_installer.upgrade_pip()
+        inner_pkg_installer.install_utilities('wheel')
+
+    def test_venv_install_inner_pkg(self):
+        self.srepkg_builder.build_mid_layer()
+        assert self.srepkg_builder.repkg_paths.srepkg_control_components. \
+            exists()
+        assert self.srepkg_builder.repkg_paths.srepkg_init.exists()
+
+        inner_pkg_installer = ipi \
+            .InnerPkgInstaller.from_srepkg_path_and_orig_pkg_info(
+                srepkg_path=self.srepkg_builder.repkg_paths.root,
+                orig_pkg_info=self.srepkg_builder.orig_pkg_info)
+
+        inner_pkg_installer.build_venv()
+        inner_pkg_installer.upgrade_pip()
+        inner_pkg_installer.install_utilities('wheel')
+        inner_pkg_installer.install_inner_pkg()
+
+
 
     def test_build_outer_layer(self):
         self.srepkg_builder.build_inner_layer()
@@ -79,5 +127,5 @@ class TestSrepkgBuilder(unittest.TestCase):
 
 class TestSrepkgBuilderNonSrcLayout(TestSrepkgBuilder, unittest.TestCase):
     srepkg_root = test_case_data.package_test_cases.t_proj_srepkg_info.srepkg_root
-    orig_pkg_root = test_case_data.package_test_cases.t_proj_info.\
+    orig_pkg_root = test_case_data.package_test_cases.t_proj_info. \
         non_src_layout_pkg_root
