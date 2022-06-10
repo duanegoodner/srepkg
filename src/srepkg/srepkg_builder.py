@@ -3,10 +3,15 @@ Contains the SrepkgBuilder class that creates a copy of the original package and
 wraps the copied package with a file structure that forces it to run as a
 Srepkg.
 """
-
+import io
+import os
+import subprocess
+from contextlib import redirect_stdout
 from typing import List, Callable, NamedTuple
 from pathlib import Path
 from enum import Enum
+
+from setuptools import sandbox
 import string
 import shutil
 import sys
@@ -87,9 +92,9 @@ class SrepkgBuilder:
         )
         self._entry_points_builder = epb.EntryPointsBuilder \
             .from_srepkg_builder_init_args(
-                orig_pkg_info=orig_pkg_info,
-                src_paths=src_paths,
-                repkg_paths=repkg_paths)
+            orig_pkg_info=orig_pkg_info,
+            src_paths=src_paths,
+            repkg_paths=repkg_paths)
 
     @property
     def orig_pkg_info(self):
@@ -230,13 +235,36 @@ class SrepkgBuilder:
                     dest=self._repkg_paths.manifest)
             ])
 
-    def output_summary(self):
+    # TODO handle case if archive already exists
+    def write_archive(self, archive_format: str):
+        cwd = Path.cwd()
+        try:
+            os.chdir(str(self._repkg_paths.root))
+            print('Building source distribution of repackaged package')
+            log_path = self._repkg_paths.srepkg / 'log.txt'
+            with log_path.open(mode='x') as log:
+                subprocess.call(
+                    ['python', 'setup.py', 'sdist', '-d', str(cwd), '--quiet',
+                     '--formats=' + archive_format], stdout=log)
+
+            with io.StringIO() as buffer, redirect_stdout(buffer):
+                sandbox.run_setup('setup.py', ['--fullname'])
+                archive_fullname = buffer.getvalue()
+        finally:
+            os.chdir(str(cwd))
+
+        archive_filename = archive_fullname + '.' + archive_format
+
+        return ''.join(archive_filename.split())
+
+    def output_summary(self, archive_filename: str):
         print(f'Original package \'{self._orig_pkg_info.pkg_name}\' has been '
               f're-packaged as \'{self._repkg_paths.srepkg.name}\'\n')
-        print(f'The re-packaged version has been saved in:\n'
-              f'{self._repkg_paths.root}\n')
+        print(f'The re-packaged version has been saved as source '
+              f'distribution archive file:\n'
+              f'{str(Path.cwd()) + "/" + archive_filename}')
         print(f'\'{self._repkg_paths.srepkg.name}\' can be installed using:\n'
-              f'\'pip install {self._repkg_paths.root}\'\n')
+              f'pip install {str(Path.cwd()) + "/" + archive_filename}\n')
         print(f'After installation, \'{self._repkg_paths.srepkg.name}\' will '
               f'provide command line access to the following commands:')
         for cse in self._orig_pkg_info.entry_pts:
@@ -251,4 +279,5 @@ class SrepkgBuilder:
         self.build_inner_layer()
         self.build_mid_layer()
         self.build_outer_layer()
-        self.output_summary()
+        archive = self.write_archive('zip')
+        self.output_summary(archive)

@@ -20,12 +20,23 @@ class _Repackager(abc.ABC):
     def _repackage_local(self, orig_pkg: Path):
         orig_pkg_info = opi.OrigPkgInspector(str(orig_pkg)).get_orig_pkg_info()
 
+        srepkg_temp_dir = None
+
+        if self._srepkg_custom_location is None:
+            srepkg_temp_dir = tempfile.TemporaryDirectory()
+            srepkg_location = Path(srepkg_temp_dir.name)
+        else:
+            srepkg_location = self._srepkg_custom_location
+
         builder_src_paths, builder_dest_paths = pc.BuilderPathsCalculator(
-            orig_pkg_info, self._srepkg_name, self._srepkg_custom_location)\
+            orig_pkg_info, srepkg_location, self._srepkg_name)\
             .calc_builder_paths()
 
         sb.SrepkgBuilder(orig_pkg_info, builder_src_paths,
                          builder_dest_paths).build_srepkg()
+
+        if srepkg_temp_dir:
+            srepkg_temp_dir.cleanup()
 
     @abc.abstractmethod
     def repackage(self):

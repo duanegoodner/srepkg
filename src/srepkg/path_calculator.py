@@ -25,8 +25,9 @@ class BuilderPathsCalculator:
     def __init__(
             self,
             orig_pkg_info: nt.OrigPkgInfo,
-            srepkg_custom_name: str = None,
-            srepkg_custom_parent_dir: Path = None):
+            srepkg_custom_parent_dir: Path,
+            srepkg_custom_name: str = None
+    ):
 
         self._orig_pkg_info = orig_pkg_info
         self._srepkg_custom_name = srepkg_custom_name
@@ -34,10 +35,11 @@ class BuilderPathsCalculator:
 
     @property
     def _srepkg_parent_dir(self):
-        if self._srepkg_custom_parent_dir:
-            return self._srepkg_custom_parent_dir
-        else:
-            return Path.home() / 'srepkg_pkgs'
+        return self._srepkg_custom_parent_dir
+        # if self._srepkg_custom_parent_dir:
+        #     return self._srepkg_custom_parent_dir
+        # else:
+        #     return Path.home() / 'srepkg_pkgs'
 
     def calc_src_paths(self):
         src_files_util = pb.fs_util.FileStructureUtil(

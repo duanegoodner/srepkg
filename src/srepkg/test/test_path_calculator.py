@@ -1,4 +1,5 @@
 import shutil
+import tempfile
 import unittest
 from pathlib import Path
 import srepkg.command_input as ci
@@ -15,18 +16,22 @@ repackaging_components = test_case_data.paths.repackaging_components_actual
 def calc_test_paths(pkg_root: Path = test_case_data.package_test_cases.t_proj_info.
                     pkg_root):
     args = ci.get_args([str(pkg_root)])
-
     orig_pkg_info = opi.OrigPkgInspector(args.pkg_ref).get_orig_pkg_info()
+
+    srepkg_temp_dir = tempfile.TemporaryDirectory()
 
     builder_paths_calculator = pc.BuilderPathsCalculator(
         orig_pkg_info=orig_pkg_info,
-        srepkg_custom_name=args.srepkg_name,
-        srepkg_custom_parent_dir=test_case_data.package_test_cases.t_proj_srepkg_info
-        .test_srepkg_pkgs_dir
+        srepkg_custom_parent_dir=Path(srepkg_temp_dir.name),
+        srepkg_custom_name=args.srepkg_name
+        # srepkg_custom_parent_dir=test_case_data.package_test_cases.t_proj_srepkg_info
+        # .test_srepkg_pkgs_dir
     )
 
     builder_src_paths, builder_dest_paths = \
         builder_paths_calculator.calc_builder_paths()
+
+    srepkg_temp_dir.cleanup()
 
     return builder_src_paths, builder_dest_paths
 
@@ -63,23 +68,20 @@ class TestPathCalculator(unittest.TestCase):
 
     def test_builder_dest_paths(self):
         builder_dest_paths = calc_test_paths.locals['builder_dest_paths']
+        srepkg_temp_dir = calc_test_paths.locals['srepkg_temp_dir']
+        srepkg_temp_path = Path(srepkg_temp_dir.name) / 't_proj_as_t_projsrepkg'
 
-        srepkg_path = test_case_data.package_test_cases.t_proj_srepkg_info.\
-            srepkg_root / \
-            ('t_proj' + 'srepkg')
+        srepkg_path = srepkg_temp_path / ('t_proj' + 'srepkg')
         srepkg_control_components = srepkg_path / 'srepkg_control_components'
         srepkg_entry_module = srepkg_control_components / 'entry_points.py'
         srepkg_entry_points = srepkg_path / 'srepkg_entry_points'
-        srepkg_setup_cfg = test_case_data.package_test_cases.t_proj_srepkg_info.\
-            srepkg_root / 'setup.cfg'
-        srepkg_setup_py = test_case_data.package_test_cases.t_proj_srepkg_info.\
-            srepkg_root / 'setup.py'
+        srepkg_setup_cfg = srepkg_temp_path / 'setup.cfg'
+        srepkg_setup_py = srepkg_temp_path / 'setup.py'
         srepkg_init = srepkg_path / '__init__.py'
         inner_setup_cfg_active = srepkg_path / 'setup.cfg'
         inner_setup_py_active = srepkg_path / 'setup.py'
 
-        assert builder_dest_paths.root == test_case_data.package_test_cases.\
-            t_proj_srepkg_info.srepkg_root
+        assert builder_dest_paths.root == srepkg_temp_path
         assert builder_dest_paths.srepkg == srepkg_path
         assert builder_dest_paths.srepkg_control_components == \
                srepkg_control_components
