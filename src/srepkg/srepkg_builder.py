@@ -199,9 +199,9 @@ class SrepkgBuilder:
             direct_copy_files=[
                 SrcDestPair(src=self._src_paths.srepkg_init,
                             dest=self._repkg_paths.srepkg_init),
-                SrcDestPair(
-                    src=self._src_paths.main_outer,
-                    dest=self._repkg_paths.main_outer)
+                # SrcDestPair(
+                #     src=self._src_paths.main_outer,
+                #     dest=self._repkg_paths.main_outer)
             ],
             template_file_writes=[
                 SrcDestPair(

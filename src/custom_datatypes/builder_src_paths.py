@@ -13,7 +13,6 @@ class BuilderSrcPaths(NamedTuple):
     srepkg_controller: Path
     entry_point_template: Path
     srepkg_init: Path
-    main_outer: Path
     outer_layer: Path
     inner_pkg_installer: Path
     manifest_template: Path

@@ -59,7 +59,7 @@ class TestSrepkgBuilder(unittest.TestCase):
             exists()
         assert self.srepkg_builder.repkg_paths.srepkg_entry_points.exists()
         assert self.srepkg_builder.repkg_paths.srepkg_init.exists()
-        assert self.srepkg_builder.repkg_paths.main_outer.exists()
+        # assert self.srepkg_builder.repkg_paths.main_outer.exists()
         assert self.srepkg_builder.repkg_paths.pkg_names_mid.exists()
 
     def test_build_outer_layer(self):

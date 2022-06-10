@@ -13,7 +13,6 @@ class BuilderDestPaths(NamedTuple):
     srepkg_entry_points: Path
     srepkg_entry_points_init: Path
     srepkg_init: Path
-    main_outer: Path
     pkg_names_mid: Path
     inner_setup_cfg_active: Path
     inner_setup_cfg_inactive: Path
