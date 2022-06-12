@@ -1,1 +1,3 @@
 graft $sre_pkg_name
+include inner_pkg_installer.py
+include pkg_names.py

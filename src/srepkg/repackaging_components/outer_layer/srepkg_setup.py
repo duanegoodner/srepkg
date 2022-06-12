@@ -27,6 +27,6 @@ def check_pip_version():
         exit(1)
 
 
-check_pip_version()
+# check_pip_version()
 setuptools.setup()
 
