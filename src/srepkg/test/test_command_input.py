@@ -15,7 +15,7 @@ def test_zero_args(capsys):
     expected_msg_components = [
         'usage',
         '[-h] [--srepkg_name [SREPKG_NAME]]',
-        '[--srepkg_location [SREPKG_LOCATION]]',
+        '[--srepkg_build_dir [SREPKG_BUILD_DIR]]',
         'error: the following arguments are required: '
         'pkg_ref'
     ]
@@ -35,10 +35,10 @@ def test_valid_custom_name():
     assert args.srepkg_name == 'custom_package_name'
 
 
-def test_custom_srepkg_location():
-    args = ci.get_args([arg_1, '--srepkg_location', arg_3])
+def test_custom_srepkg_build_dir():
+    args = ci.get_args([arg_1, '--srepkg_build_dir', arg_3])
     assert args.pkg_ref == str(Path.home() / 'dproj' / 'my_project')
-    assert args.srepkg_location == str(Path.home() / 'srepkg_pkgs_alternate')
+    assert args.srepkg_build_dir == str(Path.home() / 'srepkg_pkgs_alternate')
 
 
 def test_too_many_args(capsys):
@@ -48,7 +48,7 @@ def test_too_many_args(capsys):
     expected_msg_components = [
         'usage',
         '[-h] [--srepkg_name [SREPKG_NAME]]',
-        '[--srepkg_location [SREPKG_LOCATION]]',
+        '[--srepkg_build_dir [SREPKG_BUILD_DIR]]',
         'error: unrecognized arguments:',
         'extra_arg'
     ]

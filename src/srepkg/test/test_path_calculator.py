@@ -8,58 +8,65 @@ import srepkg.path_calculator as pc
 import srepkg.test.test_case_data as test_case_data
 import srepkg.test.t_utils as tu
 
-
 repackaging_components = test_case_data.paths.repackaging_components_actual
 
 
 @tu.p_loc.PersistentLocals
-def calc_test_paths(pkg_root: Path = test_case_data.package_test_cases.t_proj_info.
-                    pkg_root):
-    args = ci.get_args([str(pkg_root)])
+def calc_paths(ci_args):
+    args = ci.get_args(ci_args)
     orig_pkg_info = opi.OrigPkgInspector(args.pkg_ref).get_orig_pkg_info()
 
-    srepkg_temp_dir = tempfile.TemporaryDirectory()
+    srepkg_temp_dir = None
+
+    if not args.srepkg_build_dir:
+        srepkg_temp_dir = tempfile.TemporaryDirectory()
+        srepkg_build_dir = Path(srepkg_temp_dir.name)
+    else:
+        srepkg_build_dir = Path(args.srepkg_build_dir)
 
     builder_paths_calculator = pc.BuilderPathsCalculator(
         orig_pkg_info=orig_pkg_info,
-        srepkg_custom_parent_dir=Path(srepkg_temp_dir.name),
-        srepkg_custom_name=args.srepkg_name
-        # srepkg_custom_parent_dir=test_case_data.package_test_cases.t_proj_srepkg_info
-        # .test_srepkg_pkgs_dir
-    )
+        srepkg_build_dir=srepkg_build_dir,
+        srepkg_custom_name=args.srepkg_name)
+
+    # these local vars not needed to reach return value. defining here so
+    # they can be accessed as PersistentLocals data members in test functs
+    final_srepkg_name = builder_paths_calculator._srepkg_name
+    srepkg_root = builder_paths_calculator._srepkg_root
 
     builder_src_paths, builder_dest_paths = \
         builder_paths_calculator.calc_builder_paths()
 
-    srepkg_temp_dir.cleanup()
+    if srepkg_temp_dir:
+        srepkg_temp_dir.cleanup()
 
     return builder_src_paths, builder_dest_paths
 
 
-class TestPathCalculator(unittest.TestCase):
+class TestPathCalc(unittest.TestCase):
+    orig_pkg_path = Path(__file__).parent.absolute() / 'test_case_data' / \
+                    'package_test_cases' / 't_proj'
+    srepkg_pkgs_non_temp_dir = Path(__file__).parent.absolute() / \
+        'test_case_data' / 'package_test_cases' / 'srepkg_pkgs'
 
-    @classmethod
-    def setUpClass(cls) -> None:
-        if test_case_data.package_test_cases.t_proj_srepkg_info.srepkg_root.exists():
-            shutil.rmtree(test_case_data.package_test_cases.t_proj_srepkg_info.
-                          srepkg_root)
+    def setUp(self) -> None:
+        if self.srepkg_pkgs_non_temp_dir.exists():
+            shutil.rmtree(self.srepkg_pkgs_non_temp_dir)
 
-        calc_test_paths()
-
-    def test_confirm_calc_paths_locals_accessible(self):
-        print(calc_test_paths.locals)
+        self.builder_src_paths, self.builder_dest_paths = \
+            calc_paths([str(self.orig_pkg_path)])
 
     def test_builder_src_paths(self):
-        builder_src_paths = calc_test_paths.locals['builder_src_paths']
+        builder_src_paths = calc_paths.locals['builder_src_paths']
         assert builder_src_paths.srepkg_init == repackaging_components / \
                'mid_layer' / 'srepkg_init.py'
         assert builder_src_paths.entry_module == repackaging_components / \
-               'mid_layer' / 'srepkg_control_components' /\
+               'mid_layer' / 'srepkg_control_components' / \
                'entry_point_runner.py'
         assert builder_src_paths.entry_point_template == \
                repackaging_components / 'mid_layer' / 'generic_entry.py'
         assert builder_src_paths.srepkg_control_components == \
-               repackaging_components / 'mid_layer' /\
+               repackaging_components / 'mid_layer' / \
                'srepkg_control_components'
         assert builder_src_paths.srepkg_setup_py == repackaging_components / \
                'outer_layer' / 'srepkg_setup.py'
@@ -67,21 +74,21 @@ class TestPathCalculator(unittest.TestCase):
                'outer_layer' / 'srepkg_starter_setup.cfg'
 
     def test_builder_dest_paths(self):
-        builder_dest_paths = calc_test_paths.locals['builder_dest_paths']
-        srepkg_temp_dir = calc_test_paths.locals['srepkg_temp_dir']
-        srepkg_temp_path = Path(srepkg_temp_dir.name) / 't_proj_as_t_projsrepkg'
+        builder_dest_paths = calc_paths.locals['builder_dest_paths']
+        srepkg_build_dir = calc_paths.locals['srepkg_build_dir']
+        srepkg_root = calc_paths.locals['srepkg_root']
 
-        srepkg_path = srepkg_temp_path / ('t_proj' + 'srepkg')
+        srepkg_path = srepkg_root / calc_paths.locals['final_srepkg_name']
         srepkg_control_components = srepkg_path / 'srepkg_control_components'
         srepkg_entry_module = srepkg_control_components / 'entry_points.py'
         srepkg_entry_points = srepkg_path / 'srepkg_entry_points'
-        srepkg_setup_cfg = srepkg_temp_path / 'setup.cfg'
-        srepkg_setup_py = srepkg_temp_path / 'setup.py'
+        srepkg_setup_cfg = srepkg_root / 'setup.cfg'
+        srepkg_setup_py = srepkg_root / 'setup.py'
         srepkg_init = srepkg_path / '__init__.py'
         inner_setup_cfg_active = srepkg_path / 'setup.cfg'
         inner_setup_py_active = srepkg_path / 'setup.py'
 
-        assert builder_dest_paths.root == srepkg_temp_path
+        assert builder_dest_paths.root == srepkg_root
         assert builder_dest_paths.srepkg == srepkg_path
         assert builder_dest_paths.srepkg_control_components == \
                srepkg_control_components
@@ -94,3 +101,30 @@ class TestPathCalculator(unittest.TestCase):
                inner_setup_cfg_active
         assert builder_dest_paths.inner_setup_py_active == \
                inner_setup_py_active
+
+
+class TestPathCalcCustomDir(TestPathCalc):
+
+    def setUp(self) -> None:
+        if self.srepkg_pkgs_non_temp_dir.exists():
+            shutil.rmtree(self.srepkg_pkgs_non_temp_dir)
+
+        self.builder_src_paths, self.builder_dest_paths = \
+            calc_paths([str(self.orig_pkg_path), '--srepkg_build_dir',
+                        str(self.srepkg_pkgs_non_temp_dir)])
+
+
+class TestPathCalcCustomDirAndPkgName(TestPathCalc):
+
+    def setUp(self) -> None:
+        if self.srepkg_pkgs_non_temp_dir.exists():
+            shutil.rmtree(self.srepkg_pkgs_non_temp_dir)
+
+        self.builder_src_paths, self.builder_dest_paths = \
+            calc_paths([str(self.orig_pkg_path),
+                        '--srepkg_build_dir',
+                        str(self.srepkg_pkgs_non_temp_dir),
+                        '--srepkg_name',
+                        'custom_name'])
+
+

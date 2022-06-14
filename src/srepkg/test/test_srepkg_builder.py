@@ -1,31 +1,31 @@
 import unittest
 import shutil
+from pathlib import Path
 import srepkg.srepkg_builder as sb
 import srepkg.test.test_path_calculator as tpc
 import srepkg.test.test_case_data as test_case_data
 
 
 class TestSrepkgBuilder(unittest.TestCase):
-    srepkg_root = test_case_data.package_test_cases.t_proj_srepkg_info.srepkg_root
-    orig_pkg_root = test_case_data.package_test_cases.t_proj_info.pkg_root
+    orig_pkg_path = Path(__file__).parent.absolute() / 'test_case_data' / \
+                    'package_test_cases' / 't_proj'
+    srepkg_pkgs_non_temp_dir = Path(__file__).parent.absolute() / \
+                               'test_case_data' / 'package_test_cases' / 'srepkg_pkgs'
 
     def setUp(self) -> None:
-        if self.srepkg_root.exists():
-            shutil.rmtree(
-                test_case_data.package_test_cases.t_proj_srepkg_info.srepkg_root)
+        if self.srepkg_pkgs_non_temp_dir.exists():
+            shutil.rmtree(self.srepkg_pkgs_non_temp_dir)
 
-        self.builder_src_paths, self.builder_dest_paths =\
-            tpc.calc_test_paths(
-                self.orig_pkg_root)
+        self.builder_src_paths, self.builder_dest_paths = \
+            tpc.calc_paths(
+                [str(self.orig_pkg_path)])
         self.srepkg_builder = sb.SrepkgBuilder(
-            tpc.calc_test_paths.locals['orig_pkg_info'],
+            tpc.calc_paths.locals['orig_pkg_info'],
             self.builder_src_paths, self.builder_dest_paths)
 
     def tearDown(self) -> None:
-        if test_case_data.package_test_cases.t_proj_srepkg_info.test_srepkg_pkgs_dir.\
-                exists():
-            shutil.rmtree(test_case_data.package_test_cases.t_proj_srepkg_info.
-                          test_srepkg_pkgs_dir)
+        if self.srepkg_pkgs_non_temp_dir.exists():
+            shutil.rmtree(self.srepkg_pkgs_non_temp_dir)
 
     def test_srepkg_builder_paths(self) -> None:
         assert self.srepkg_builder.src_paths == self.builder_src_paths
@@ -55,11 +55,10 @@ class TestSrepkgBuilder(unittest.TestCase):
         self.srepkg_builder.build_inner_layer()
         self.srepkg_builder.build_mid_layer()
 
-        assert self.srepkg_builder.repkg_paths.srepkg_control_components.\
+        assert self.srepkg_builder.repkg_paths.srepkg_control_components. \
             exists()
         assert self.srepkg_builder.repkg_paths.srepkg_entry_points.exists()
         assert self.srepkg_builder.repkg_paths.srepkg_init.exists()
-        # assert self.srepkg_builder.repkg_paths.main_outer.exists()
         assert self.srepkg_builder.repkg_paths.pkg_names_mid.exists()
 
     def test_build_outer_layer(self):
@@ -73,11 +72,29 @@ class TestSrepkgBuilder(unittest.TestCase):
         assert self.srepkg_builder.repkg_paths.pkg_names_outer.exists()
         assert self.srepkg_builder.repkg_paths.manifest.exists()
 
+    def test_build_srepkg(self):
+        self.srepkg_builder.build_srepkg()
 
-# TODO add test to inspect contents of srepkg setup.cfg
+
+class TestSrepkgBuilderCustomDir(TestSrepkgBuilder):
+
+    def setUp(self) -> None:
+        if self.srepkg_pkgs_non_temp_dir.exists():
+            shutil.rmtree(self.srepkg_pkgs_non_temp_dir)
+
+        self.builder_src_paths, self.builder_dest_paths = \
+            tpc.calc_paths(
+                [str(self.orig_pkg_path), '--srepkg_build_dir',
+                 str(self.srepkg_pkgs_non_temp_dir)])
+        self.srepkg_builder = sb.SrepkgBuilder(
+            tpc.calc_paths.locals['orig_pkg_info'],
+            self.builder_src_paths, self.builder_dest_paths)
+
+    # TODO add test to inspect contents of srepkg setup.cfg
 
 
 class TestSrepkgBuilderNonSrcLayout(TestSrepkgBuilder, unittest.TestCase):
-    srepkg_root = test_case_data.package_test_cases.t_proj_srepkg_info.srepkg_root
-    orig_pkg_root = test_case_data.package_test_cases.t_proj_info.\
-        non_src_layout_pkg_root
+    orig_pkg_path = Path(__file__).parent.absolute() / 'test_case_data' / \
+                    'package_test_cases' / 't_proj'
+    srepkg_pkgs_non_temp_dir = Path(__file__).parent.absolute() / \
+                               'test_case_data' / 'package_test_cases' / 'srepkg_pkgs'

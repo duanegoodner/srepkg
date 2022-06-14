@@ -13,6 +13,7 @@ src/paths_class_builder/builder.py
 src/srepkg/__init__.py
 src/srepkg/archive_retriever.py
 src/srepkg/command_input.py
+src/srepkg/distribution_buillder.py
 src/srepkg/entry_points_builder.py
 src/srepkg/orig_pkg_inspector.py
 src/srepkg/path_calculator.py

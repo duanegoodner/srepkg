@@ -28,7 +28,7 @@ def get_args(*args):
     )
 
     parser.add_argument(
-        '--srepkg_location',
+        '--srepkg_build_dir',
         type=str,
         nargs='?',
         action='store',

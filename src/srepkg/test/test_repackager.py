@@ -7,22 +7,22 @@ import srepkg.repackager as repackager
 
 class TestRepackager(unittest.TestCase):
 
-    _srepkg_location = Path(__file__).parent.absolute() / 'test_srepkg_pkgs'
+    _srepkg_build_dir = Path(__file__).parent.absolute() / 'test_srepkg_pkgs'
 
     _pkg_refs = ['howdoi', 'numpy', 'cowsay']
 
     def SetUp(self):
-        if self._srepkg_location.exists():
-            shutil.rmtree(self._srepkg_location)
-        self._srepkg_location.mkdir()
+        if self._srepkg_build_dir.exists():
+            shutil.rmtree(self._srepkg_build_dir)
+        self._srepkg_build_dir.mkdir()
 
     def tearDown(self) -> None:
-        if self._srepkg_location.exists():
-            shutil.rmtree(self._srepkg_location)
+        if self._srepkg_build_dir.exists():
+            shutil.rmtree(self._srepkg_build_dir)
 
     def run_single_pkg_test(self, pkg_ref: str):
         my_repackager = repackager.Repackager(
-            pkg_ref, srepkg_location=self._srepkg_location)
+            pkg_ref, srepkg_build_dir=str(self._srepkg_build_dir))
         my_repackager.repackage()
 
     def test_testproj(self):

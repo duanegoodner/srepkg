@@ -15,6 +15,7 @@ from setuptools import sandbox
 import string
 import shutil
 import sys
+import tempfile
 import configparser
 import srepkg.distribution_buillder as db
 import srepkg.entry_points_builder as epb
@@ -205,9 +206,6 @@ class SrepkgBuilder:
             direct_copy_files=[
                 SrcDestPair(src=self._src_paths.srepkg_init,
                             dest=self._repkg_paths.srepkg_init),
-                # SrcDestPair(
-                #     src=self._src_paths.main_outer,
-                #     dest=self._repkg_paths.main_outer)
             ],
             template_file_writes=[
                 SrcDestPair(
@@ -239,39 +237,13 @@ class SrepkgBuilder:
     def build_distribution(self):
 
         dist_builder = db.DistributionBuilder(
-            pkg_src=self._repkg_paths.root,
+            pkg_src=self._repkg_paths.root.absolute(),
             archive_format='zip',
             output_dir=Path.cwd(),
             # TODO need better method and location for logging
-            log_dir=self._repkg_paths.root
 
         )
-
         return dist_builder.write_archive()
-
-    def write_archive(self, archive_format: str):
-        cwd = Path.cwd()
-        try:
-            os.chdir(str(self._repkg_paths.root))
-            print('Building source distribution of repackaged package')
-            log_path = self._repkg_paths.srepkg / 'log.txt'
-
-            with log_path.open(mode='x') as log:
-                subprocess.call(
-                    ['python', 'setup.py', 'sdist', '-d', str(cwd), '--quiet',
-                     '--formats=' + archive_format], stdout=log)
-
-
-
-            # with io.StringIO() as buffer, redirect_stdout(buffer):
-            #     sandbox.run_setup('setup.py', ['--fullname'])
-            #     archive_fullname = buffer.getvalue()
-        finally:
-            os.chdir(str(cwd))
-
-        # archive_filename = archive_fullname + '.' + archive_format
-        #
-        # return ''.join(archive_filename.split())
 
     def output_summary(self, archive_filename: str):
         print(f'Original package \'{self._orig_pkg_info.pkg_name}\' has been '
@@ -297,5 +269,6 @@ class SrepkgBuilder:
         self.build_outer_layer()
         # self.write_archive('zip')
         # archive = self.write_archive('zip')
+        # archive = self.write_archive()
         archive = self.build_distribution()
         self.output_summary(archive)

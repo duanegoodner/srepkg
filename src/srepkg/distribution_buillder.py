@@ -1,7 +1,6 @@
 import os
 import subprocess
 import tempfile
-import uuid
 from pathlib import Path
 
 
@@ -9,22 +8,15 @@ class DistributionBuilder:
 
     # TODO setup logs with standard logging module
     # TODO handle case if archive already exists
-    # TODO figure out why pkg_src param is a tuple
-    def __init__(
-            self,
-            pkg_src: Path,
-            archive_format: str,
-            output_dir: Path,
-            log_dir: Path
-    ):
+    # TODO figure out why pkg_src is a tuple even though Path passes as arg
+    def __init__(self, pkg_src: Path, archive_format: str, output_dir: Path):
 
-        self._pkg_src = pkg_src,
+        self._pkg_src = pkg_src
         self._archive_format = archive_format
         self._output_dir = output_dir
-        self._log_dir = log_dir
 
     def _get_archive_fullname(self) -> str:
-        assert Path.cwd().absolute() == self._pkg_src[0].absolute()
+        assert Path.cwd() == self._pkg_src
 
         fullname_file = tempfile.NamedTemporaryFile()
 
@@ -36,24 +28,23 @@ class DistributionBuilder:
 
         return fullname
 
-    def _build_archive_sdist(self, fullname: str):
-        assert Path.cwd().absolute() == self._pkg_src[0].absolute()
+    def _build_archive_sdist(self):
+        assert Path.cwd() == self._pkg_src
 
-        random_str = uuid.uuid4().hex
-        log_path = self._log_dir / (random_str + fullname + '-log.txt')
-        with log_path.open(mode='x') as log:
+        log_path = tempfile.NamedTemporaryFile()
+        with open(log_path.name, mode='w') as logfile:
             subprocess.call([
                 'python', 'setup.py', 'sdist', '-d', str(self._output_dir),
-                '--quiet', '--formats=' + self._archive_format], stdout=log)
+                '--quiet', '--formats=' + self._archive_format], stdout=logfile)
             print('Building source distribution of repackaged package')
 
     def write_archive(self):
         cwd = Path.cwd()
 
         try:
-            os.chdir(str(self._pkg_src[0]))
+            os.chdir(str(self._pkg_src))
             fullname = self._get_archive_fullname()
-            self._build_archive_sdist(fullname)
+            self._build_archive_sdist()
 
         finally:
             os.chdir(str(cwd))

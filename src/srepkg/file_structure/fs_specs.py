@@ -63,4 +63,5 @@ def get_builder_dest(root_name: str = 'dummy_root',
             SCF(pname='pkg_names.py', sc='pkg_names_outer'),
             SCF(pname='setup.cfg', sc='srepkg_setup_cfg'),
             SCF(pname='setup.py', sc='srepkg_setup_py')
-        ])]
+        ])
+    ]

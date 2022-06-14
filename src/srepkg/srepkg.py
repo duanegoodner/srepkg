@@ -19,9 +19,10 @@ def main():
     """
     args = ci.get_args()
     re.Repackager(
-        pkg_ref=args.pkg_ref,
-        srepkg_name=args.srepkg_name,
-        srepkg_location=args.srepkg_location
+        **vars(args)
+        # pkg_ref=args.pkg_ref,
+        # srepkg_name=args.srepkg_name,
+        # srepkg_build_dir=args.srepkg_build_dir
     ).repackage()
 
 
