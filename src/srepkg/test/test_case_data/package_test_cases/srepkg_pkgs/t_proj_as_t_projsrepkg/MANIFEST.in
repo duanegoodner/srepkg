@@ -1,3 +1,0 @@
-graft t_projsrepkg
-include inner_pkg_installer.py
-include pkg_names.py

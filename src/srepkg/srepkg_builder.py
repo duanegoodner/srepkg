@@ -3,20 +3,15 @@ Contains the SrepkgBuilder class that creates a copy of the original package and
 wraps the copied package with a file structure that forces it to run as a
 Srepkg.
 """
-import io
-import os
-import subprocess
-from contextlib import redirect_stdout
+import configparser
+import shutil
+import string
+import sys
+
 from typing import List, Callable, NamedTuple
 from pathlib import Path
 from enum import Enum
 
-from setuptools import sandbox
-import string
-import shutil
-import sys
-import tempfile
-import configparser
 import srepkg.distribution_buillder as db
 import srepkg.entry_points_builder as epb
 import custom_datatypes.builder_src_paths as bsp
@@ -94,9 +89,9 @@ class SrepkgBuilder:
         )
         self._entry_points_builder = epb.EntryPointsBuilder \
             .from_srepkg_builder_init_args(
-            orig_pkg_info=orig_pkg_info,
-            src_paths=src_paths,
-            repkg_paths=repkg_paths)
+                orig_pkg_info=orig_pkg_info,
+                src_paths=src_paths,
+                repkg_paths=repkg_paths)
 
     @property
     def orig_pkg_info(self):
@@ -267,8 +262,5 @@ class SrepkgBuilder:
         self.build_inner_layer()
         self.build_mid_layer()
         self.build_outer_layer()
-        # self.write_archive('zip')
-        # archive = self.write_archive('zip')
-        # archive = self.write_archive()
         archive = self.build_distribution()
         self.output_summary(archive)

@@ -8,7 +8,6 @@ class DistributionBuilder:
 
     # TODO setup logs with standard logging module
     # TODO handle case if archive already exists
-    # TODO figure out why pkg_src is a tuple even though Path passes as arg
     def __init__(self, pkg_src: Path, archive_format: str, output_dir: Path):
 
         self._pkg_src = pkg_src
@@ -16,7 +15,9 @@ class DistributionBuilder:
         self._output_dir = output_dir
 
     def _get_archive_fullname(self) -> str:
-        assert Path.cwd() == self._pkg_src
+        print(Path.cwd())
+        print(self._pkg_src)
+        assert 'setup.py' in [path.name for path in list(Path.cwd().iterdir())]
 
         fullname_file = tempfile.NamedTemporaryFile()
 
@@ -29,14 +30,14 @@ class DistributionBuilder:
         return fullname
 
     def _build_archive_sdist(self):
-        assert Path.cwd() == self._pkg_src
+        assert 'setup.py' in [path.name for path in list(Path.cwd().iterdir())]
 
         log_path = tempfile.NamedTemporaryFile()
+        print('Building source distribution of repackaged package')
         with open(log_path.name, mode='w') as logfile:
             subprocess.call([
                 'python', 'setup.py', 'sdist', '-d', str(self._output_dir),
                 '--quiet', '--formats=' + self._archive_format], stdout=logfile)
-            print('Building source distribution of repackaged package')
 
     def write_archive(self):
         cwd = Path.cwd()
