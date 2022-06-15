@@ -49,24 +49,24 @@ class InnerPkgInstaller:
         return self
 
     def install_inner_pkg(self):
-        if (self._paths.inner_src.parent / 'setup_off.py').exists():
-            (self._paths.inner_src.parent / 'setup_off.py').rename(
-                self._paths.inner_src.parent / 'setup.py')
-
-        if (self._paths.inner_src.parent / 'setup_off.cfg').exists():
-            (self._paths.inner_src.parent / 'setup_off.cfg').rename(
-                self._paths.inner_src.parent / 'setup.cfg')
+        # if (self._paths.inner_src.parent / 'setup_off.py').exists():
+        #     (self._paths.inner_src.parent / 'setup_off.py').rename(
+        #         self._paths.inner_src.parent / 'setup.py')
+        #
+        # if (self._paths.inner_src.parent / 'setup_off.cfg').exists():
+        #     (self._paths.inner_src.parent / 'setup_off.cfg').rename(
+        #         self._paths.inner_src.parent / 'setup.cfg')
 
         subprocess.call([self._paths.venv_pip, 'install',
                          self._paths.inner_src.parent / '.', '--quiet'])
 
-        if (self._paths.inner_src.parent / 'setup.py').exists():
-            (self._paths.inner_src.parent / 'setup.py').rename(
-                self._paths.inner_src.parent / 'setup_off.py')
-
-        if (self._paths.inner_src.parent / 'setup.cfg').exists():
-            (self._paths.inner_src.parent / 'setup.cfg').rename(
-                self._paths.inner_src.parent / 'setup_off.cfg')
+        # if (self._paths.inner_src.parent / 'setup.py').exists():
+        #     (self._paths.inner_src.parent / 'setup.py').rename(
+        #         self._paths.inner_src.parent / 'setup_off.py')
+        #
+        # if (self._paths.inner_src.parent / 'setup.cfg').exists():
+        #     (self._paths.inner_src.parent / 'setup.cfg').rename(
+        #         self._paths.inner_src.parent / 'setup_off.cfg')
         return self
 
 

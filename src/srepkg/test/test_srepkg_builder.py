@@ -35,20 +35,16 @@ class TestSrepkgBuilder(unittest.TestCase):
         self.srepkg_builder.copy_inner_package()
         assert self.srepkg_builder.repkg_paths.root.exists()
         assert self.srepkg_builder.repkg_paths.srepkg.exists()
-        assert self.srepkg_builder.repkg_paths.inner_setup_py_active.exists()
-        assert self.srepkg_builder.repkg_paths.inner_setup_cfg_active.exists()
+        assert self.srepkg_builder.repkg_paths.inner_setup_py.exists()
+        assert self.srepkg_builder.repkg_paths.inner_setup_cfg.exists()
 
     def test_build_inner_layer(self) -> None:
         self.srepkg_builder.build_inner_layer()
 
-        assert not self.srepkg_builder.repkg_paths.inner_setup_py_active \
+        assert self.srepkg_builder.repkg_paths.inner_setup_py \
             .exists()
-        assert (self.srepkg_builder.repkg_paths.inner_setup_cfg_active.parent /
-                'setup_off.py').exists()
-        assert not self.srepkg_builder.repkg_paths.inner_setup_cfg_active \
+        assert self.srepkg_builder.repkg_paths.inner_setup_cfg \
             .exists()
-        assert (self.srepkg_builder.repkg_paths.inner_setup_cfg_active.parent /
-                'setup_off.cfg').exists()
 
     #  TODO add test that creates ...entry.py files & checks existence / content
     def test_build_mid_layer(self):

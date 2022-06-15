@@ -85,8 +85,8 @@ class TestPathCalc(unittest.TestCase):
         srepkg_setup_cfg = srepkg_root / 'setup.cfg'
         srepkg_setup_py = srepkg_root / 'setup.py'
         srepkg_init = srepkg_path / '__init__.py'
-        inner_setup_cfg_active = srepkg_path / 'setup.cfg'
-        inner_setup_py_active = srepkg_path / 'setup.py'
+        inner_setup_cfg = srepkg_path / 'setup.cfg'
+        inner_setup_py = srepkg_path / 'setup.py'
 
         assert builder_dest_paths.root == srepkg_root
         assert builder_dest_paths.srepkg == srepkg_path
@@ -97,10 +97,10 @@ class TestPathCalc(unittest.TestCase):
         assert builder_dest_paths.srepkg_setup_cfg == srepkg_setup_cfg
         assert builder_dest_paths.srepkg_setup_py == srepkg_setup_py
         assert builder_dest_paths.srepkg_init == srepkg_init
-        assert builder_dest_paths.inner_setup_cfg_active == \
-               inner_setup_cfg_active
-        assert builder_dest_paths.inner_setup_py_active == \
-               inner_setup_py_active
+        assert builder_dest_paths.inner_setup_cfg == \
+               inner_setup_cfg
+        assert builder_dest_paths.inner_setup_py == \
+               inner_setup_py
 
 
 class TestPathCalcCustomDir(TestPathCalc):

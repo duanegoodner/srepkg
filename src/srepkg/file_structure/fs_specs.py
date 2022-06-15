@@ -51,12 +51,9 @@ def get_builder_dest(root_name: str = 'dummy_root',
                 # path to inner_pkg depends on orig_pkg file structure so don't
                 # even try to predict it here.
                 SCF(pname='__init__.py', sc='srepkg_init'),
-                # SCF(pname='__main__.py', sc='main_outer'),
                 SCF(pname='pkg_names.py', sc='pkg_names_mid'),
-                SCF(pname='setup.cfg', sc='inner_setup_cfg_active'),
-                SCF(pname='setup_off.cfg', sc='inner_setup_cfg_inactive'),
-                SCF(pname='setup.py', sc='inner_setup_py_active'),
-                SCF(pname='setup_off.py', sc='inner_setup_py_inactive')
+                SCF(pname='setup.cfg', sc='inner_setup_cfg'),
+                SCF(pname='setup.py', sc='inner_setup_py'),
             ]),
             SCF(pname='inner_pkg_installer.py', sc='inner_pkg_installer'),
             SCF(pname='MANIFEST.in', sc='manifest'),

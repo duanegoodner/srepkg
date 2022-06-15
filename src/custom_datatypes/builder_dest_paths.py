@@ -14,10 +14,8 @@ class BuilderDestPaths(NamedTuple):
     srepkg_entry_points_init: Path
     srepkg_init: Path
     pkg_names_mid: Path
-    inner_setup_cfg_active: Path
-    inner_setup_cfg_inactive: Path
-    inner_setup_py_active: Path
-    inner_setup_py_inactive: Path
+    inner_setup_cfg: Path
+    inner_setup_py: Path
     inner_pkg_installer: Path
     manifest: Path
     pkg_names_outer: Path

@@ -157,20 +157,6 @@ class SrepkgBuilder:
             print(f'File already exists at {str(src_dest.src)}.')
             sys.exit(self._build_errors.CopyDestinationPathExists.msg)
 
-    def inner_pkg_setup_off(self):
-        """
-        Bundle of all methods that modify the inner (aka original) package
-        inside the SRE-package.
-        """
-
-        if self._repkg_paths.inner_setup_py_active.exists():
-            self._repkg_paths.inner_setup_py_active.rename(
-                self._repkg_paths.inner_setup_py_inactive)
-
-        if self._repkg_paths.inner_setup_cfg_active.exists():
-            self._repkg_paths.inner_setup_cfg_active.rename(
-                self._repkg_paths.inner_setup_cfg_inactive)
-
     def build_srepkg_layer(
             self,
             call_methods: List[Callable] = None,
@@ -191,8 +177,7 @@ class SrepkgBuilder:
 
     def build_inner_layer(self):
         self.build_srepkg_layer(
-            call_methods=[self.copy_inner_package,
-                          self.inner_pkg_setup_off])
+            call_methods=[self.copy_inner_package])
 
     def build_mid_layer(self):
         self.build_srepkg_layer(
