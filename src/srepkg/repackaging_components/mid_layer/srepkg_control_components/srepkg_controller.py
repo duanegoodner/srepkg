@@ -14,7 +14,7 @@ class SrepkgController:
 
     @classmethod
     def default(cls, srepkg_root: Path, inner_pkg_name: str):
-        venv_root = srepkg_root / (inner_pkg_name + '_venv')
+        venv_root = srepkg_root / 'srepkg_venv'
         return cls(srepkg_root=srepkg_root, inner_pkg_name=inner_pkg_name,
                    venv_paths=VenvPaths.default(venv_root))
 
