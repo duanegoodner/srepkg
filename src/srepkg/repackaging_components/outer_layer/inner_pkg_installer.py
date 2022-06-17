@@ -150,8 +150,6 @@ class InnerPkgInstaller:
 
 
 def custom_command():
-    # inner_pkg_installer = InnerPkgInstaller.from_inner_src(
-    #     Path(__file__).parent.absolute() / sre_pkg_name / inner_pkg_name)
 
     inner_pkg_installer = InnerPkgInstaller(
         venv_path=Path(__file__).parent.absolute() / sre_pkg_name /

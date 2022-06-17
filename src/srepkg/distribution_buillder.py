@@ -14,9 +14,8 @@ class DistributionBuilder:
         self._archive_format = archive_format
         self._output_dir = output_dir
 
-    def _get_archive_fullname(self) -> str:
-        print(Path.cwd())
-        print(self._pkg_src)
+    @staticmethod
+    def _get_archive_fullname() -> str:
         assert 'setup.py' in [path.name for path in list(Path.cwd().iterdir())]
 
         fullname_file = tempfile.NamedTemporaryFile()
