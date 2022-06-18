@@ -181,7 +181,7 @@ class _SetupCfgFileReader(_SetupFileReader):
 class _SetupPyFileReader(_SetupFileReader):
 
     _doi_keys = SetupKeys(
-                    single_level=['name', 'package_dir', 'dummy'],
+                    single_level=['name', 'version', 'package_dir', 'dummy'],
                     two_level=[('entry_points', 'console_scripts')])
 
     def __init__(self, setup_file: Path):

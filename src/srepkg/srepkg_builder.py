@@ -135,6 +135,8 @@ class SrepkgBuilder:
 
         sr_config['metadata']['name'] = self._repkg_paths.srepkg.name
 
+        sr_config['metadata']['version'] = self._orig_pkg_info.version
+
         with open(self._repkg_paths.srepkg_setup_cfg, 'w') as sr_configfile:
             sr_config.write(sr_configfile)
 

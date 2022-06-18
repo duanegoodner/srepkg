@@ -80,9 +80,13 @@ class OrigPkgInspector:
                 (not self._merged_data['name']):
             sys.exit(PkgError.PkgNameNotFound.msg)
 
-        if ('console_scripts' not in self._merged_data) or\
+        if ('console_scripts' not in self._merged_data) or \
                 (not self._merged_data['console_scripts']):
             sys.exit(PkgError.NoCSE.msg)
+
+        if ('version' not in self._merged_data) or \
+                (not self._merged_data['version']):
+            self._merged_data['version'] = '0.0.0'
 
         return self
 
@@ -92,5 +96,6 @@ class OrigPkgInspector:
 
         return cd.nt.OrigPkgInfo(
             pkg_name=self._merged_data['name'],
+            version=self._merged_data['version'],
             root_path=self._orig_pkg_path,
             entry_pts=self._merged_data['console_scripts'])

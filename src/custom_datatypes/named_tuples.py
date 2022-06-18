@@ -1,8 +1,6 @@
 from pathlib import Path
 from typing import NamedTuple, List
 
-# TODO divide up into more specific modules
-
 
 class CSEntry(NamedTuple):
     command: str
@@ -12,6 +10,7 @@ class CSEntry(NamedTuple):
 
 class OrigPkgInfo(NamedTuple):
     pkg_name: str
+    version: str
     root_path: Path
     entry_pts: List[CSEntry]
 
