@@ -24,7 +24,8 @@ def get_args(*args):
         type=str,
         nargs='?',
         action='store',
-        help="Custom name to be used for repackaged package."
+        help="Name to be used for repackaged package. Default is "
+             "<ORIGINAL_PACKAGE_NAME + srepkg>"
     )
 
     parser.add_argument(
@@ -32,6 +33,7 @@ def get_args(*args):
         type=str,
         nargs='?',
         action='store',
-        help='Directory where srepkg will be saved. Default is ~/srepkg_pkgs.'
+        help='Directory where non-compressed repackage will be built and saved. '
+             'If not specified, srepkg is built in a temp directory .'
     )
     return parser.parse_args(*args)

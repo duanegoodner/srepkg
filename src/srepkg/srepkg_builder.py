@@ -66,7 +66,7 @@ class SrepkgBuilder:
     """
 
     # file patterns that are not copied into the SRE-packaged app
-    _ignore_types = ['*.git', '*.gitignore', '*.idea', '*__pycache__']
+    # _ignore_types = ['*.git', '*.gitignore', '*.idea', '*__pycache__']
     _build_errors = SrepkgBuilderErrors
 
     def __init__(self, orig_pkg_info: nt.OrigPkgInfo,
@@ -109,8 +109,7 @@ class SrepkgBuilder:
         """Copies original package to SRE-package directory"""
         try:
             shutil.copytree(self._orig_pkg_info.root_path,
-                            self._repkg_paths.srepkg,
-                            ignore=shutil.ignore_patterns(*self._ignore_types))
+                            self._repkg_paths.srepkg)
         except FileNotFoundError:
             sys.exit(self._build_errors.OrigPkgPathNotFound.msg)
         except FileExistsError:

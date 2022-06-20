@@ -29,6 +29,8 @@ class _Repackager(abc.ABC):
             self._srepkg_temp_dir.cleanup()
 
     def _repackage_local(self, orig_pkg: Path):
+        print(f'Repackaging {orig_pkg.name}')
+
         orig_pkg_info = opi.OrigPkgInspector(str(orig_pkg)).get_orig_pkg_info()
 
         builder_src_paths, builder_dest_paths = pc.BuilderPathsCalculator(
@@ -54,10 +56,10 @@ class _LocalRepackager(_Repackager):
 class _RemoteRepackager(_Repackager):
 
     def _download_archive(self, archive_dir: tempfile.TemporaryDirectory):
+        print(f'Downloading {self._pkg_ref}')
         subprocess.call([
             'pip',
             'download',
-            '-v',
             '--dest',
             archive_dir.name,
             self._pkg_ref,

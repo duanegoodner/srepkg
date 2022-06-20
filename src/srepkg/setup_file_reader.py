@@ -113,8 +113,14 @@ class _SetupFileReader(abc.ABC):
 class _SetupCfgFileReader(_SetupFileReader):
     _doi_keys = SetupKeys(
         single_level=[],
-        two_level=[('metadata', 'name'), ('options', 'package_dir'),
-                   ('options.entry_points', 'console_scripts')])
+        two_level=[
+            ('metadata', 'name'),
+            ('metadata', 'url'),
+            ('metadata', 'author'),
+            ('metadata', 'author_email'),
+            ('metadata', 'long_description'),
+            ('options', 'package_dir'),
+            ('options.entry_points', 'console_scripts')])
 
     def __init__(self, setup_file: Path):
         super().__init__(setup_file)
@@ -181,7 +187,8 @@ class _SetupCfgFileReader(_SetupFileReader):
 class _SetupPyFileReader(_SetupFileReader):
 
     _doi_keys = SetupKeys(
-                    single_level=['name', 'version', 'package_dir', 'dummy'],
+                    single_level=['name', 'version', 'package_dir', 'author',
+                                  'author_email', 'url', 'long_description'],
                     two_level=[('entry_points', 'console_scripts')])
 
     def __init__(self, setup_file: Path):
