@@ -65,13 +65,12 @@ class SrepkgBuilder:
     package.
     """
 
-    # file patterns that are not copied into the SRE-packaged app
-    # _ignore_types = ['*.git', '*.gitignore', '*.idea', '*__pycache__']
     _build_errors = SrepkgBuilderErrors
 
     def __init__(self, orig_pkg_info: nt.OrigPkgInfo,
                  src_paths: bsp.BuilderSrcPaths,
-                 repkg_paths: bdp.BuilderDestPaths):
+                 repkg_paths: bdp.BuilderDestPaths,
+                 dist_out_dir: Path):
         """
         Construct a new SrepkgBuilder
         :param src_paths: BuilderSrcPaths namedtuple
@@ -92,6 +91,7 @@ class SrepkgBuilder:
                 orig_pkg_info=orig_pkg_info,
                 src_paths=src_paths,
                 repkg_paths=repkg_paths)
+        self._dist_out_dir = dist_out_dir
 
     @property
     def orig_pkg_info(self):
@@ -220,7 +220,7 @@ class SrepkgBuilder:
         dist_builder = db.DistributionBuilder(
             pkg_src=self._repkg_paths.root.absolute(),
             archive_format='zip',
-            output_dir=Path.cwd(),
+            output_dir=self._dist_out_dir,
             # TODO need better method and location for logging
 
         )

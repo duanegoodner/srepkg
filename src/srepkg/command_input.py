@@ -33,7 +33,23 @@ def get_args(*args):
         type=str,
         nargs='?',
         action='store',
-        help='Directory where non-compressed repackage will be built and saved. '
-             'If not specified, srepkg is built in a temp directory .'
+        help='Directory where non-compressed repackage will be built and saved.'
+             ' If not specified, srepkg is built in a temp directory and '
+             'deleted after distribution archive creation.'
     )
+
+    parser.add_argument(
+        '--dist_out_dir',
+        type=str,
+        nargs='?',
+        action='store',
+        help='Directory where srepkg distribution archive is saved. Default is'
+             ' the current working directory.'
+    )
+
     return parser.parse_args(*args)
+
+
+
+
+

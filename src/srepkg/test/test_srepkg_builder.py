@@ -11,21 +11,29 @@ class TestSrepkgBuilder(unittest.TestCase):
                     'package_test_cases' / 't_proj'
     srepkg_pkgs_non_temp_dir = Path(__file__).parent.absolute() / \
                                'test_case_data' / 'package_test_cases' / 'srepkg_pkgs'
+    srepkg_dist_dir = Path(__file__).parent.absolute() / 'test_srepkg_dists'
 
     def setUp(self) -> None:
         if self.srepkg_pkgs_non_temp_dir.exists():
             shutil.rmtree(self.srepkg_pkgs_non_temp_dir)
+
+        if self.srepkg_dist_dir.exists():
+            shutil.rmtree(self.srepkg_dist_dir)
 
         self.builder_src_paths, self.builder_dest_paths = \
             tpc.calc_paths(
                 [str(self.orig_pkg_path)])
         self.srepkg_builder = sb.SrepkgBuilder(
             tpc.calc_paths.locals['orig_pkg_info'],
-            self.builder_src_paths, self.builder_dest_paths)
+            self.builder_src_paths, self.builder_dest_paths,
+            self.srepkg_dist_dir)
 
     def tearDown(self) -> None:
         if self.srepkg_pkgs_non_temp_dir.exists():
             shutil.rmtree(self.srepkg_pkgs_non_temp_dir)
+
+        if self.srepkg_dist_dir.exists():
+            shutil.rmtree(self.srepkg_dist_dir)
 
     def test_srepkg_builder_paths(self) -> None:
         assert self.srepkg_builder.src_paths == self.builder_src_paths
@@ -78,13 +86,17 @@ class TestSrepkgBuilderCustomDir(TestSrepkgBuilder):
         if self.srepkg_pkgs_non_temp_dir.exists():
             shutil.rmtree(self.srepkg_pkgs_non_temp_dir)
 
+        if self.srepkg_dist_dir.exists():
+            shutil.rmtree(self.srepkg_dist_dir)
+
         self.builder_src_paths, self.builder_dest_paths = \
             tpc.calc_paths(
                 [str(self.orig_pkg_path), '--srepkg_build_dir',
                  str(self.srepkg_pkgs_non_temp_dir)])
         self.srepkg_builder = sb.SrepkgBuilder(
             tpc.calc_paths.locals['orig_pkg_info'],
-            self.builder_src_paths, self.builder_dest_paths)
+            self.builder_src_paths, self.builder_dest_paths,
+            self.srepkg_dist_dir)
 
     # TODO add test to inspect contents of srepkg setup.cfg
 
@@ -93,4 +105,4 @@ class TestSrepkgBuilderNonSrcLayout(TestSrepkgBuilder, unittest.TestCase):
     orig_pkg_path = Path(__file__).parent.absolute() / 'test_case_data' / \
                     'package_test_cases' / 't_proj'
     srepkg_pkgs_non_temp_dir = Path(__file__).parent.absolute() / \
-                               'test_case_data' / 'package_test_cases' / 'srepkg_pkgs'
+        'test_case_data' / 'package_test_cases' / 'srepkg_pkgs'

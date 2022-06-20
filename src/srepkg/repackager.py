@@ -14,7 +14,8 @@ class _Repackager(abc.ABC):
     def __init__(self,
                  pkg_ref: str,
                  srepkg_name: str = None,
-                 srepkg_build_dir: str = None):
+                 srepkg_build_dir: str = None,
+                 dist_out_dir: str = None):
         self._pkg_ref = pkg_ref
         self._srepkg_name = srepkg_name
         self._srepkg_temp_dir = None
@@ -23,6 +24,10 @@ class _Repackager(abc.ABC):
             self._srepkg_build_dir = Path(self._srepkg_temp_dir.name)
         else:
             self._srepkg_build_dir = Path(srepkg_build_dir)
+        if dist_out_dir:
+            self._dist_out_dir = Path(dist_out_dir)
+        else:
+            self._dist_out_dir = Path.cwd()
 
     def _cleanup_srepkg_temp_dir(self):
         if self._srepkg_temp_dir:
@@ -38,7 +43,7 @@ class _Repackager(abc.ABC):
             .calc_builder_paths()
 
         sb.SrepkgBuilder(orig_pkg_info, builder_src_paths,
-                         builder_dest_paths).build_srepkg()
+                         builder_dest_paths, self._dist_out_dir).build_srepkg()
 
         self._cleanup_srepkg_temp_dir()
 
@@ -99,10 +104,12 @@ class Repackager:
     def __init__(self,
                  pkg_ref: str,
                  srepkg_build_dir: str = None,
-                 srepkg_name: str = None):
+                 srepkg_name: str = None,
+                 dist_out_dir: str = None):
         self._pkg_ref = pkg_ref
         self._srepkg_build_dir = srepkg_build_dir
         self._srepkg_name = srepkg_name
+        self._dist_out_dir = dist_out_dir
 
     @property
     def _is_local(self):
@@ -114,12 +121,14 @@ class Repackager:
             _LocalRepackager(
                 self._pkg_ref,
                 self._srepkg_name,
-                self._srepkg_build_dir
+                self._srepkg_build_dir,
+                self._dist_out_dir
             ).repackage()
         else:
             _RemoteRepackager(
                 self._pkg_ref,
                 self._srepkg_name,
-                self._srepkg_build_dir
+                self._srepkg_build_dir,
+                self._dist_out_dir
             ).repackage()
 
