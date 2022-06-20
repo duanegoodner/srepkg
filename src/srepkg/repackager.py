@@ -104,7 +104,6 @@ class Repackager:
         self._srepkg_build_dir = srepkg_build_dir
         self._srepkg_name = srepkg_name
 
-
     @property
     def _is_local(self):
         return (Path(self._pkg_ref).is_dir()) and \
@@ -124,12 +123,3 @@ class Repackager:
                 self._srepkg_build_dir
             ).repackage()
 
-# def repackage_local(orig_pkg: str, srepkg_name: str):
-#
-#     orig_pkg_info = opi.OrigPkgInspector(orig_pkg).get_orig_pkg_info()
-#
-#     builder_src_paths, builder_dest_paths = pc.BuilderPathsCalculator(
-#         orig_pkg_info, srepkg_name).calc_builder_paths()
-#
-#     sb.SrepkgBuilder(orig_pkg_info, builder_src_paths,
-#                      builder_dest_paths).build_srepkg()
