@@ -4,11 +4,9 @@ import unittest
 import pytest
 from pathlib import Path
 from typing import NamedTuple
-import srepkg.test.test_case_data as test_case_data
 import srepkg.orig_pkg_inspector as opi
-import srepkg.test.test_case_data.setup_files.sfr_expected_output as ev
-import srepkg.test.test_case_data.package_test_cases.expected_cfg_data as ecd
-import srepkg.setup_file_reader as sfr
+import srepkg.test.sfr_valid_cases.sfr_expected_output as ev
+import srepkg.test.package_test_cases.expected_cfg_data as ecd
 
 ErrorTest = NamedTuple(
     'ErrorTest', [('cfg_dir_name', str), ('expected_err', opi.PkgError)])
@@ -35,8 +33,8 @@ error_tests = [
 
 
 def sys_exit_condition(condition: ErrorTest):
-    setup_cfg_dir = Path(__file__).parent / 'test_case_data' / \
-                    'setup_error_cases' / condition.cfg_dir_name
+    setup_cfg_dir = Path(__file__).parent / 'sfr_error_cases' /\
+                    condition.cfg_dir_name
     orig_pkg_inspector = opi.OrigPkgInspector(str(setup_cfg_dir))
     with pytest.raises(SystemExit) as e:
         orig_pkg_info = orig_pkg_inspector.get_orig_pkg_info()
@@ -52,8 +50,7 @@ class TestWarningConditions(unittest.TestCase):
 
     @property
     def base_dir(self):
-        return Path(__file__).parent / 'test_case_data' / \
-               'setup_error_cases'
+        return Path(__file__).parent / 'sfr_error_cases'
 
     @property
     @abc.abstractmethod
@@ -82,8 +79,8 @@ class TestOPI(unittest.TestCase):
 
     @property
     def base_dir(self):
-        return Path(__file__).parent.absolute() / 'test_case_data' / \
-               'setup_files'
+        return Path(__file__).parent.absolute() /\
+               'sfr_valid_cases'
 
     @property
     def setup_dir(self):
@@ -149,8 +146,7 @@ class TestOPISrcLayoutNoPy(TestOPI):
 
 class TestOPIFullPkgTNonSrc(TestOPI):
     dataset_name = 't_nonsrc'
-    base_dir = Path(__file__).parent.absolute() / 'test_case_data' / \
-               'package_test_cases'
+    base_dir = Path(__file__).parent.absolute() / 'package_test_cases'
     full_expected_data = getattr(ecd, dataset_name)
     expected_data = {
         '.cfg': ev.get_final_data(full_expected_data['.cfg']),

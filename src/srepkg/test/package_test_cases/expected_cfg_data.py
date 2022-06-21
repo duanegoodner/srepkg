@@ -31,3 +31,18 @@ t_proj = {
         'format_matched': {}
     }
 }
+
+testproj = {
+    '.cfg': {
+        'format_matched': {
+            'name': 'testproj',
+            'console_scripts': [
+                'my_project = testproj.app:run',
+                'my_test = testproj.test:simple_test',
+            ]
+        }
+    },
+    '.py': {
+        'format_matched': {}
+    }
+}

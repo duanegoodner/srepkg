@@ -3,14 +3,13 @@ import shutil
 from pathlib import Path
 import srepkg.srepkg_builder as sb
 import srepkg.test.test_path_calculator as tpc
-import srepkg.test.test_case_data as test_case_data
 
 
 class TestSrepkgBuilder(unittest.TestCase):
-    orig_pkg_path = Path(__file__).parent.absolute() / 'test_case_data' / \
-                    'package_test_cases' / 't_proj'
+    orig_pkg_path = Path(__file__).parent.absolute() / \
+        'package_test_cases' / 't_proj'
     srepkg_pkgs_non_temp_dir = Path(__file__).parent.absolute() / \
-                               'test_case_data' / 'package_test_cases' / 'srepkg_pkgs'
+        'package_test_cases' / 'srepkg_pkgs'
     srepkg_dist_dir = Path(__file__).parent.absolute() / 'test_srepkg_dists'
 
     def setUp(self) -> None:
@@ -91,7 +90,7 @@ class TestSrepkgBuilderCustomDir(TestSrepkgBuilder):
 
         self.builder_src_paths, self.builder_dest_paths = \
             tpc.calc_paths(
-                [str(self.orig_pkg_path), '--srepkg_build_dir',
+                [str(self.orig_pkg_path), '--construction_dir',
                  str(self.srepkg_pkgs_non_temp_dir)])
         self.srepkg_builder = sb.SrepkgBuilder(
             tpc.calc_paths.locals['orig_pkg_info'],
@@ -102,7 +101,7 @@ class TestSrepkgBuilderCustomDir(TestSrepkgBuilder):
 
 
 class TestSrepkgBuilderNonSrcLayout(TestSrepkgBuilder, unittest.TestCase):
-    orig_pkg_path = Path(__file__).parent.absolute() / 'test_case_data' / \
+    orig_pkg_path = Path(__file__).parent.absolute() / \
                     'package_test_cases' / 't_proj'
     srepkg_pkgs_non_temp_dir = Path(__file__).parent.absolute() / \
-        'test_case_data' / 'package_test_cases' / 'srepkg_pkgs'
+        'package_test_cases' / 'srepkg_pkgs'

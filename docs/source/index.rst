@@ -1,0 +1,35 @@
+.. srepkg documentation master file, created by
+   sphinx-quickstart on Mon Jun 20 16:55:02 2022.
+   You can adapt this file completely to your liking, but it should at least
+   contain the root `toctree` directive.
+
+Welcome to srepkg's documentation!
+==================================
+
+**srepkg** adds an isolation layer to a Python command line  interface (CLI) apps. This layer ensures users can only install a "repackaged" app in an isolated virtual environment but can still access it from outside that environment.
+
+Contents
+--------
+
+.. toctree::
+
+   description
+
+.. toctree::
+
+   getting_started
+
+.. toctree::
+
+   usage
+
+.. toctree::
+
+   examples
+
+.. toctree::
+
+   comparison_with_a_similar_tool
+
+
+

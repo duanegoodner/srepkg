@@ -5,28 +5,28 @@ from pathlib import Path
 import srepkg.command_input as ci
 import srepkg.orig_pkg_inspector as opi
 import srepkg.path_calculator as pc
-import srepkg.test.test_case_data as test_case_data
 import srepkg.test.t_utils as tu
 
-repackaging_components = test_case_data.paths.repackaging_components_actual
+repackaging_components = Path(__file__).parent.parent.absolute() /\
+                         'repackaging_components'
 
 
 @tu.p_loc.PersistentLocals
 def calc_paths(ci_args):
     args = ci.get_args(ci_args)
-    orig_pkg_info = opi.OrigPkgInspector(args.pkg_ref).get_orig_pkg_info()
+    orig_pkg_info = opi.OrigPkgInspector(args.orig_pkg_ref).get_orig_pkg_info()
 
     srepkg_temp_dir = None
 
-    if not args.srepkg_build_dir:
+    if not args.construction_dir:
         srepkg_temp_dir = tempfile.TemporaryDirectory()
-        srepkg_build_dir = Path(srepkg_temp_dir.name)
+        construction_dir = Path(srepkg_temp_dir.name)
     else:
-        srepkg_build_dir = Path(args.srepkg_build_dir)
+        construction_dir = Path(args.construction_dir)
 
     builder_paths_calculator = pc.BuilderPathsCalculator(
         orig_pkg_info=orig_pkg_info,
-        srepkg_build_dir=srepkg_build_dir,
+        construction_dir=construction_dir,
         srepkg_custom_name=args.srepkg_name)
 
     # these local vars not needed to reach return value. defining here so
@@ -44,10 +44,10 @@ def calc_paths(ci_args):
 
 
 class TestPathCalc(unittest.TestCase):
-    orig_pkg_path = Path(__file__).parent.absolute() / 'test_case_data' / \
-                    'package_test_cases' / 't_proj'
+    orig_pkg_path = Path(__file__).parent.absolute() / 'package_test_cases' /\
+                    't_proj'
     srepkg_pkgs_non_temp_dir = Path(__file__).parent.absolute() / \
-        'test_case_data' / 'package_test_cases' / 'srepkg_pkgs'
+        'package_test_cases' / 'srepkg_pkgs'
 
     def setUp(self) -> None:
         if self.srepkg_pkgs_non_temp_dir.exists():
@@ -75,7 +75,7 @@ class TestPathCalc(unittest.TestCase):
 
     def test_builder_dest_paths(self):
         builder_dest_paths = calc_paths.locals['builder_dest_paths']
-        srepkg_build_dir = calc_paths.locals['srepkg_build_dir']
+        construction_dir = calc_paths.locals['construction_dir']
         srepkg_root = calc_paths.locals['srepkg_root']
 
         srepkg_path = srepkg_root / calc_paths.locals['final_srepkg_name']
@@ -110,7 +110,7 @@ class TestPathCalcCustomDir(TestPathCalc):
             shutil.rmtree(self.srepkg_pkgs_non_temp_dir)
 
         self.builder_src_paths, self.builder_dest_paths = \
-            calc_paths([str(self.orig_pkg_path), '--srepkg_build_dir',
+            calc_paths([str(self.orig_pkg_path), '--construction_dir',
                         str(self.srepkg_pkgs_non_temp_dir)])
 
 
@@ -122,7 +122,7 @@ class TestPathCalcCustomDirAndPkgName(TestPathCalc):
 
         self.builder_src_paths, self.builder_dest_paths = \
             calc_paths([str(self.orig_pkg_path),
-                        '--srepkg_build_dir',
+                        '--construction_dir',
                         str(self.srepkg_pkgs_non_temp_dir),
                         '--srepkg_name',
                         'custom_name'])

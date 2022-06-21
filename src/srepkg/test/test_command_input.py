@@ -14,31 +14,31 @@ def test_zero_args(capsys):
     stderr = capsys.readouterr().err
     expected_msg_components = [
         'usage',
-        '[-h] [--srepkg_name [SREPKG_NAME]]',
-        '[--srepkg_build_dir [SREPKG_BUILD_DIR]]',
+        '[-h] [-n [SREPKG_NAME]]',
+        '[-c [CONSTRUCTION_DIR]]',
         'error: the following arguments are required: '
-        'pkg_ref'
+        'orig_pkg_ref'
     ]
     assert all([component in stderr for component in expected_msg_components])
 
 
 def test_one_arg():
     args = ci.get_args([arg_1])
-    assert args.pkg_ref == \
+    assert args.orig_pkg_ref == \
            str(Path.home() / 'dproj' / 'my_project')
     assert args.srepkg_name is None
 
 
 def test_valid_custom_name():
     args = ci.get_args([arg_1, '--srepkg_name', arg_2])
-    assert args.pkg_ref == str(Path.home() / 'dproj' / 'my_project')
+    assert args.orig_pkg_ref == str(Path.home() / 'dproj' / 'my_project')
     assert args.srepkg_name == 'custom_package_name'
 
 
-def test_custom_srepkg_build_dir():
-    args = ci.get_args([arg_1, '--srepkg_build_dir', arg_3])
-    assert args.pkg_ref == str(Path.home() / 'dproj' / 'my_project')
-    assert args.srepkg_build_dir == str(Path.home() / 'srepkg_pkgs_alternate')
+def test_custom_construction_dir():
+    args = ci.get_args([arg_1, '--construction_dir', arg_3])
+    assert args.orig_pkg_ref == str(Path.home() / 'dproj' / 'my_project')
+    assert args.construction_dir == str(Path.home() / 'srepkg_pkgs_alternate')
 
 
 def test_too_many_args(capsys):
@@ -47,8 +47,8 @@ def test_too_many_args(capsys):
     stderr = capsys.readouterr().err
     expected_msg_components = [
         'usage',
-        '[-h] [--srepkg_name [SREPKG_NAME]]',
-        '[--srepkg_build_dir [SREPKG_BUILD_DIR]]',
+        '[-h] [-n [SREPKG_NAME]]',
+        '[-c [CONSTRUCTION_DIR]]',
         'error: unrecognized arguments:',
         'extra_arg'
     ]

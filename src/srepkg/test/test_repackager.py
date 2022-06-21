@@ -7,30 +7,30 @@ import srepkg.repackager as repackager
 
 class TestRepackager(unittest.TestCase):
 
-    _srepkg_build_dir = Path(__file__).parent.absolute() / 'test_srepkg_pkgs'
+    _construction_dir = Path(__file__).parent.absolute() / 'test_srepkg_pkgs'
     _srepkg_dist_dir = Path(__file__).parent.absolute() / 'test_srepkg_dists'
 
-    _pkg_refs = ['howdoi', 'numpy', 'cowsay']
+    _orig_pkg_refs = ['howdoi', 'numpy', 'cowsay']
 
     def SetUp(self):
-        if self._srepkg_build_dir.exists():
-            shutil.rmtree(self._srepkg_build_dir)
-        self._srepkg_build_dir.mkdir()
+        if self._construction_dir.exists():
+            shutil.rmtree(self._construction_dir)
+        self._construction_dir.mkdir()
 
         if self._srepkg_dist_dir.exists():
             shutil.rmtree(self._srepkg_dist_dir)
         self._srepkg_dist_dir.mkdir()
 
     def tearDown(self) -> None:
-        if self._srepkg_build_dir.exists():
-            shutil.rmtree(self._srepkg_build_dir)
+        if self._construction_dir.exists():
+            shutil.rmtree(self._construction_dir)
 
         if self._srepkg_dist_dir.exists():
             shutil.rmtree(self._srepkg_dist_dir)
 
-    def run_single_pkg_test(self, pkg_ref: str):
+    def run_single_pkg_test(self, orig_pkg_ref: str):
         my_repackager = repackager.Repackager(
-            pkg_ref, srepkg_build_dir=str(self._srepkg_build_dir),
+            orig_pkg_ref, construction_dir=str(self._construction_dir),
             dist_out_dir=str(self._srepkg_dist_dir))
         my_repackager.repackage()
 

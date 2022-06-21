@@ -25,13 +25,13 @@ class BuilderPathsCalculator:
     def __init__(
             self,
             orig_pkg_info: nt.OrigPkgInfo,
-            srepkg_build_dir: Path,
+            construction_dir: Path,
             srepkg_custom_name: str = None
     ):
 
         self._orig_pkg_info = orig_pkg_info
         self._srepkg_custom_name = srepkg_custom_name
-        self._srepkg_build_dir = srepkg_build_dir
+        self._construction_dir = construction_dir
 
     @property
     def _srepkg_name(self):
@@ -42,7 +42,7 @@ class BuilderPathsCalculator:
 
     @property
     def _srepkg_root(self):
-        return self._srepkg_build_dir / (self._orig_pkg_info.pkg_name + '_as_' +
+        return self._construction_dir / (self._orig_pkg_info.pkg_name + '_as_' +
                                          self._srepkg_name)
 
     def _validate_srepkg_root(self):
@@ -68,7 +68,7 @@ class BuilderPathsCalculator:
 
         dest_file_util = pb.fs_util.FileStructureUtil(
             file_struct=builder_dest_structure,
-            root_path=self._srepkg_build_dir
+            root_path=self._construction_dir
         )
 
         dest_paths = dest_file_util.get_path_names()

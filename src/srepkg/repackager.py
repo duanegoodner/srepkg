@@ -12,18 +12,18 @@ import srepkg.srepkg_builder as sb
 class _Repackager(abc.ABC):
 
     def __init__(self,
-                 pkg_ref: str,
+                 orig_pkg_ref: str,
                  srepkg_name: str = None,
-                 srepkg_build_dir: str = None,
+                 construction_dir: str = None,
                  dist_out_dir: str = None):
-        self._pkg_ref = pkg_ref
+        self._orig_pkg_ref = orig_pkg_ref
         self._srepkg_name = srepkg_name
         self._srepkg_temp_dir = None
-        if not srepkg_build_dir:
+        if not construction_dir:
             self._srepkg_temp_dir = tempfile.TemporaryDirectory()
-            self._srepkg_build_dir = Path(self._srepkg_temp_dir.name)
+            self._construction_dir = Path(self._srepkg_temp_dir.name)
         else:
-            self._srepkg_build_dir = Path(srepkg_build_dir)
+            self._construction_dir = Path(construction_dir)
         if dist_out_dir:
             self._dist_out_dir = Path(dist_out_dir)
         else:
@@ -39,7 +39,7 @@ class _Repackager(abc.ABC):
         orig_pkg_info = opi.OrigPkgInspector(str(orig_pkg)).get_orig_pkg_info()
 
         builder_src_paths, builder_dest_paths = pc.BuilderPathsCalculator(
-            orig_pkg_info, self._srepkg_build_dir, self._srepkg_name) \
+            orig_pkg_info, self._construction_dir, self._srepkg_name) \
             .calc_builder_paths()
 
         sb.SrepkgBuilder(orig_pkg_info, builder_src_paths,
@@ -55,19 +55,19 @@ class _Repackager(abc.ABC):
 class _LocalRepackager(_Repackager):
 
     def repackage(self):
-        self._repackage_local(Path(self._pkg_ref))
+        self._repackage_local(Path(self._orig_pkg_ref))
 
 
 class _RemoteRepackager(_Repackager):
 
     def _download_archive(self, archive_dir: tempfile.TemporaryDirectory):
-        print(f'Downloading {self._pkg_ref}')
+        print(f'Downloading {self._orig_pkg_ref}')
         subprocess.call([
             'pip',
             'download',
             '--dest',
             archive_dir.name,
-            self._pkg_ref,
+            self._orig_pkg_ref,
             '--no-binary',
             ':all:',
             '--no-deps',
@@ -102,33 +102,33 @@ class _RemoteRepackager(_Repackager):
 
 class Repackager:
     def __init__(self,
-                 pkg_ref: str,
-                 srepkg_build_dir: str = None,
+                 orig_pkg_ref: str,
+                 construction_dir: str = None,
                  srepkg_name: str = None,
                  dist_out_dir: str = None):
-        self._pkg_ref = pkg_ref
-        self._srepkg_build_dir = srepkg_build_dir
+        self._orig_pkg_ref = orig_pkg_ref
+        self._construction_dir = construction_dir
         self._srepkg_name = srepkg_name
         self._dist_out_dir = dist_out_dir
 
     @property
     def _is_local(self):
-        return (Path(self._pkg_ref).is_dir()) and \
-               not all([letter.isalnum() for letter in self._pkg_ref])
+        return (Path(self._orig_pkg_ref).is_dir()) and \
+               not all([letter.isalnum() for letter in self._orig_pkg_ref])
 
     def repackage(self):
         if self._is_local:
             _LocalRepackager(
-                self._pkg_ref,
+                self._orig_pkg_ref,
                 self._srepkg_name,
-                self._srepkg_build_dir,
+                self._construction_dir,
                 self._dist_out_dir
             ).repackage()
         else:
             _RemoteRepackager(
-                self._pkg_ref,
+                self._orig_pkg_ref,
                 self._srepkg_name,
-                self._srepkg_build_dir,
+                self._construction_dir,
                 self._dist_out_dir
             ).repackage()
 

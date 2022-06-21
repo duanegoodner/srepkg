@@ -3,7 +3,7 @@ import unittest
 from pathlib import Path
 
 import srepkg.setup_file_reader as sfr
-import srepkg.test.test_case_data.setup_files.sfr_expected_output as ev
+import srepkg.test.sfr_valid_cases.sfr_expected_output as ev
 
 
 class PrivateSFRTester(unittest.TestCase):
@@ -31,8 +31,8 @@ class PrivateSFRTester(unittest.TestCase):
 
     @property
     def base_dir(self):
-        return Path(__file__).parent.absolute() / 'test_case_data' / \
-               'setup_files'
+        return Path(__file__).parent.absolute() /\
+               'sfr_valid_cases'
 
     @property
     def setup_dir(self):
@@ -121,8 +121,8 @@ class PublicSFRTester(unittest.TestCase):
         '.py': '.py'
     }
 
-    base_path = Path(__file__).parent.absolute() / 'test_case_data' / \
-        'setup_files'
+    base_path = Path(__file__).parent.absolute() /\
+        'sfr_valid_cases'
 
     test_case_data = [
         ('file_type_only', ev.file_type_only),
