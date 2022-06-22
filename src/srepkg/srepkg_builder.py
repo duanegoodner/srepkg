@@ -12,7 +12,6 @@ from typing import List, Callable, NamedTuple
 from pathlib import Path
 from enum import Enum
 
-import srepkg.distribution_buillder as db
 import srepkg.entry_points_builder as epb
 import custom_datatypes.builder_src_paths as bsp
 import custom_datatypes.builder_dest_paths as bdp
@@ -221,14 +220,15 @@ class SrepkgBuilder:
 
     def build_distribution(self):
 
-        dist_builder = db.DistributionBuilder(
-            pkg_src=self._repkg_paths.root.absolute(),
-            archive_format='zip',
-            output_dir=self._dist_out_dir,
-            # TODO need better method and location for logging
+        zipfile_name = '-'.join(
+            [self._repkg_paths.srepkg.name, self._orig_pkg_info.version])
 
-        )
-        return dist_builder.write_archive()
+        shutil.make_archive(
+            base_name=str(self._dist_out_dir / zipfile_name),
+            format='zip',
+            root_dir=str(self._repkg_paths.root.absolute()))
+
+        return zipfile_name
 
     def output_summary(self, archive_filename: str):
         print(f'Original package \'{self._orig_pkg_info.pkg_name}\' has been '
