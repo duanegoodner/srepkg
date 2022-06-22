@@ -67,6 +67,9 @@ class SrepkgBuilder:
 
     _build_errors = SrepkgBuilderErrors
 
+    # file patterns that are not copied into the SRE-packaged app
+    _ignore_types = ['*.git', '*.gitignore', '*.idea', '*__pycache__']
+
     def __init__(self, orig_pkg_info: nt.OrigPkgInfo,
                  src_paths: bsp.BuilderSrcPaths,
                  repkg_paths: bdp.BuilderDestPaths,
@@ -109,7 +112,8 @@ class SrepkgBuilder:
         """Copies original package to SRE-package directory"""
         try:
             shutil.copytree(self._orig_pkg_info.root_path,
-                            self._repkg_paths.srepkg)
+                            self._repkg_paths.srepkg,
+                            ignore=shutil.ignore_patterns(*self._ignore_types))
         except FileNotFoundError:
             sys.exit(self._build_errors.OrigPkgPathNotFound.msg)
         except FileExistsError:
@@ -230,10 +234,11 @@ class SrepkgBuilder:
         print(f'Original package \'{self._orig_pkg_info.pkg_name}\' has been '
               f're-packaged as \'{self._repkg_paths.srepkg.name}\'\n')
         print(f'The re-packaged version has been saved as source '
-              f'distribution archive file:\n'
-              f'{str(Path.cwd()) + "/" + archive_filename}')
-        print(f'\'{self._repkg_paths.srepkg.name}\' can be installed using:\n'
-              f'pip install {str(Path.cwd()) + "/" + archive_filename}\n')
+              f'distribution archive file: '
+              f'{str(self._dist_out_dir) + "/" + archive_filename}')
+        print(f'\'{self._repkg_paths.srepkg.name}\' can be installed using: '
+              f'pip install '
+              f'{str(self._dist_out_dir) + "/" + archive_filename}\n')
         print(f'After installation, \'{self._repkg_paths.srepkg.name}\' will '
               f'provide command line access to the following commands:')
         for cse in self._orig_pkg_info.entry_pts:
