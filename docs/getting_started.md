@@ -3,6 +3,7 @@
 ## Requirements
 
 * Python version 3.6 or higher
+* [pip](https://pip.pypa.io/en/stable/installation/#)
 * To be compatible with srepkg, a package must:
     * Be installable via pip
     * Have command line entry point(s) specifiied in a setup.py or setup.cfg file.

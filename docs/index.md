@@ -11,7 +11,7 @@ When an S-package is installed in an active, pre-existing Python environment, th
 
 ## Typical Use Case
 
-srepkg can be useful if you are sharing a Python command line application, and you want to be certain that users can install and run it without worrying about dependency conflicts. You might be sharing application **X** that depends on package **Y** version 1.0, but users may want to run **X** from an environment where they require Y version 2.0. Or perhaps you just want to save users the trouble of dependency and/or environment management.
+srepkg can be useful if you are sharing a Python command line application, and you want to be certain that users can install and run it without worrying about dependency conflicts. You might be sharing application **X** that depends on package **Y** version 1.0, but users may want to run **X** from an environment where they require **Y** version 2.0. Or perhaps you just want to save users the trouble of dependency and/or environment management.
 
 
 

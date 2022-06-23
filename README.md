@@ -1,29 +1,28 @@
-
-
 # srepkg (Solo Repackage)
 
 Add a safeguard to a dependency-laden Python command line  interface (CLI) app to ensure users can only install it in an isolated virtual environment but can run it from outside that environment.
 
 ## Description
 
-srepkg is a Python package that wraps an isolation layer around other Python packages. A package that has been "re-packaged" is referred to as an "S-package." When an S-package is installed in an existing Python environment, a dependency-free "access" package is installed in the pre-existing environment, and the original package plus its dependencies are installed in a new, automatically created virtual environment. This package structure prevents dependency conflicts but still exposes the original package’s CLI to the pre-existing environment.
+**srepkg** is a Python package that wraps an isolation layer around other Python packages. A package that has been "re-packaged" is referred to as an "S-package."
+
+When an S-package is installed in an active, pre-existing Python environment, the original package plus its dependencies are installed in a new, automatically created virtual environment. A dependency-free "access" package installed in the pre-existing environment contains a controller module cabable of making calls to the Python interpreter in the newly created environment. This package structure prevents dependency conflicts but still exposes the original package’s CLI to the pre-existing environment. 
 
 ## Getting Started
 
 ### Requirements
 
 - Python version 3.6 or higher
+- [pip](https://pip.pypa.io/en/stable/installation/#)
+- To be compatible with srepkg, a package must:
+  * Be installable via pip
+  * Have command line entry point(s) specifiied in a setup.py or setup.cfg file.
 
 ### Installing srepkg
 
 ```
 $ pip install git+https://github.com/duanegoodner/srepkg
 ```
-
-### Requirements for a package to be "re-packagable"
-To be compatible with srepkg, a package must:
-- Be installable via pip
-- Have command line entry point(s) specifiied in a setup.py or setup.cfg file.
 
 ### Usage
 
@@ -61,20 +60,6 @@ $ pip install ORIGINAL_NAMEsrepkg-ORIGINAL_VERSION.zip
 ### Using an S-package
 
 Once an S-package has been installed in a user's global Python environment, or (preferably) a virtual environment, all command line entry points of the original CLI application are available in that environment. The syntax of these commands is identical to that of the original application.
-
-
-
-## Comparing srepkg with a similar tool: [pipx](https://github.com/pypa/pipx)
-
-srepkg is in many ways similar to the widely used tool [pipx](https://github.com/pypa/pipx) which also allows users to install a Python CLI app in an isolated environment and then access that package from another environment. Key differences between srepkg and pipx include:
-
-* The actions that ensure isolation via pipx (i.e. installing a package with pipx instead of pip) are taken by the user at the time of package installation. With srepkg, source code is wrapped in an isolating layer prior to installation. Upon installation, the re-packaged application is automatically placed in its own environment, regardless of whether the user takes any other action to isolate it.
-
-* Packages that have been modified by srepkg and then installed are only accessible from the pre-existing environment from which the `pip install` command was called. pipx allows isolated applications to be installed with global access, or run in a temporary virtual environment. 
-
-* pipx is more mature and feature-rich than srepkg. If you are looking for a tool to isolate Python command line apps that <u>you</u> will be installing and using, pipx will likely be more useful than srepkg. However, if you will be distributing a Python CLI app and want to be certain that the app is always installed into an isolated environment - regardless what the user knows about virtual environments and/or decides to do at install time - then consider using srepkg.
-
-  
 
 ## Examples
 
@@ -201,6 +186,44 @@ Re-package release *2.0.17*:
 ```
 $ srepkg git+https://github.com/gleitz/howdoi.git@v2.0.17
 ```
+
+
+
+## Comparing srepkg with a similar tool: [pipx](https://github.com/pypa/pipx)
+
+srepkg is in many ways similar to the widely used tool [pipx](https://github.com/pypa/pipx) which also allows users to install a Python package in an isolated environment and then access its command line tool(s) from another environment. Key differences between srepkg and pipx include:
+
+* The actions that ensure isolation via pipx are taken by the user at the time of package installation. With srepkg, source code is wrapped in an isolating layer prior to installation, and the re-packaged application is automatically placed in its own environment during installation. 
+* The CLI of a srepkg S-package is only accessible from an environment containing its access package. pipx allows global access to isolated command line applications. 
+* pipx is more mature and feature-rich than srepkg. If you have control of the package installation process, pipx will likely be more useful than srepkg. However, if you are distributing but not installing a Python CLI app and want to be certain the app is always installed into an isolated environment regardless what happens at install time, consider using srepkg.
+
+
+
+## Roadmap
+
+### Functionality
+
+* Option to add prefix before CLI command. This would allow multiple re-packaged versions of the same original package to be accessed from single environment.
+* Change behavior in cases where srepkg does not find console entry points or package name from from setup.cfg or setup.py. Instead of exiting, give re-packaging user the option to proceed and have inner_pkg_installer module look for these items during S-package install process.
+
+### Performance
+
+* Use [fastentrypoints](https://github.com/ninjaaron/fast-entry_points) to prevent delay that occurs the first time an S-package's CLI is accessed
+* Reduce install time via .whl support for
+
+
+
+## Contributing
+
+Issues, Pull Requests and/or Discussions are welcome and appreciated!
+
+
+
+Anyone interacting with this project is expected to follow the [Code of Conduct](https://github.com/duanegoodner/srepkg/blob/main/CODE_OF_CONDUCT.md).
+
+
+
+
 
 
 

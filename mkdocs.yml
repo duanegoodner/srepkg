@@ -7,5 +7,5 @@ nav:
     - Home: index.md
     - Getting Started: getting_started.md
     - Examples: examples.md
-    - Comparing srepkg with Other Tools: comparison_with_pipx.md
+    - Comparing srepkg with pipx: comparison_with_pipx.md
 
