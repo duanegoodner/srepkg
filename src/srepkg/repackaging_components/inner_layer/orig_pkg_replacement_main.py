@@ -15,10 +15,12 @@ def main():
     venv_site_pkgs = sys.argv[2]
     pkg_args = sys.argv[3:]
 
-    if outer_main_call_key == '--called_by_safe_pkg':
-        subprocess.call([sys.executable, venv_site_pkgs +
-                         f'/{inner_pkg_name}/orig_main.py'] + pkg_args)
+    if outer_main_call_key == "--called_by_safe_pkg":
+        subprocess.call(
+            [sys.executable, venv_site_pkgs + f"/{inner_pkg_name}/orig_main.py"]
+            + pkg_args
+        )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

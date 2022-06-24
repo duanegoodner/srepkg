@@ -3,5 +3,5 @@ def run():
     print("It should do something interesting.")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     run()

@@ -6,11 +6,13 @@ import srepkg.test.test_path_calculator as tpc
 
 
 class TestSrepkgBuilder(unittest.TestCase):
-    orig_pkg_path = Path(__file__).parent.absolute() / \
-        'package_test_cases' / 't_proj'
-    srepkg_pkgs_non_temp_dir = Path(__file__).parent.absolute() / \
-        'package_test_cases' / 'srepkg_pkgs'
-    srepkg_dist_dir = Path(__file__).parent.absolute() / 'test_srepkg_dists'
+    orig_pkg_path = (
+        Path(__file__).parent.absolute() / "package_test_cases" / "t_proj"
+    )
+    srepkg_pkgs_non_temp_dir = (
+        Path(__file__).parent.absolute() / "package_test_cases" / "srepkg_pkgs"
+    )
+    srepkg_dist_dir = Path(__file__).parent.absolute() / "test_srepkg_dists"
 
     def setUp(self) -> None:
         if self.srepkg_pkgs_non_temp_dir.exists():
@@ -19,13 +21,15 @@ class TestSrepkgBuilder(unittest.TestCase):
         if self.srepkg_dist_dir.exists():
             shutil.rmtree(self.srepkg_dist_dir)
 
-        self.builder_src_paths, self.builder_dest_paths = \
-            tpc.calc_paths(
-                [str(self.orig_pkg_path)])
+        self.builder_src_paths, self.builder_dest_paths = tpc.calc_paths(
+            [str(self.orig_pkg_path)]
+        )
         self.srepkg_builder = sb.SrepkgBuilder(
-            tpc.calc_paths.locals['orig_pkg_info'],
-            self.builder_src_paths, self.builder_dest_paths,
-            self.srepkg_dist_dir)
+            tpc.calc_paths.locals["orig_pkg_info"],
+            self.builder_src_paths,
+            self.builder_dest_paths,
+            self.srepkg_dist_dir,
+        )
 
     def tearDown(self) -> None:
         if self.srepkg_pkgs_non_temp_dir.exists():
@@ -48,18 +52,17 @@ class TestSrepkgBuilder(unittest.TestCase):
     def test_build_inner_layer(self) -> None:
         self.srepkg_builder.build_inner_layer()
 
-        assert self.srepkg_builder.repkg_paths.inner_setup_py \
-            .exists()
-        assert self.srepkg_builder.repkg_paths.inner_setup_cfg \
-            .exists()
+        assert self.srepkg_builder.repkg_paths.inner_setup_py.exists()
+        assert self.srepkg_builder.repkg_paths.inner_setup_cfg.exists()
 
     #  TODO add test that creates ...entry.py files
     def test_build_mid_layer(self):
         self.srepkg_builder.build_inner_layer()
         self.srepkg_builder.build_mid_layer()
 
-        assert self.srepkg_builder.repkg_paths.srepkg_control_components. \
-            exists()
+        assert (
+            self.srepkg_builder.repkg_paths.srepkg_control_components.exists()
+        )
         assert self.srepkg_builder.repkg_paths.srepkg_entry_points.exists()
         assert self.srepkg_builder.repkg_paths.srepkg_init.exists()
         assert self.srepkg_builder.repkg_paths.pkg_names_mid.exists()
@@ -80,7 +83,6 @@ class TestSrepkgBuilder(unittest.TestCase):
 
 
 class TestSrepkgBuilderCustomDir(TestSrepkgBuilder):
-
     def setUp(self) -> None:
         if self.srepkg_pkgs_non_temp_dir.exists():
             shutil.rmtree(self.srepkg_pkgs_non_temp_dir)
@@ -88,20 +90,27 @@ class TestSrepkgBuilderCustomDir(TestSrepkgBuilder):
         if self.srepkg_dist_dir.exists():
             shutil.rmtree(self.srepkg_dist_dir)
 
-        self.builder_src_paths, self.builder_dest_paths = \
-            tpc.calc_paths(
-                [str(self.orig_pkg_path), '--construction_dir',
-                 str(self.srepkg_pkgs_non_temp_dir)])
+        self.builder_src_paths, self.builder_dest_paths = tpc.calc_paths(
+            [
+                str(self.orig_pkg_path),
+                "--construction_dir",
+                str(self.srepkg_pkgs_non_temp_dir),
+            ]
+        )
         self.srepkg_builder = sb.SrepkgBuilder(
-            tpc.calc_paths.locals['orig_pkg_info'],
-            self.builder_src_paths, self.builder_dest_paths,
-            self.srepkg_dist_dir)
+            tpc.calc_paths.locals["orig_pkg_info"],
+            self.builder_src_paths,
+            self.builder_dest_paths,
+            self.srepkg_dist_dir,
+        )
 
     # TODO add test to inspect contents of srepkg setup.cfg
 
 
 class TestSrepkgBuilderNonSrcLayout(TestSrepkgBuilder, unittest.TestCase):
-    orig_pkg_path = Path(__file__).parent.absolute() / \
-                    'package_test_cases' / 't_proj'
-    srepkg_pkgs_non_temp_dir = Path(__file__).parent.absolute() / \
-        'package_test_cases' / 'srepkg_pkgs'
+    orig_pkg_path = (
+        Path(__file__).parent.absolute() / "package_test_cases" / "t_proj"
+    )
+    srepkg_pkgs_non_temp_dir = (
+        Path(__file__).parent.absolute() / "package_test_cases" / "srepkg_pkgs"
+    )

@@ -3,8 +3,9 @@ from typing import List
 from custom_datatypes.named_tuples import SCD
 
 
-def _file_structure_walk(file_structure: List, root_path: Path,
-                         shortcut_names=None, paths=None):
+def _file_structure_walk(
+    file_structure: List, root_path: Path, shortcut_names=None, paths=None
+):
     if shortcut_names is None:
         shortcut_names = []
     if paths is None:
@@ -15,7 +16,8 @@ def _file_structure_walk(file_structure: List, root_path: Path,
         paths.append(root_path / item.pname)
         if type(item) == SCD:
             new_names, new_paths = _file_structure_walk(
-                file_structure=item.contents, root_path=root_path / item.pname)
+                file_structure=item.contents, root_path=root_path / item.pname
+            )
             shortcut_names += new_names
             paths += new_paths
 
@@ -38,9 +40,11 @@ class FileStructureUtil:
 
     def build_paths_class(self, class_name: str, write_file_path: Path):
         shortcut_names = self.get_sc_names()
-        with write_file_path.open(mode='w') as class_file:
-            class_file.write('from typing import NamedTuple\n'
-                             'from pathlib import Path\n\n\n'
-                             f'class {class_name}(NamedTuple):\n')
+        with write_file_path.open(mode="w") as class_file:
+            class_file.write(
+                "from typing import NamedTuple\n"
+                "from pathlib import Path\n\n\n"
+                f"class {class_name}(NamedTuple):\n"
+            )
             for name in shortcut_names:
-                class_file.write(f'    {name}: Path\n')
+                class_file.write(f"    {name}: Path\n")

@@ -1,10 +1,10 @@
 import setuptools
 
 setuptools.setup(
-    name='testproj',
-    package_dir={'': 'src'},
+    name="testproj",
+    package_dir={"": "src"},
     packages=setuptools.find_packages(),
-    install_requires=['numpy >= 1.22', 'pandas'],
+    install_requires=["numpy >= 1.22", "pandas"],
     # entry_points={
     #     'console_scripts': [
     #         'my_project = testproj.app:run',

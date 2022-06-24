@@ -13,30 +13,29 @@ import custom_datatypes as cd
 
 
 class SetupFileReaderError(cd.nt.ErrorMsg, Enum):
-    SetupCfgReadError = cd.nt.ErrorMsg(
-        msg='Unable to read or parse setup.cfg')
+    SetupCfgReadError = cd.nt.ErrorMsg(msg="Unable to read or parse setup.cfg")
     InvalidPackageDirValue = cd.nt.ErrorMsg(
-        msg='Invalid package_dir value in [options] section of setup.cfg')
-    UnsupportedSetupFileType = cd.nt.ErrorMsg(
-        msg='Unsupported setup file type'
+        msg="Invalid package_dir value in [options] section of setup.cfg"
     )
+    UnsupportedSetupFileType = cd.nt.ErrorMsg(msg="Unsupported setup file type")
 
 
 class SetupInfoError(cd.nt.ErrorMsg, Enum):
-    InvalidPkgDirValue = cd.nt.ErrorMsg(
-        msg='Invalid value for package_dir'
-    )
+    InvalidPkgDirValue = cd.nt.ErrorMsg(msg="Invalid value for package_dir")
 
 
 class UnsupportedSetupFileType(Exception):
-    def __init__(self, file_name: str,
-                 msg=SetupFileReaderError.UnsupportedSetupFileType.msg):
+    def __init__(
+        self,
+        file_name: str,
+        msg=SetupFileReaderError.UnsupportedSetupFileType.msg,
+    ):
         self._file_name = file_name
         self._msg = msg
         super().__init__(self._msg)
 
     def __str__(self):
-        return f'{self.file_name} -> {self.message}'
+        return f"{self.file_name} -> {self.message}"
 
 
 class SetupKeys(NamedTuple):
@@ -62,12 +61,11 @@ class _SetupFileReader(abc.ABC):
     @staticmethod
     def _filter_and_flatten(orig: dict, setup_keys: SetupKeys):
         single_key_params = {
-            key: orig.get(key) for key in setup_keys.single_level
-            if key in orig
+            key: orig.get(key) for key in setup_keys.single_level if key in orig
         }
         two_key_nested_params = {
-            keys[1]: orig.get(keys[0]).get(keys[1]) for keys in
-            setup_keys.two_level
+            keys[1]: orig.get(keys[0]).get(keys[1])
+            for keys in setup_keys.two_level
             if (keys[0] in orig) and keys[1] in orig[keys[0]]
         }
 
@@ -75,13 +73,14 @@ class _SetupFileReader(abc.ABC):
 
     @staticmethod
     def _parse_cs_line(cs_line: str):
-        [command, full_call] = cs_line.split('=')
+        [command, full_call] = cs_line.split("=")
         command = command.strip()
         full_call = full_call.strip()
-        [module_path, funct] = full_call.split(':')
+        [module_path, funct] = full_call.split(":")
 
         return cd.nt.CSEntry(
-            command=command, module_path=module_path, funct=funct)
+            command=command, module_path=module_path, funct=funct
+        )
 
     @abc.abstractmethod
     def _read_raw_data(self):
@@ -98,15 +97,16 @@ class _SetupFileReader(abc.ABC):
         return self
 
     def _cs_lists_to_cse_objs(self):
-        if ('console_scripts' in self._data) and self._data['console_scripts']:
-            cse_list = [self._parse_cs_line(entry) for entry in
-                        self._data['console_scripts']]
-            self._data['console_scripts'] = cse_list
+        if ("console_scripts" in self._data) and self._data["console_scripts"]:
+            cse_list = [
+                self._parse_cs_line(entry)
+                for entry in self._data["console_scripts"]
+            ]
+            self._data["console_scripts"] = cse_list
         return self
 
     def get_setup_info(self):
-        self._read_raw_data()._filter_raw_data()._match_to_py_format() \
-            ._cs_lists_to_cse_objs()
+        self._read_raw_data()._filter_raw_data()._match_to_py_format()._cs_lists_to_cse_objs()
         return self._data
 
 
@@ -114,13 +114,15 @@ class _SetupCfgFileReader(_SetupFileReader):
     _doi_keys = SetupKeys(
         single_level=[],
         two_level=[
-            ('metadata', 'name'),
-            ('metadata', 'url'),
-            ('metadata', 'author'),
-            ('metadata', 'author_email'),
-            ('metadata', 'long_description'),
-            ('options', 'package_dir'),
-            ('options.entry_points', 'console_scripts')])
+            ("metadata", "name"),
+            ("metadata", "url"),
+            ("metadata", "author"),
+            ("metadata", "author_email"),
+            ("metadata", "long_description"),
+            ("options", "package_dir"),
+            ("options.entry_points", "console_scripts"),
+        ],
+    )
 
     def __init__(self, setup_file: Path):
         super().__init__(setup_file)
@@ -130,41 +132,47 @@ class _SetupCfgFileReader(_SetupFileReader):
 
         try:
             config.read(self._setup_file)
-        except (configparser.ParsingError,
-                configparser.MissingSectionHeaderError):
+        except (
+            configparser.ParsingError,
+            configparser.MissingSectionHeaderError,
+        ):
             warnings.warn(
-                SetupFileReaderError.SetupCfgReadError.msg,
-                UserWarning)
+                SetupFileReaderError.SetupCfgReadError.msg, UserWarning
+            )
 
         self._data.clear()
-        self._data.update({sect: dict(config.items(sect)) for sect in
-                           config.sections()})
+        self._data.update(
+            {sect: dict(config.items(sect)) for sect in config.sections()}
+        )
         return self
 
     def _convert_cs_str_to_list(self):
-        if ('console_scripts' in self._data) \
-                and (type(self._data['console_scripts']) == str):
-            self._data['console_scripts'] = \
-                self._data['console_scripts'].strip().splitlines()
+        if ("console_scripts" in self._data) and (
+            type(self._data["console_scripts"]) == str
+        ):
+            self._data["console_scripts"] = (
+                self._data["console_scripts"].strip().splitlines()
+            )
 
         return self
 
     def _convert_pkg_dir_str_to_dict(self):
         dir_dict = {}
-        if ('package_dir' in self._data) and \
-                (type(self._data['package_dir']) == str):
-            pkg_dir_lines = self._data['package_dir'].strip() \
-                .split('\n')
+        if ("package_dir" in self._data) and (
+            type(self._data["package_dir"]) == str
+        ):
+            pkg_dir_lines = self._data["package_dir"].strip().split("\n")
             pkg_dir_lines_parsed = [
-                [item.strip() for item in line] for line in
-                [line.split('=') for line in pkg_dir_lines]]
+                [item.strip() for item in line]
+                for line in [line.split("=") for line in pkg_dir_lines]
+            ]
 
             for line in pkg_dir_lines_parsed:
                 if len(line) == 2:
                     pkg_name = line[0]
                     pkg_dir = line[1]
                 elif len(line) == 1:
-                    pkg_name = ''
+                    pkg_name = ""
                     pkg_dir = line[0]
                 else:
                     sys.exit(SetupFileReaderError.InvalidPackageDirValue.msg)
@@ -175,7 +183,7 @@ class _SetupCfgFileReader(_SetupFileReader):
                 else:
                     dir_dict[pkg_name] = pkg_dir
 
-            self._data['package_dir'] = dir_dict
+            self._data["package_dir"] = dir_dict
 
         return self
 
@@ -187,9 +195,17 @@ class _SetupCfgFileReader(_SetupFileReader):
 
 class _SetupPyFileReader(_SetupFileReader):
     _doi_keys = SetupKeys(
-        single_level=['name', 'version', 'package_dir', 'author',
-                      'author_email', 'url', 'long_description'],
-        two_level=[('entry_points', 'console_scripts')])
+        single_level=[
+            "name",
+            "version",
+            "package_dir",
+            "author",
+            "author_email",
+            "url",
+            "long_description",
+        ],
+        two_level=[("entry_points", "console_scripts")],
+    )
 
     def __init__(self, setup_file: Path):
         super().__init__(setup_file)
@@ -203,14 +219,15 @@ class _SetupPyFileReader(_SetupFileReader):
 
             try:
                 sys.path.insert(0, str(self._setup_file.parent.absolute()))
-                with mock.patch.object(setuptools, 'setup') as mock_setup:
+                with mock.patch.object(setuptools, "setup") as mock_setup:
                     import setup
+
                     if mock_setup.call_args:
                         setup_params = mock_setup.call_args[1]
             finally:
                 sys.path.remove(str(self._setup_file.parent.absolute()))
-                if 'setup' in sys.modules:
-                    sys.modules.pop('setup')
+                if "setup" in sys.modules:
+                    sys.modules.pop("setup")
 
             self._data.clear()
             if setup_params:
@@ -226,8 +243,8 @@ class _SetupPyFileReader(_SetupFileReader):
 
 class SetupFileReader:
     _file_type_readers = {
-        '.cfg': _SetupCfgFileReader,
-        '.py': _SetupPyFileReader
+        ".cfg": _SetupCfgFileReader,
+        ".py": _SetupPyFileReader,
     }
 
     def __init__(self, setup_file: Path):
@@ -236,7 +253,8 @@ class SetupFileReader:
     @property
     def _implemented_reader(self) -> _SetupFileReader:
         return self._file_type_readers[self._setup_file.suffix](
-            self._setup_file)
+            self._setup_file
+        )
 
     def _validate_file_type(self):
         if self._setup_file.suffix not in self._file_type_readers:
