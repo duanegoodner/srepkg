@@ -2,6 +2,7 @@ import configparser
 import venv
 import subprocess
 import sys
+from packaging import version
 from types import SimpleNamespace
 from typing import NamedTuple
 from pathlib import Path
@@ -31,15 +32,25 @@ class CustomVenvBuilder(venv.EnvBuilder):
 
 class VenvManager:
     def __init__(
-        self, venv_context: SimpleNamespace, version_info: sys.version_info
+        self, env_dir: Path, env_exe: Path, cfg_path: Path
     ):
-        self._context = venv_context
-        self._version_info = version_info
+        # self._context = venv_context
+        self._env_dir = env_dir
+        self._env_exe = env_exe
+        self._cfg_path = cfg_path
+        self._pyvenv_cfg = configparser.ConfigParser()
+        with self._cfg_path.open(mode='r') as cfg_file:
+            self._pyvenv_cfg.read_string("[pyvenv_cfg]\n" + cfg_file.read())
+        # self._version_info = version_info
         self._console_scripts = []
 
+    # @property
+    # def _env_dir(self) -> Path:
+    #     return Path(self._context.env_dir)
+
     @property
-    def _env_dir(self) -> Path:
-        return Path(self._context.env_dir)
+    def _version(self):
+        return version.parse(self._pyvenv_cfg.get("pyvenv_cfg", "version"))
 
     @property
     def _site_packages(self):
@@ -50,9 +61,9 @@ class VenvManager:
             / "".join(
                 [
                     "python",
-                    str(self._version_info.major),
+                    str(self._version.major),
                     ".",
-                    str(self._version_info.minor),
+                    str(self._version.minor),
                 ]
             )
             / "site-packages"
@@ -64,7 +75,7 @@ class VenvManager:
 
     def pip_install(self, *args):
         subprocess.call(
-            [self._context.env_exe, "-m", "pip", "install"] + [*args]
+            [self._env_exe, "-m", "pip", "install"] + [*args]
         )
 
         return self
@@ -111,9 +122,9 @@ class VenvManager:
             / "bin"
             / (
                 "pip"
-                + str(self._version_info.major)
+                + str(self._version.major)
                 + "."
-                + str(self._version_info.minor)
+                + str(self._version.minor)
             )
         )
         if pip_cs_without_dist_info.exists():
@@ -166,14 +177,14 @@ class InnerPkgInstaller:
         env_builder = CustomVenvBuilder()
         env_builder.create(self._venv_path)
 
-        return {
-            "venv_context": env_builder.context,
-            "version_info": env_builder.version_info,
-        }
+        return env_builder.context
 
     def install_inner_pkg(self):
-        venv_info = self.build_venv()
-        venv_manager = VenvManager(**venv_info)
+        venv_context = self.build_venv()
+        venv_manager = VenvManager(
+            env_dir=Path(venv_context.env_dir),
+            env_exe=Path(venv_context.env_exe),
+            cfg_path=Path(venv_context.cfg_path))
         venv_manager.pip_install(
             self._inner_pkg_install_ref, "--quiet"
         ).rewire_shebangs()
