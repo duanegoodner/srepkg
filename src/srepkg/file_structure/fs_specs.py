@@ -2,11 +2,6 @@ from custom_datatypes.named_tuples import SCF, SCD
 
 repackaging_components = [
     SCD(
-        pname="inner_layer",
-        sc="inner_layer",
-        contents=[SCF(pname="orig_pkg_replacement_main.py", sc="main_inner")],
-    ),
-    SCD(
         pname="mid_layer",
         sc="mid_layer",
         contents=[
@@ -89,14 +84,13 @@ def get_builder_dest(
                                 )
                             ],
                         ),
-                        # path to inner_pkg depends on orig_pkg file structure so don't
-                        # even try to predict it here.
                         SCF(pname="__init__.py", sc="srepkg_init"),
                         SCF(pname="pkg_names.py", sc="pkg_names_mid"),
                         SCF(pname="setup.cfg", sc="inner_setup_cfg"),
                         SCF(pname="setup.py", sc="inner_setup_py"),
                     ],
                 ),
+                SCF(pname="inner_pkg_install.cfg", sc="inner_pkg_install_cfg"),
                 SCF(pname="inner_pkg_installer.py", sc="inner_pkg_installer"),
                 SCF(pname="MANIFEST.in", sc="manifest"),
                 SCF(pname="pkg_names.py", sc="pkg_names_outer"),

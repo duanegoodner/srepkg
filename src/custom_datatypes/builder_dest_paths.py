@@ -16,6 +16,7 @@ class BuilderDestPaths(NamedTuple):
     pkg_names_mid: Path
     inner_setup_cfg: Path
     inner_setup_py: Path
+    inner_pkg_install_cfg: Path
     inner_pkg_installer: Path
     manifest: Path
     pkg_names_outer: Path

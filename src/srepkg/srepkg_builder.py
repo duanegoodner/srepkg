@@ -142,7 +142,7 @@ class SrepkgBuilder:
         except FileExistsError:
             sys.exit(self._build_errors.ControlComponentsExist.msg)
 
-    def build_sr_cfg(self):
+    def build_srepkg_cfg(self):
         sr_config = configparser.ConfigParser()
         sr_config.read(self._src_paths.srepkg_setup_cfg)
 
@@ -156,6 +156,15 @@ class SrepkgBuilder:
 
         with open(self._repkg_paths.srepkg_setup_cfg, "w") as sr_configfile:
             sr_config.write(sr_configfile)
+
+    def build_inner_pkg_install_cfg(self):
+        ipi_config = configparser.ConfigParser()
+        ipi_config.add_section("metadata")
+        ipi_config.set("metadata", "name", self._repkg_paths.srepkg.name)
+        # ipi_config["metadata"]["name"] = self._repkg_paths.srepkg.name
+        with open(self._repkg_paths.inner_pkg_install_cfg, 'w')\
+                as ipi_config_file:
+            ipi_config.write(ipi_config_file)
 
     def write_entry_point_file(self, orig_cse: nt.CSEntry):
 
@@ -223,7 +232,8 @@ class SrepkgBuilder:
 
     def build_outer_layer(self):
         self.build_srepkg_layer(
-            call_methods=[self.build_sr_cfg],
+            call_methods=[
+                self.build_srepkg_cfg, self.build_inner_pkg_install_cfg],
             direct_copy_files=[
                 SrcDestPair(
                     src=self._src_paths.inner_pkg_installer,
@@ -235,10 +245,6 @@ class SrepkgBuilder:
                 ),
             ],
             template_file_writes=[
-                SrcDestPair(
-                    src=self._src_paths.pkg_names_template,
-                    dest=self._repkg_paths.pkg_names_outer,
-                ),
                 SrcDestPair(
                     src=self._src_paths.manifest_template,
                     dest=self._repkg_paths.manifest,

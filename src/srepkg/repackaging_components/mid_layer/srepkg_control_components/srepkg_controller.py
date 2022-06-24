@@ -24,15 +24,15 @@ class SrepkgController:
         subprocess.call([self._venv.vbin / entry_command, *pkg_args])
         return self
 
-    def run_inner_pkg_main(self, *pkg_args):
-        subprocess.call(
-            [
-                self._venv.py_interp,
-                "-m",
-                self._inner_pkg_name,
-                "--called_by_safe_pkg",
-                self._venv.site_pkgs,
-                *pkg_args,
-            ]
-        )
-        return self
+    # def run_inner_pkg_main(self, *pkg_args):
+    #     subprocess.call(
+    #         [
+    #             self._venv.py_interp,
+    #             "-m",
+    #             self._inner_pkg_name,
+    #             "--called_by_safe_pkg",
+    #             self._venv.site_pkgs,
+    #             *pkg_args,
+    #         ]
+    #     )
+    #     return self

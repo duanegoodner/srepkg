@@ -8,7 +8,6 @@ from pathlib import Path
 from setuptools.command.install import install
 from setuptools.command.develop import develop
 from setuptools.command.egg_info import egg_info
-from pkg_names import inner_pkg_name, sre_pkg_name
 
 
 class CustomVenvBuilder(venv.EnvBuilder):
@@ -142,14 +141,26 @@ class VenvInstallPaths(NamedTuple):
         return cls(inner_src=inner_src, venv_py=venv_py, venv_pip=venv_pip)
 
 
-class InnerPkgInstaller:
-    def __init__(self, venv_path: Path, inner_pkg_src: Path):
-        self._venv_path = venv_path
-        self._inner_pkg_src = inner_pkg_src
+class InnerPkgCfgReader:
+    def __init__(self, inner_pkg_cfg: Path):
+        self._inner_pkg_cfg_file = inner_pkg_cfg
+        self._inner_pkg_cfg = configparser.ConfigParser()
+        self._inner_pkg_cfg.read(self._inner_pkg_cfg_file)
 
-    @classmethod
-    def from_inner_src(cls, inner_src: Path):
-        return cls(VenvInstallPaths.from_inner_src(inner_src))
+    @property
+    def srepkg_name(self):
+        return self._inner_pkg_cfg.get("metadata", "name")
+
+
+class InnerPkgInstaller:
+    def __init__(
+            self, venv_path: Path, inner_pkg_install_ref: Path):
+        self._venv_path = venv_path
+        self._inner_pkg_install_ref = inner_pkg_install_ref
+
+    # @classmethod
+    # def from_inner_src(cls, inner_src: Path):
+    #     return cls(VenvInstallPaths.from_inner_src(inner_src))
 
     def build_venv(self):
         env_builder = CustomVenvBuilder()
@@ -164,17 +175,21 @@ class InnerPkgInstaller:
         venv_info = self.build_venv()
         venv_manager = VenvManager(**venv_info)
         venv_manager.pip_install(
-            self._inner_pkg_src, "--quiet"
+            self._inner_pkg_install_ref, "--quiet"
         ).rewire_shebangs()
 
 
 def custom_command():
 
+    inner_pkg_cfg_reader = InnerPkgCfgReader(Path(__file__).parent /
+                                             'inner_pkg_install.cfg')
+    srepkg_name = inner_pkg_cfg_reader.srepkg_name
+
     inner_pkg_installer = InnerPkgInstaller(
         venv_path=Path(__file__).parent.absolute()
-        / sre_pkg_name
+        / srepkg_name
         / "srepkg_venv",
-        inner_pkg_src=Path(__file__).parent.absolute() / sre_pkg_name,
+        inner_pkg_install_ref=Path(__file__).parent.absolute() / srepkg_name,
     )
 
     inner_pkg_installer.build_venv()

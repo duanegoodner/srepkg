@@ -37,4 +37,3 @@ class FileStructureUtil:
 
     def get_path_names(self) -> List:
         return self.get_sc_and_path_names()[1]
-
