@@ -95,13 +95,13 @@ class _RemoteRepackager(_Repackager):
         self._download_archive(archive_dir)
 
         for file in Path(archive_dir.name).iterdir():
-            if file.suffix in [".gz", ".zip"]:
-                extract_dir = tempfile.TemporaryDirectory()
-                self._extract_archive(archive=file, extract_dir=extract_dir)
+            # if file.suffix in [".gz", ".zip"]:
+            extract_dir = tempfile.TemporaryDirectory()
+            self._extract_archive(archive=file, extract_dir=extract_dir)
 
-                for package in Path(extract_dir.name).iterdir():
-                    self._repackage_local(package)
-                extract_dir.cleanup()
+            for package in Path(extract_dir.name).iterdir():
+                self._repackage_local(package)
+            extract_dir.cleanup()
         archive_dir.cleanup()
 
 

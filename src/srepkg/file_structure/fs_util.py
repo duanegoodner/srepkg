@@ -38,13 +38,3 @@ class FileStructureUtil:
     def get_path_names(self) -> List:
         return self.get_sc_and_path_names()[1]
 
-    def build_paths_class(self, class_name: str, write_file_path: Path):
-        shortcut_names = self.get_sc_names()
-        with write_file_path.open(mode="w") as class_file:
-            class_file.write(
-                "from typing import NamedTuple\n"
-                "from pathlib import Path\n\n\n"
-                f"class {class_name}(NamedTuple):\n"
-            )
-            for name in shortcut_names:
-                class_file.write(f"    {name}: Path\n")

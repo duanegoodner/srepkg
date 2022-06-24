@@ -1,0 +1,9 @@
+[run]
+branch = True
+omit = src/srepkg/test/*
+
+[report]
+exclude_lines =
+    if __name__ == .__main__.:
+
+    @(abc\.)?abstractmethod
