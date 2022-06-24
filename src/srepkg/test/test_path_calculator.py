@@ -73,18 +73,11 @@ class TestPathCalc(unittest.TestCase):
             builder_src_paths.entry_module
             == repackaging_components
             / "mid_layer"
-            / "srepkg_control_components"
             / "entry_point_runner.py"
         )
         assert (
             builder_src_paths.entry_point_template
             == repackaging_components / "mid_layer" / "generic_entry.py"
-        )
-        assert (
-            builder_src_paths.srepkg_control_components
-            == repackaging_components
-            / "mid_layer"
-            / "srepkg_control_components"
         )
         assert (
             builder_src_paths.srepkg_setup_py
@@ -102,28 +95,24 @@ class TestPathCalc(unittest.TestCase):
         srepkg_root = calc_paths.locals["srepkg_root"]
 
         srepkg_path = srepkg_root / calc_paths.locals["final_srepkg_name"]
-        srepkg_control_components = srepkg_path / "srepkg_control_components"
-        srepkg_entry_module = srepkg_control_components / "entry_points.py"
+        # srepkg_control_components = srepkg_path / "srepkg_control_components"
         srepkg_entry_points = srepkg_path / "srepkg_entry_points"
+        srepkg_entry_module = srepkg_entry_points / "entry_point_runner.py"
         srepkg_setup_cfg = srepkg_root / "setup.cfg"
         srepkg_setup_py = srepkg_root / "setup.py"
         srepkg_init = srepkg_path / "__init__.py"
-        inner_setup_cfg = srepkg_path / "setup.cfg"
-        inner_setup_py = srepkg_path / "setup.py"
 
-        assert builder_dest_paths.root == srepkg_root
+        # assert builder_dest_paths.root == srepkg_root
         assert builder_dest_paths.srepkg == srepkg_path
-        assert (
-            builder_dest_paths.srepkg_control_components
-            == srepkg_control_components
-        )
+        # assert (
+        #     builder_dest_paths.srepkg_control_components
+        #     == srepkg_control_components
+        # )
         assert builder_dest_paths.entry_module == srepkg_entry_module
         assert builder_dest_paths.srepkg_entry_points == srepkg_entry_points
         assert builder_dest_paths.srepkg_setup_cfg == srepkg_setup_cfg
         assert builder_dest_paths.srepkg_setup_py == srepkg_setup_py
         assert builder_dest_paths.srepkg_init == srepkg_init
-        assert builder_dest_paths.inner_setup_cfg == inner_setup_cfg
-        assert builder_dest_paths.inner_setup_py == inner_setup_py
 
 
 class TestPathCalcCustomDir(TestPathCalc):

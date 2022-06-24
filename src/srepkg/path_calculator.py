@@ -65,17 +65,12 @@ class BuilderPathsCalculator:
         return bsp.BuilderSrcPaths(*src_paths)
 
     def calc_dest_paths(self):
-
-        builder_dest_structure = pb.fs_specs.get_builder_dest(
-            root_name=self._srepkg_root.name, srepkg_name=self._srepkg_name
+        dest_files_util = pb.fs_util.FileStructureUtil(
+            file_struct=pb.fs_specs.get_srepkg_root(self._srepkg_name),
+            root_path=self._srepkg_root
         )
 
-        dest_file_util = pb.fs_util.FileStructureUtil(
-            file_struct=builder_dest_structure, root_path=self._construction_dir
-        )
-
-        dest_paths = dest_file_util.get_path_names()
-
+        dest_paths = dest_files_util.get_path_names()
         return bdp.BuilderDestPaths(*dest_paths)
 
     def calc_builder_paths(self):

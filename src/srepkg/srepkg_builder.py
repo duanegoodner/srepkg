@@ -18,29 +18,25 @@ import custom_datatypes.builder_dest_paths as bdp
 import custom_datatypes.named_tuples as nt
 
 
-class SrepkgBuilderErrorMsg(NamedTuple):
-    msg: str
-
-
-class SrepkgBuilderErrors(SrepkgBuilderErrorMsg, Enum):
-    OrigPkgPathNotFound = SrepkgBuilderErrorMsg(
+class SrepkgBuilderErrors(nt.ErrorMsg, Enum):
+    OrigPkgPathNotFound = nt.ErrorMsg(
         msg="Original package path not found"
     )
-    DestPkgPathExits = SrepkgBuilderErrorMsg(
+    DestPkgPathExits = nt.ErrorMsg(
         msg="Intended Srepkg destination path already exists"
     )
-    ControlComponentsNotFound = SrepkgBuilderErrorMsg(
+    ControlComponentsNotFound = nt.ErrorMsg(
         msg="Error when attempting to copy sub-package "
         "srepkg_control_components. Sub-package not found"
     )
-    ControlComponentsExist = SrepkgBuilderErrorMsg(
+    ControlComponentsExist = nt.ErrorMsg(
         msg="Error when attempting to copy sub-package "
         "srepkg_control_components. Destination path already exists."
     )
-    FileNotFoundForCopy = SrepkgBuilderErrorMsg(
+    FileNotFoundForCopy = nt.ErrorMsg(
         msg="Error when attempting to copy. Source file not found."
     )
-    CopyDestinationPathExists = SrepkgBuilderErrorMsg(
+    CopyDestinationPathExists = nt.ErrorMsg(
         msg="Error when attempting to copy. Destination path already exists"
     )
 
@@ -92,8 +88,7 @@ class SrepkgBuilder:
         self._repkg_paths = repkg_paths
         self._template_file_writer = TemplateFileWriter(
             substitution_map={
-                "inner_pkg_name": self._orig_pkg_info.pkg_name,
-                "sre_pkg_name": self._repkg_paths.srepkg.name,
+                "srepkg_name": self._repkg_paths.srepkg.name,
             }
         )
         self._entry_points_builder = (
@@ -130,18 +125,6 @@ class SrepkgBuilder:
         except FileExistsError:
             sys.exit(self._build_errors.DestPkgPathExits.msg)
 
-    def copy_srepkg_control_components(self):
-        """Copies srepkg components and driver to SRE-package directory"""
-        try:
-            shutil.copytree(
-                self._src_paths.srepkg_control_components,
-                self._repkg_paths.srepkg_control_components,
-            )
-        except FileNotFoundError:
-            sys.exit(self._build_errors.ControlComponentsNotFound.msg)
-        except FileExistsError:
-            sys.exit(self._build_errors.ControlComponentsExist.msg)
-
     def build_srepkg_cfg(self):
         sr_config = configparser.ConfigParser()
         sr_config.read(self._src_paths.srepkg_setup_cfg)
@@ -165,6 +148,10 @@ class SrepkgBuilder:
         with open(self._repkg_paths.inner_pkg_install_cfg, 'w')\
                 as ipi_config_file:
             ipi_config.write(ipi_config_file)
+
+    def create_srepkg_init(self):
+        with self._repkg_paths.srepkg_init.open(mode='a'):
+            pass
 
     def write_entry_point_file(self, orig_cse: nt.CSEntry):
 
@@ -213,19 +200,17 @@ class SrepkgBuilder:
     def build_mid_layer(self):
         self.build_srepkg_layer(
             call_methods=[
-                self.copy_srepkg_control_components,
                 self._entry_points_builder.build_entry_pts,
+                self.create_srepkg_init
             ],
             direct_copy_files=[
+                # SrcDestPair(
+                #     src=self._src_paths.srepkg_init,
+                #     dest=self._repkg_paths.srepkg_init,
+                # ),
                 SrcDestPair(
-                    src=self._src_paths.srepkg_init,
-                    dest=self._repkg_paths.srepkg_init,
-                ),
-            ],
-            template_file_writes=[
-                SrcDestPair(
-                    src=self._src_paths.pkg_names_template,
-                    dest=self._repkg_paths.pkg_names_mid,
+                    src=self._src_paths.entry_module,
+                    dest=self._repkg_paths.entry_module
                 )
             ],
         )
@@ -261,7 +246,7 @@ class SrepkgBuilder:
         shutil.make_archive(
             base_name=str(self._dist_out_dir / zipfile_name),
             format="zip",
-            root_dir=str(self._repkg_paths.root.absolute()),
+            root_dir=str(self._repkg_paths.srepkg.parent.absolute()),
         )
 
         return zipfile_name

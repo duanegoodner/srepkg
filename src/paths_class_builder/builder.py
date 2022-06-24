@@ -42,7 +42,7 @@ def build_for_srepkg():
     ).write_class_file()
 
     PathsClassBuilder(
-        file_struct=fs.fs_specs.get_builder_dest(),
+        file_struct=fs.fs_specs.get_srepkg_root(),
         root_path=Path("srepkg_pkgs"),
         class_name="BuilderDestPaths",
         write_file_path=cd_path / "builder_dest_paths.py",
