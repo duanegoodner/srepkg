@@ -1,7 +1,6 @@
 import shutil
 import unittest
 from pathlib import Path
-from typing import List
 import srepkg.repackager as repackager
 
 
@@ -48,7 +47,3 @@ class TestRepackager(unittest.TestCase):
 
     def test_flake8(self):
         self.run_single_pkg_test('flake8')
-
-
-
-

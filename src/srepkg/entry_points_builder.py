@@ -54,8 +54,9 @@ class EntryPointsBuilder:
 
     def _write_entry_point_files(self):
         for cse in self._orig_entry_pts:
-            shutil.copy2(self._entry_point_template, self._srepkg_entry_pt_dir /
-                         (cse.command + '.py'))
+            shutil.copy2(
+                self._entry_point_template, self._srepkg_entry_pt_dir /
+                (cse.command + '.py'))
 
     def _write_entry_point_init(self):
         entry_pt_imports = [
@@ -63,14 +64,12 @@ class EntryPointsBuilder:
             cse in self._orig_entry_pts
         ]
 
-        with open((self._srepkg_entry_pt_dir / '__init__.py'), 'w') as ent_init:
+        with open((self._srepkg_entry_pt_dir / '__init__.py'), 'w') as e_init:
             for import_entry in entry_pt_imports:
-                ent_init.write(import_entry + '\n')
-            ent_init.write('\n')
+                e_init.write(import_entry + '\n')
+            e_init.write('\n')
 
     def build_entry_pts(self):
         self._srepkg_entry_pt_dir.mkdir()
         self._write_entry_point_init()
         self._write_entry_point_files()
-
-

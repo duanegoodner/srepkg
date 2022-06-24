@@ -1,5 +1,3 @@
-import tempfile
-from pathlib import Path
 import srepkg.command_input as ci
 import srepkg.repackager as re
 

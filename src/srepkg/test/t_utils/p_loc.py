@@ -47,4 +47,3 @@ class PersistentLocals(object):
 # OUTPUT:
 # 4
 # {'local1': 2, 'local2': 2}
-

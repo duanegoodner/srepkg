@@ -62,7 +62,8 @@ class TestWarningConditions(unittest.TestCase):
         return self.base_dir / self.error_case_name
 
     def setUp(self) -> None:
-        self.orig_pkg_inspector = opi.OrigPkgInspector(str(self.error_case_dir))
+        self.orig_pkg_inspector = opi.OrigPkgInspector(
+            str(self.error_case_dir))
 
     def test_warning_condition(self):
         with self.assertWarns(UserWarning) as tw:

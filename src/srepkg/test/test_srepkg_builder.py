@@ -53,7 +53,7 @@ class TestSrepkgBuilder(unittest.TestCase):
         assert self.srepkg_builder.repkg_paths.inner_setup_cfg \
             .exists()
 
-    #  TODO add test that creates ...entry.py files & checks existence / content
+    #  TODO add test that creates ...entry.py files
     def test_build_mid_layer(self):
         self.srepkg_builder.build_inner_layer()
         self.srepkg_builder.build_mid_layer()

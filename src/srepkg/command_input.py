@@ -17,8 +17,8 @@ def get_args(*args):
         'orig_pkg_ref',
         type=str,
         help='A reference to the original package to be repackaged. Can be a '
-             'local path to a directory where a package\'s setup.py resides, a '
-             'PyPI package name, or Github repo')
+             'local path to a directory where a package\'s setup.py resides, a'
+             ' PyPI package name, or Github repo')
 
     parser.add_argument(
         '-n',
@@ -35,9 +35,9 @@ def get_args(*args):
         type=str,
         nargs='?',
         action='store',
-        help='Directory where non-compressed repackage will be built and saved.'
-             ' If not specified, srepkg is built in a temp directory and '
-             'deleted after distribution archive creation'
+        help='Directory where non-compressed repackage will be built and '
+             'saved. If not specified, srepkg is built in a temp directory and'
+             ' deleted after distribution archive creation'
     )
 
     parser.add_argument(
@@ -51,8 +51,3 @@ def get_args(*args):
     )
 
     return parser.parse_args(*args)
-
-
-
-
-

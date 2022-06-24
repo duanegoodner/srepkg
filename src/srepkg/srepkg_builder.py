@@ -1,6 +1,6 @@
 """
-Contains the SrepkgBuilder class that creates a copy of the original package and
-wraps the copied package with a file structure that forces it to run as a
+Contains the SrepkgBuilder class that creates a copy of the original package
+and wraps the copied package with a file structure that forces it to run as a
 Srepkg.
 """
 import configparser

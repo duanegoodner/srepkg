@@ -10,8 +10,8 @@ import srepkg.setup_file_reader as sfr
 class PkgError(cd.nt.ErrorMsg, Enum):
     PkgPathNotFound = cd.nt.ErrorMsg(msg='Original package path not found')
     NoSetupFilesFound = cd.nt.ErrorMsg(
-        msg='No setup.py file found, and no setup.cfg file found.\nsrepkg needs'
-            ' at least one of these files.')
+        msg='No setup.py file found, and no setup.cfg file found.\nsrepkg '
+            'needs at least one of these files.')
     PkgNameNotFound = cd.nt.ErrorMsg(
         msg='Unable to find package name in any setup file')
     InvalidPkgName = cd.nt.ErrorMsg(msg='Invalid package name')

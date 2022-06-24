@@ -1,7 +1,6 @@
 import abc
 import configparser
 import os
-import runpy
 
 import setuptools
 import sys
@@ -63,7 +62,8 @@ class _SetupFileReader(abc.ABC):
     @staticmethod
     def _filter_and_flatten(orig: dict, setup_keys: SetupKeys):
         single_key_params = {
-            key: orig.get(key) for key in setup_keys.single_level if key in orig
+            key: orig.get(key) for key in setup_keys.single_level
+            if key in orig
         }
         two_key_nested_params = {
             keys[1]: orig.get(keys[0]).get(keys[1]) for keys in
@@ -105,7 +105,7 @@ class _SetupFileReader(abc.ABC):
         return self
 
     def get_setup_info(self):
-        self._read_raw_data()._filter_raw_data()._match_to_py_format()\
+        self._read_raw_data()._filter_raw_data()._match_to_py_format() \
             ._cs_lists_to_cse_objs()
         return self._data
 
@@ -155,8 +155,9 @@ class _SetupCfgFileReader(_SetupFileReader):
                 (type(self._data['package_dir']) == str):
             pkg_dir_lines = self._data['package_dir'].strip() \
                 .split('\n')
-            pkg_dir_lines_parsed = [[item.strip() for item in line] for line in
-                                    [line.split('=') for line in pkg_dir_lines]]
+            pkg_dir_lines_parsed = [
+                [item.strip() for item in line] for line in
+                [line.split('=') for line in pkg_dir_lines]]
 
             for line in pkg_dir_lines_parsed:
                 if len(line) == 2:
@@ -185,11 +186,10 @@ class _SetupCfgFileReader(_SetupFileReader):
 
 
 class _SetupPyFileReader(_SetupFileReader):
-
     _doi_keys = SetupKeys(
-                    single_level=['name', 'version', 'package_dir', 'author',
-                                  'author_email', 'url', 'long_description'],
-                    two_level=[('entry_points', 'console_scripts')])
+        single_level=['name', 'version', 'package_dir', 'author',
+                      'author_email', 'url', 'long_description'],
+        two_level=[('entry_points', 'console_scripts')])
 
     def __init__(self, setup_file: Path):
         super().__init__(setup_file)

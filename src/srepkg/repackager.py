@@ -131,4 +131,3 @@ class Repackager:
                 self._construction_dir,
                 self._dist_out_dir
             ).repackage()
-

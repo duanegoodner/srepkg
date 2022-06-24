@@ -26,13 +26,15 @@ match_src_layout = {
                 },
             'options.entry_points':
                 {
-                    'console_scripts': '\nmy_project = testproj.app:run\nmy_test = testproj.test:simple_test'
+                    'console_scripts': '\nmy_project = testproj.app:run\n'
+                                       'my_test = testproj.test:simple_test'
                 }
         },
         'filtered': {
             'name': 'testproj',
             'package_dir': '\n=src',
-            'console_scripts': '\nmy_project = testproj.app:run\nmy_test = testproj.test:simple_test'},
+            'console_scripts': '\nmy_project = testproj.app:run\n'
+                               'my_test = testproj.test:simple_test'},
         'format_matched': {
             'name': 'testproj',
             'package_dir': {
@@ -86,12 +88,14 @@ match_non_src_layout = {
                         },
             'options.entry_points':
                 {
-                    'console_scripts': '\nmy_project = testproj.app:run\nmy_test = testproj.test:simple_test'
+                    'console_scripts': '\nmy_project = testproj.app:run\n'
+                                       'my_test = testproj.test:simple_test'
                 }
         },
         'filtered': {
             'name': 'testproj',
-            'console_scripts': '\nmy_project = testproj.app:run\nmy_test = testproj.test:simple_test'},
+            'console_scripts': '\nmy_project = testproj.app:run\n'
+                               'my_test = testproj.test:simple_test'},
         'format_matched': {
             'name': 'testproj',
             'console_scripts': [
@@ -155,12 +159,14 @@ mixed_src_layout_valid = {
                         },
             'options.entry_points':
                 {
-                    'console_scripts': '\nmy_project = testproj.app:run\nmy_test = testproj.test:simple_test'
+                    'console_scripts': '\nmy_project = testproj.app:run\n'
+                                       'my_test = testproj.test:simple_test'
                 }
         },
         'filtered': {
             'name': 'testproj',
-            'console_scripts': '\nmy_project = testproj.app:run\nmy_test = testproj.test:simple_test'},
+            'console_scripts': '\nmy_project = testproj.app:run\n'
+                               'my_test = testproj.test:simple_test'},
         'format_matched': {
             'name': 'testproj',
             'console_scripts': [
@@ -206,13 +212,15 @@ mixed_src_layout_cse_override = {
                 },
             'options.entry_points':
                 {
-                    'console_scripts': '\nmy_project = testproj.app:bad_run\nmy_test = testproj.test:bad_test'
+                    'console_scripts': '\nmy_project = testproj.app:bad_run\n'
+                                       'my_test = testproj.test:bad_test'
                 }
         },
         'filtered': {
             'name': 'testproj',
             'package_dir': '\n=src',
-            'console_scripts': '\nmy_project = testproj.app:bad_run\nmy_test = testproj.test:bad_test'},
+            'console_scripts': '\nmy_project = testproj.app:bad_run\n'
+                               'my_test = testproj.test:bad_test'},
         'format_matched': {
             'name': 'testproj',
             'package_dir': {

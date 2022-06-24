@@ -42,8 +42,8 @@ class BuilderPathsCalculator:
 
     @property
     def _srepkg_root(self):
-        return self._construction_dir / (self._orig_pkg_info.pkg_name + '_as_' +
-                                         self._srepkg_name)
+        return self._construction_dir / (
+                self._orig_pkg_info.pkg_name + '_as_' + self._srepkg_name)
 
     def _validate_srepkg_root(self):
 

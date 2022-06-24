@@ -1,4 +1,3 @@
-from srepkg.setup_file_reader import SetupFileType
 
 t_nonsrc = {
     '.cfg': {

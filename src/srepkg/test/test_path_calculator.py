@@ -75,7 +75,6 @@ class TestPathCalc(unittest.TestCase):
 
     def test_builder_dest_paths(self):
         builder_dest_paths = calc_paths.locals['builder_dest_paths']
-        construction_dir = calc_paths.locals['construction_dir']
         srepkg_root = calc_paths.locals['srepkg_root']
 
         srepkg_path = srepkg_root / calc_paths.locals['final_srepkg_name']
@@ -126,5 +125,3 @@ class TestPathCalcCustomDirAndPkgName(TestPathCalc):
                         str(self.srepkg_pkgs_non_temp_dir),
                         '--srepkg_name',
                         'custom_name'])
-
-
