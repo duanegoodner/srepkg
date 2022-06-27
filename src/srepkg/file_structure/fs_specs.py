@@ -1,4 +1,4 @@
-from custom_datatypes.named_tuples import SCF, SCD
+from shared_data_structures.named_tuples import SCF, SCD
 
 repackaging_components = [
     SCD(

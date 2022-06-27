@@ -1,6 +1,6 @@
 from pathlib import Path
 from typing import List
-from custom_datatypes.named_tuples import SCD
+from shared_data_structures.named_tuples import SCD
 
 
 def _file_structure_walk(

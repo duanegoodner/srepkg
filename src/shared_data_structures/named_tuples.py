@@ -2,13 +2,7 @@ from pathlib import Path
 from typing import NamedTuple, List
 from .builder_src_paths import BuilderSrcPaths
 from .builder_dest_paths import BuilderDestPaths
-from .console_script_entry import CSEntryPt, CSEntryPoints
-
-
-# class CSEntryPt(NamedTuple):
-#     command: str
-#     module_path: str
-#     funct: str
+from .console_script_entry import CSEntryPt
 
 
 class OrigPkgInfo(NamedTuple):
@@ -27,10 +21,11 @@ class ErrorMsg(NamedTuple):
     msg: str
 
 
-class SrepkgTaskListBuilderInfo(NamedTuple):
+class TaskBuilderInfo(NamedTuple):
     orig_pkg_info: OrigPkgInfo
     src_paths: BuilderSrcPaths
     repkg_paths: BuilderDestPaths
+    dist_out_dir: Path
 
 
 SCF = NamedTuple("SCF", [("pname", str), ("sc", str)])

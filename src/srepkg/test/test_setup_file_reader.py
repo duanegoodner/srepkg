@@ -55,10 +55,6 @@ class PrivateSFRTester(unittest.TestCase):
         self._file_reader._read_raw_data()._filter_raw_data()
         assert self._file_reader._data == self.expected_vals["filtered"]
 
-    def test_format_matched(self):
-        self._file_reader._read_raw_data()._filter_raw_data()._match_to_py_format()
-        assert self._file_reader._data == self.expected_vals["format_matched"]
-
     def test_get_data(self):
         setup_info = self._file_reader.get_setup_info()
 

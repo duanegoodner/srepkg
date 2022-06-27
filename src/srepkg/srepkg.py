@@ -1,5 +1,5 @@
 import srepkg.command_input as ci
-import srepkg.repackager as re
+import srepkg.repackager as rep
 
 
 def main():
@@ -16,7 +16,7 @@ def main():
      ~/srepkg_pkgs/<orig_pkg_name>_srepkg/<srepkg_name>
     """
     args = ci.get_args()
-    re.Repackager(
+    rep.Repackager(
         **vars(args)
         # orig_pkg_ref=args.orig_pkg_ref,
         # srepkg_name=args.srepkg_name,

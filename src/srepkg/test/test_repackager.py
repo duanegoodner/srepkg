@@ -8,10 +8,9 @@ class TestRepackager(unittest.TestCase):
 
     _construction_dir = Path(__file__).parent.absolute() / "test_srepkg_pkgs"
     _srepkg_dist_dir = Path(__file__).parent.absolute() / "test_srepkg_dists"
-
     _orig_pkg_refs = ["howdoi", "numpy", "cowsay"]
 
-    def SetUp(self):
+    def setUp(self):
         if self._construction_dir.exists():
             shutil.rmtree(self._construction_dir)
         self._construction_dir.mkdir()
@@ -20,12 +19,20 @@ class TestRepackager(unittest.TestCase):
             shutil.rmtree(self._srepkg_dist_dir)
         self._srepkg_dist_dir.mkdir()
 
+        self.orig_cwd_content = list(Path.cwd().iterdir())
+        print(self.orig_cwd_content)
+
     def tearDown(self) -> None:
         if self._construction_dir.exists():
             shutil.rmtree(self._construction_dir)
 
         if self._srepkg_dist_dir.exists():
             shutil.rmtree(self._srepkg_dist_dir)
+
+        curr_contents = list(Path.cwd().iterdir())
+        for item in curr_contents:
+            if item not in self.orig_cwd_content:
+                item.unlink()
 
     @staticmethod
     def run_pkg_test_dirs_none(orig_pkg_ref: str):
@@ -69,14 +76,14 @@ class TestRepackager(unittest.TestCase):
     def test_testproj_dirs_const_dist(self):
         self.run_pkg_test_dirs_const_dist("/Users/duane/dproj/testproj")
 
-    # def test_howdoi_pypi_dirs_none(self):
-    #     self.run_pkg_test_dirs_none("howdoi")
-    #
-    # def test_howdoi_pypi_dirs_const(self):
-    #     self.run_pkg_test_dirs_const("howdoi")
-    #
-    # def test_howdoi_pypi_dirs_dist(self):
-    #     self.run_pkg_test_dirs_dist("howdoi")
+    def test_howdoi_pypi_dirs_none(self):
+        self.run_pkg_test_dirs_none("howdoi")
+
+    def test_howdoi_pypi_dirs_const(self):
+        self.run_pkg_test_dirs_const("howdoi")
+
+    def test_howdoi_pypi_dirs_dist(self):
+        self.run_pkg_test_dirs_dist("howdoi")
     #
     # def test_howdoi_pypi_dirs_const_dist(self):
     #     self.run_pkg_test_dirs_const_dist("howdoi")

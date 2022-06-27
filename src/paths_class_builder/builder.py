@@ -31,7 +31,7 @@ class PathsClassBuilder:
 
 
 def build_for_srepkg():
-    cd_path = Path(__file__).parent.parent.absolute() / "custom_datatypes"
+    cd_path = Path(__file__).parent.parent.absolute() / "shared_data_structures"
 
     PathsClassBuilder(
         file_struct=fs.fs_specs.repackaging_components,

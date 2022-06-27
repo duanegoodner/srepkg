@@ -1,6 +1,7 @@
 import unittest
 import shutil
 from pathlib import Path
+import shared_data_structures.named_tuples as nt
 import srepkg.srepkg_builder as sb
 import srepkg.test.test_path_calculator as tpc
 
@@ -24,12 +25,16 @@ class TestSrepkgBuilder(unittest.TestCase):
         self.builder_src_paths, self.builder_dest_paths = tpc.calc_paths(
             [str(self.orig_pkg_path)]
         )
-        self.srepkg_builder = sb.SrepkgBuilder(
-            tpc.calc_paths.locals["orig_pkg_info"],
-            self.builder_src_paths,
-            self.builder_dest_paths,
-            self.srepkg_dist_dir,
+
+        task_builder_info = nt.TaskBuilderInfo(
+            orig_pkg_info=tpc.calc_paths.locals["orig_pkg_info"],
+            src_paths=self.builder_src_paths,
+            repkg_paths=self.builder_dest_paths,
+            dist_out_dir=self.srepkg_dist_dir
         )
+
+        self.task_builder = sb.SrepkgTaskListBuilder(task_builder_info)
+        self.construction_tasks = self.task_builder.ordered_tasks
 
     def tearDown(self) -> None:
         if self.srepkg_pkgs_non_temp_dir.exists():
@@ -39,42 +44,68 @@ class TestSrepkgBuilder(unittest.TestCase):
             shutil.rmtree(self.srepkg_dist_dir)
 
     def test_srepkg_builder_paths(self) -> None:
-        assert self.srepkg_builder.src_paths == self.builder_src_paths
-        assert self.srepkg_builder.repkg_paths == self.builder_dest_paths
+        assert self.task_builder._info.src_paths == self.builder_src_paths
+        assert self.task_builder._info.repkg_paths == self.builder_dest_paths
+
+    def run_srepkg_builder_through_task(self, task_name: str, expected_path_id: str):
+        end_index = self.task_builder.execution_order.index(task_name) + 1
+        tasks = self.task_builder.ordered_tasks[:end_index]
+        srepkg_builder = sb.SrepkgBuilder(tasks)
+        srepkg_builder.build_srepkg()
+
+        expected_path = getattr(self.task_builder._info.repkg_paths, expected_path_id)
+        assert expected_path.exists()
 
     def test_inner_pkg_copy(self) -> None:
-        self.srepkg_builder.copy_inner_package()
-        # assert self.srepkg_builder.repkg_paths.root.exists()
-        assert self.srepkg_builder.repkg_paths.srepkg.exists()
+        self.run_srepkg_builder_through_task(
+            task_name='copy_inner_pkg', expected_path_id='srepkg')
 
-    def test_build_inner_layer(self) -> None:
-        self.srepkg_builder.build_inner_layer()
+    def test_create_srepkg_init(self) -> None:
+        self.run_srepkg_builder_through_task(
+            task_name='create_srepkg_init', expected_path_id='srepkg_init')
 
-    #  TODO add test that creates ...entry.py files
-    def test_build_mid_layer(self):
-        self.srepkg_builder.build_inner_layer()
-        self.srepkg_builder.build_mid_layer()
+    def test_build_entry_pts(self):
+        self.run_srepkg_builder_through_task(
+            task_name='build_entry_pts', expected_path_id='srepkg_entry_points')
 
-        # assert (
-        #     self.srepkg_builder.repkg_paths.srepkg_control_components.exists()
-        # )
-        assert self.srepkg_builder.repkg_paths.srepkg_entry_points.exists()
-        assert self.srepkg_builder.repkg_paths.srepkg_init.exists()
-        # assert self.srepkg_builder.repkg_paths.pkg_names_mid.exists()
+    def test_copy_entry_module(self):
+        self.run_srepkg_builder_through_task(
+            task_name='copy_entry_module', expected_path_id='entry_module')
 
-    def test_build_outer_layer(self):
-        self.srepkg_builder.build_inner_layer()
-        self.srepkg_builder.build_mid_layer()
-        self.srepkg_builder.build_outer_layer()
+    def test_build_srepkg_cfg(self):
+        self.run_srepkg_builder_through_task(
+            task_name='build_srepkg_cfg', expected_path_id='srepkg_setup_cfg')
 
-        assert self.srepkg_builder.repkg_paths.srepkg_setup_cfg.exists()
-        assert self.srepkg_builder.repkg_paths.inner_pkg_installer.exists()
-        assert self.srepkg_builder.repkg_paths.srepkg_setup_py.exists()
-        # assert self.srepkg_builder.repkg_paths.pkg_names_outer.exists()
-        assert self.srepkg_builder.repkg_paths.manifest.exists()
+    def test_build_inner_pkg_install_cfg(self):
+        self.run_srepkg_builder_through_task(
+            task_name='build_inner_pkg_install_cfg',
+            expected_path_id='inner_pkg_install_cfg')
 
-    def test_build_srepkg(self):
-        self.srepkg_builder.build_srepkg()
+    def test_copy_inner_pkg_installer(self):
+        self.run_srepkg_builder_through_task(
+            task_name='copy_inner_pkg_installer',
+            expected_path_id='inner_pkg_installer')
+
+    def test_copy_srepkg_setup_py(self):
+        self.run_srepkg_builder_through_task(
+            task_name='copy_srepkg_setup_py',
+            expected_path_id='srepkg_setup_py')
+
+    def test_write_manifest(self):
+        self.run_srepkg_builder_through_task(
+            task_name='write_manifest', expected_path_id='manifest')
+
+    def test_full_srepkg_build(self):
+        srepkg_builder = sb.SrepkgBuilder(self.task_builder.ordered_tasks)
+        srepkg_builder.build_srepkg()
+        zipfile_name = "-".join(
+            [
+                self.task_builder._info.repkg_paths.srepkg.name,
+                self.task_builder._info.orig_pkg_info.version
+            ]
+        )
+
+        assert (self.task_builder._info.dist_out_dir / (zipfile_name + '.zip')).exists()
 
 
 class TestSrepkgBuilderCustomDir(TestSrepkgBuilder):
@@ -92,12 +123,15 @@ class TestSrepkgBuilderCustomDir(TestSrepkgBuilder):
                 str(self.srepkg_pkgs_non_temp_dir),
             ]
         )
-        self.srepkg_builder = sb.SrepkgBuilder(
-            tpc.calc_paths.locals["orig_pkg_info"],
-            self.builder_src_paths,
-            self.builder_dest_paths,
-            self.srepkg_dist_dir,
+        task_builder_info = nt.TaskBuilderInfo(
+            orig_pkg_info=tpc.calc_paths.locals["orig_pkg_info"],
+            src_paths=self.builder_src_paths,
+            repkg_paths=self.builder_dest_paths,
+            dist_out_dir=self.srepkg_dist_dir
         )
+
+        self.task_builder = sb.SrepkgTaskListBuilder(task_builder_info)
+        self.construction_tasks = self.task_builder.ordered_tasks
 
     # TODO add test to inspect contents of srepkg setup.cfg
 

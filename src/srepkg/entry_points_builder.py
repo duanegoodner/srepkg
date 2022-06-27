@@ -2,15 +2,11 @@ import shutil
 from pathlib import Path
 from typing import List
 
-import custom_datatypes.builder_dest_paths as bdp
-import custom_datatypes.builder_src_paths as bsp
-import custom_datatypes.console_script_entry as cs_ent
-import custom_datatypes.named_tuples as nt
+import shared_data_structures.console_script_entry as cs_ent
+import shared_data_structures.named_tuples as nt
 
 
 class EntryPointsBuilder:
-    # this is name of entry_funct in each entry point & needed in setup.cfg
-    _gen_entry_funct_name = "entry_funct"
 
     def __init__(
         self,
@@ -18,35 +14,22 @@ class EntryPointsBuilder:
         orig_entry_pts: List[nt.CSEntryPt],
         entry_point_template: Path,
         srepkg_entry_pt_dir: Path,
+        gen_entry_funct_name: str = "entry_funct"
     ):
         self._srepkg_name = srepkg_name
         self._orig_entry_pts = orig_entry_pts
         self._entry_point_template = entry_point_template
         self._srepkg_entry_pt_dir = srepkg_entry_pt_dir
+        self._gen_entry_funct_name = gen_entry_funct_name
 
     @classmethod
-    def from_srepkg_task_list_builder(
-            cls, builder_info: nt.SrepkgTaskListBuilderInfo):
+    def for_srepkg_task_list_builder(
+            cls, builder_info: nt.TaskBuilderInfo):
         return cls(
             srepkg_name=builder_info.repkg_paths.srepkg.name,
             orig_entry_pts=builder_info.orig_pkg_info.entry_pts,
             entry_point_template=builder_info.src_paths.entry_point_template,
             srepkg_entry_pt_dir=builder_info.repkg_paths.srepkg_entry_points
-        )
-
-    @classmethod
-    def from_srepkg_builder_init_args(
-        cls,
-        orig_pkg_info: nt.OrigPkgInfo,
-        src_paths: bsp.BuilderSrcPaths,
-        repkg_paths: bdp.BuilderDestPaths,
-    ):
-
-        return cls(
-            srepkg_name=repkg_paths.srepkg.name,
-            orig_entry_pts=orig_pkg_info.entry_pts,
-            entry_point_template=src_paths.entry_point_template,
-            srepkg_entry_pt_dir=repkg_paths.srepkg_entry_points,
         )
 
     def get_cfg_cse_str(self):

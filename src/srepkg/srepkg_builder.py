@@ -8,64 +8,16 @@ import configparser
 import shutil
 import string
 import sys
-from abc import ABC
-
-from typing import List, Callable, NamedTuple
 from pathlib import Path
-from enum import Enum, auto
-
+from typing import List, NamedTuple
 import srepkg.entry_points_builder as epb
-import custom_datatypes.builder_src_paths as bsp
-import custom_datatypes.builder_dest_paths as bdp
-import custom_datatypes.named_tuples as nt
-
-
-class SrepkbBuilderError(nt.ErrorMsg, Enum):
-    OrigPkgPathNotFound = nt.ErrorMsg(
-        msg="Original package path not found"
-    )
-    DestPkgPathExits = nt.ErrorMsg(
-        msg="Intended Srepkg destination path already exists"
-    )
-    ControlComponentsNotFound = nt.ErrorMsg(
-        msg="Error when attempting to copy sub-package "
-            "srepkg_control_components. Sub-package not found"
-    )
-    ControlComponentsExist = nt.ErrorMsg(
-        msg="Error when attempting to copy sub-package "
-            "srepkg_control_components. Destination path already exists."
-    )
-    FileNotFoundForCopy = nt.ErrorMsg(
-        msg="Error when attempting to copy. Source file not found."
-    )
-    CopyDestinationPathExists = nt.ErrorMsg(
-        msg="Error when attempting to copy. Destination path already exists"
-    )
+import shared_data_structures.named_tuples as nt
+from error_handling.error_messages import SrepkgBuilderError
 
 
 class CopyInfo(NamedTuple):
     src: Path
     dest: Path
-
-
-class TemplateFileWriter:
-    def __init__(self, substitution_map: dict):
-        self._substitution_map = substitution_map
-
-    def write_file(self, template_file: Path, dest_path: Path):
-        with template_file.open(mode="r") as tf:
-            template_text = tf.read()
-        template = string.Template(template_text)
-        result = template.substitute(self._substitution_map)
-        with dest_path.open(mode="w") as output_file:
-            output_file.write(result)
-
-
-class ConstructionTaskType(Enum):
-    DIRECT_COPY_FILE: auto()
-    DIRECT_COPY_DIR: auto()
-    CALL_METHOD: auto()
-    WRITE_FROM_TEMPLATE: auto()
 
 
 class _ConstructionTask(abc.ABC):
@@ -91,7 +43,7 @@ class _Copy(_ConstructionTask, abc.ABC):
                 f"Unable to find file when attempting to copy from"
                 f"{str(self._copy_info.src)} to {str(self._copy_info.dest)}"
             )
-            sys.exit(SrepkbBuilderError.FileNotFoundForCopy.msg)
+            sys.exit(SrepkgBuilderError.FileNotFoundForCopy.msg)
 
 
 class _DirectCopyDir(_Copy):
@@ -138,325 +90,152 @@ class _CallMethod(_ConstructionTask):
         self._call_method()
 
 
-class _TaskListBuilder(abc.ABC):
+class SrepkgTaskListBuilder:
 
-    @abc.abstractmethod
-    def build_task_list(self) -> List[_ConstructionTask]:
-        pass
-
-
-class SrepkgTaskListBuilder(_TaskListBuilder):
-
-    def __init__(self, orig_pkg_info: nt.OrigPkgInfo,
-                 src_paths: bsp.BuilderSrcPaths,
-                 repkg_paths: bdp.BuilderDestPaths,
-                 info: nt.SrepkgTaskListBuilderInfo,
-                 dist_out_dir: Path):
-        self._orig_pkg_info = orig_pkg_info
-        self._src_paths = src_paths
-        self._repkg_paths = repkg_paths
+    def __init__(self, info: nt.TaskBuilderInfo):
         self._info = info
-        # self._dist_out_dir = dist_out_dir
-
-    @property
-    def _direct_file_copy_info(self):
-        return {
-            'entry_module': CopyInfo(
-                src=self._info.src_paths.entry_module,
-                dest=self._info.repkg_paths.entry_module
-            ),
-            'inner_pkg_installer': CopyInfo(
-                src=self._info.src_paths.inner_pkg_installer,
-                dest=self._info.repkg_paths.inner_pkg_installer
-            ),
-            'srepkg_setup_py': CopyInfo(
-                src=self._info.src_paths.srepkg_setup_py,
-                dest=self._info.repkg_paths.srepkg_setup_py
-            )
-        }
-
-    def _create_srepkg_init(self):
-        with self._info.repkg_paths.srepkg_init.open(mode='a'):
-            pass
-
-    def _build_entry_pts(self):
-        epb.EntryPointsBuilder.from_srepkg_builder_init_args(
-            orig_pkg_info=self._orig_pkg_info,
-            src_paths=self._src_paths,
-            repkg_paths=self._repkg_paths
-        ).build_entry_pts()
-
-    @property
-    def _create_srepkg_init_task(self):
-        return _CallMethod(self._create_srepkg_init)
-
-    def _build_entry_points(self):
-        epb.EntryPointsBuilder.from_srepkg_builder_init_args(
-            orig_pkg_info=self._orig_pkg_info,
-            src_paths=self._src_paths,
-            repkg_paths=self._repkg_paths
-        ).build_entry_pts()
-
-    @property
-    def _build_entry_points_task(self):
-        return _CallMethod(self._build_entry_points)
-
-    @property
-    def _copy_entry_pt_runner(self):
-        return _DirectCopyFile(
-            CopyInfo(src=self._src_paths.entry_module,
-                     dest=self._repkg_paths.entry_module))
-
-    def build_task_list(self) -> List[_ConstructionTask]:
-        return [
-            self._copy_inner_pkg_task,
-            self._create_srepkg_init_task,
-            self._build_entry_points_task,
-            self._copy_entry_pt_runner,
-
-
-        ]
-
-
-class SrepkgBuilder:
-    """
-    Encapsulates  methods for creating a SRE-packaged version of an existing
-    package.
-    """
-
-    _build_errors = SrepkbBuilderError
-
-    # file patterns that are not copied into the SRE-packaged app
-    _ignore_types = ["*.git", "*.gitignore", "*.idea", "*__pycache__"]
-
-    def __init__(
-            self,
-            orig_pkg_info: nt.OrigPkgInfo,
-            src_paths: bsp.BuilderSrcPaths,
-            repkg_paths: bdp.BuilderDestPaths,
-            dist_out_dir: Path,
-    ):
-        """
-        Construct a new SrepkgBuilder
-        :param src_paths: BuilderSrcPaths namedtuple
-        :param repkg_paths: BuilderDestPaths named tuple
-        module
-        """
-        self._orig_pkg_info = orig_pkg_info
-        self._src_paths = src_paths
-        self._repkg_paths = repkg_paths
-        self._template_file_writer = TemplateFileWriter(
-            substitution_map={
-                "srepkg_name": self._repkg_paths.srepkg.name,
-            }
-        )
-        self._entry_points_builder = (
-            epb.EntryPointsBuilder.from_srepkg_builder_init_args(
-                orig_pkg_info=orig_pkg_info,
-                src_paths=src_paths,
-                repkg_paths=repkg_paths,
-            )
-        )
-        self._dist_out_dir = dist_out_dir
-
-    @property
-    def orig_pkg_info(self):
-        return self._orig_pkg_info
-
-    @property
-    def src_paths(self):
-        return self._src_paths
-
-    @property
-    def repkg_paths(self):
-        return self._repkg_paths
-
-    def copy_inner_package(self):
-        """Copies original package to SRE-package directory"""
-
-        try:
-            shutil.copytree(
-                self._orig_pkg_info.root_path,
-                self._repkg_paths.srepkg,
-                ignore=shutil.ignore_patterns(*self._ignore_types),
-            )
-        except FileNotFoundError:
-            sys.exit(self._build_errors.OrigPkgPathNotFound.msg)
-        except FileExistsError:
-            sys.exit(self._build_errors.DestPkgPathExits.msg)
+        self._entry_points_builder = epb.EntryPointsBuilder \
+            .for_srepkg_task_list_builder(self._info)
 
     def build_srepkg_cfg(self):
-        sr_config = configparser.ConfigParser()
-        sr_config.read(self._src_paths.srepkg_setup_cfg)
+        srepkg_cfg = configparser.ConfigParser()
+        srepkg_cfg.read(self._info.src_paths.srepkg_setup_cfg)
+        srepkg_cfg.set("options.entry_points", "console_scripts",
+                       self._entry_points_builder.get_cfg_cse_str())
+        srepkg_cfg.set("metadata", "name", self._info.repkg_paths.srepkg.name)
+        srepkg_cfg.set("metadata", "version", self._info.orig_pkg_info.version)
 
-        sr_config["options.entry_points"][
-            "console_scripts"
-        ] = self._entry_points_builder.get_cfg_cse_str()
-
-        sr_config["metadata"]["name"] = self._repkg_paths.srepkg.name
-
-        sr_config["metadata"]["version"] = self._orig_pkg_info.version
-
-        with open(self._repkg_paths.srepkg_setup_cfg, "w") as sr_configfile:
-            sr_config.write(sr_configfile)
+        with open(self._info.repkg_paths.srepkg_setup_cfg, "w") as sr_cfg_file:
+            srepkg_cfg.write(sr_cfg_file)
 
     def build_inner_pkg_install_cfg(self):
         ipi_config = configparser.ConfigParser()
         ipi_config.add_section("metadata")
-        ipi_config.set("metadata", "name", self._repkg_paths.srepkg.name)
-        # ipi_config["metadata"]["name"] = self._repkg_paths.srepkg.name
-        with open(self._repkg_paths.inner_pkg_install_cfg, 'w') \
-                as ipi_config_file:
-            ipi_config.write(ipi_config_file)
+        ipi_config.set("metadata", "name", self._info.repkg_paths.srepkg.name)
+        with open(self._info.repkg_paths.inner_pkg_install_cfg, 'w') as icf:
+            ipi_config.write(icf)
 
     def create_srepkg_init(self):
-        with self._repkg_paths.srepkg_init.open(mode='a'):
+        with self._info.repkg_paths.srepkg_init.open(mode='a'):
             pass
 
-    def write_entry_point_file(self, orig_cse: nt.CSEntryPt):
-
-        shutil.copy2(
-            self._src_paths.entry_point_template,
-            self._repkg_paths.srepkg_entry_points / (orig_cse.command + ".py"),
-        )
-
-    def simple_file_copy(self, src_dest: CopyInfo):
-        """Copies file from source to SRE-package based on attribute name
-        in _src_paths and _repkg_paths. Requires same attribute name in each"""
-        try:
-            shutil.copy2(*src_dest)
-        except FileNotFoundError:
-            print(
-                f"Unable to find file when attempting to copy from"
-                f"{str(src_dest.src)} to {str(src_dest.dest)}"
-            )
-            sys.exit(self._build_errors.FileNotFoundForCopy.msg)
-        except FileExistsError:
-            print(f"File already exists at {str(src_dest.src)}.")
-            sys.exit(self._build_errors.CopyDestinationPathExists.msg)
-
-    def inh_build(self):
-
-        SrePkgConstructionTask(
-            ConstructionTaskType.DIRECT_COPY_DIR,
-            src_path=self._orig_pkg_info.root_path,
-            dest_path=self._repkg_paths.srepkg,
-            not_found_response=self._build_errors.OrigPkgPathNotFound.msg,
-            ignore=shutil.ignore_patterns(*self._ignore_types)
-        ).execute()
-
-        SrePkgConstructionTask(
-            ConstructionTaskType.CALL_METHOD,
-            call_method=self.create_srepkg_init
-        ).execute()
-
-        SrePkgConstructionTask(
-            ConstructionTaskType.CALL_METHOD,
-            call_method=self._entry_points_builder.build_entry_pts,
-        )
-
-    def build_srepkg_layer(
-            self,
-            call_methods: List[Callable] = None,
-            direct_copy_files: List[CopyInfo] = None,
-            template_file_writes: List[CopyInfo] = None,
-    ):
-
-        if call_methods is not None:
-            for method in call_methods:
-                method()
-
-        if direct_copy_files is not None:
-            for direct_copy_pair in direct_copy_files:
-                self.simple_file_copy(direct_copy_pair)
-
-        if template_file_writes is not None:
-            for write_op in template_file_writes:
-                self._template_file_writer.write_file(*write_op)
-
-    def build_inner_layer(self):
-        self.build_srepkg_layer(call_methods=[self.copy_inner_package])
-
-    def build_mid_layer(self):
-        self.build_srepkg_layer(
-            call_methods=[
-                self._entry_points_builder.build_entry_pts,
-                self.create_srepkg_init
-            ],
-            direct_copy_files=[
-                CopyInfo(
-                    src=self._src_paths.entry_module,
-                    dest=self._repkg_paths.entry_module
-                )
-            ],
-        )
-
-    def build_outer_layer(self):
-        self.build_srepkg_layer(
-            call_methods=[
-                self.build_srepkg_cfg, self.build_inner_pkg_install_cfg],
-            direct_copy_files=[
-                CopyInfo(
-                    src=self._src_paths.inner_pkg_installer,
-                    dest=self._repkg_paths.inner_pkg_installer,
-                ),
-                CopyInfo(
-                    src=self._src_paths.srepkg_setup_py,
-                    dest=self._repkg_paths.srepkg_setup_py,
-                ),
-            ],
-            template_file_writes=[
-                CopyInfo(
-                    src=self._src_paths.manifest_template,
-                    dest=self._repkg_paths.manifest,
-                ),
-            ],
-        )
+    def build_entry_pts(self):
+        self._entry_points_builder.build_entry_pts()
 
     def build_distribution(self):
-
         zipfile_name = "-".join(
-            [self._repkg_paths.srepkg.name, self._orig_pkg_info.version]
+            [
+                self._info.repkg_paths.srepkg.name,
+                self._info.orig_pkg_info.version
+            ]
         )
 
         shutil.make_archive(
-            base_name=str(self._dist_out_dir / zipfile_name),
+            base_name=str(self._info.dist_out_dir / zipfile_name),
             format="zip",
-            root_dir=str(self._repkg_paths.srepkg.parent.absolute()),
+            root_dir=str(self._info.repkg_paths.srepkg.parent.absolute())
         )
 
-        return zipfile_name
-
-    def output_summary(self, archive_filename: str):
         print(
-            f"Original package '{self._orig_pkg_info.pkg_name}' has been "
-            f"re-packaged as '{self._repkg_paths.srepkg.name}'\n"
+            f"Original package '{self._info.orig_pkg_info.pkg_name}' has been "
+            f"re-packaged as '{self._info.repkg_paths.srepkg.name}'\n"
         )
+
         print(
             f"The re-packaged version has been saved as source "
             f"distribution archive file: "
-            f'{str(self._dist_out_dir) + "/" + archive_filename}'
+            f'{str(self._info.dist_out_dir) + "/" + zipfile_name}'
         )
+
         print(
-            f"'{self._repkg_paths.srepkg.name}' can be installed using: "
+            f"'{self._info.repkg_paths.srepkg.name}' can be installed using: "
             f"pip install "
-            f'{str(self._dist_out_dir) + "/" + archive_filename}\n'
+            f'{str(self._info.dist_out_dir) + "/" + zipfile_name}\n'
         )
+
         print(
-            f"After installation, '{self._repkg_paths.srepkg.name}' will "
+            f"After installation, '{self._info.repkg_paths.srepkg.name}' will "
             f"provide command line access to the following commands:"
         )
-        for cse in self._orig_pkg_info.entry_pts:
+        for cse in self._info.orig_pkg_info.entry_pts:
             print(cse.command)
 
-    def build_srepkg(self):
-        """
-        Encapsulates all steps needed to build SRE-package, and displays
-        original package and SRE-package paths when complete.
-        """
+    @property
+    def task_catalog(self):
+        return {
+            'copy_inner_pkg': _DirectCopyDir(
+                CopyInfo(
+                    src=self._info.orig_pkg_info.root_path,
+                    dest=self._info.repkg_paths.srepkg
+                ),
+                ignore_patterns=[
+                    "*.git", "*.gitignore", "*.idea", "*__pycache__"]
+            ),
+            'copy_entry_module': _DirectCopyFile(
+                CopyInfo(
+                    src=self._info.src_paths.entry_module,
+                    dest=self._info.repkg_paths.entry_module
+                )),
+            'copy_inner_pkg_installer': _DirectCopyFile(
+                CopyInfo(
+                    src=self._info.src_paths.inner_pkg_installer,
+                    dest=self._info.repkg_paths.inner_pkg_installer
+                )),
+            'copy_srepkg_setup_py': _DirectCopyFile(
+                CopyInfo(
+                    src=self._info.src_paths.srepkg_setup_py,
+                    dest=self._info.repkg_paths.srepkg_setup_py
+                )),
+            'write_manifest': _WriteFromTemplate(
+                CopyInfo(
+                    src=self._info.src_paths.manifest_template,
+                    dest=self._info.repkg_paths.manifest
+                ),
+                substitution_map={
+                    "srepkg_name": self._info.repkg_paths.srepkg.name,
+                }
+            ),
+            'create_srepkg_init': _CallMethod(self.create_srepkg_init),
+            'build_entry_pts': _CallMethod(self.build_entry_pts),
+            'build_srepkg_cfg': _CallMethod(self.build_srepkg_cfg),
+            'build_inner_pkg_install_cfg': _CallMethod(
+                self.build_inner_pkg_install_cfg),
+            'build_distribution': _CallMethod(self.build_distribution)
+        }
 
-        self.build_inner_layer()
-        self.build_mid_layer()
-        self.build_outer_layer()
-        archive = self.build_distribution()
-        self.output_summary(archive)
+    @property
+    def execution_order(self):
+        task_order = [
+            'copy_inner_pkg',
+            'create_srepkg_init',
+            'build_entry_pts',
+            'copy_entry_module',
+            'build_srepkg_cfg',
+            'build_inner_pkg_install_cfg',
+            'copy_inner_pkg_installer',
+            'copy_srepkg_setup_py',
+            'write_manifest',
+            'build_distribution'
+        ]
+        
+        assert all([task in self.task_catalog for task in task_order])
+
+        return task_order
+    
+    @property
+    def ordered_tasks(self):
+        task_catalog = self.task_catalog
+        execution_order = self.execution_order
+        return [
+            task_catalog[task_name] for task_name in execution_order
+        ]
+
+
+class SrepkgBuilder:
+
+    def __init__(self, construction_tasks: List[_ConstructionTask]):
+        self._construction_tasks = construction_tasks
+
+    def build_srepkg(self):
+        for task in self._construction_tasks:
+            task.execute()

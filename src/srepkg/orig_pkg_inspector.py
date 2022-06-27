@@ -1,31 +1,11 @@
+import sys
+
 from pathlib import Path
 from typing import NamedTuple, List
-from enum import Enum
 
-import sys
-import custom_datatypes as cd
+import shared_data_structures as cd
 import srepkg.setup_file_reader as sfr
-
-
-class PkgError(cd.nt.ErrorMsg, Enum):
-    PkgPathNotFound = cd.nt.ErrorMsg(msg="Original package path not found")
-    NoSetupFilesFound = cd.nt.ErrorMsg(
-        msg="No setup.py file found, and no setup.cfg file found.\nsrepkg "
-        "needs at least one of these files."
-    )
-    PkgNameNotFound = cd.nt.ErrorMsg(
-        msg="Unable to find package name in any setup file"
-    )
-    InvalidPkgName = cd.nt.ErrorMsg(msg="Invalid package name")
-    SetupCfgReadError = cd.nt.ErrorMsg(msg="Unable to read or parse setup.cfg")
-    NoCSE = cd.nt.ErrorMsg(msg="No console script entry points found")
-
-
-class PkgWarning(cd.nt.ErrorMsg, Enum):
-    SetupCfgReadError = cd.nt.ErrorMsg(
-        msg="Problem reading setup.cfg. srepkg is unable to obtain any data "
-        "from this file"
-    )
+from error_handling.error_messages import OrigPkgError
 
 
 class SetupKeys(NamedTuple):
@@ -53,7 +33,7 @@ class OrigPkgInspector:
 
     def _validate_orig_pkg_path(self):
         if not self._orig_pkg_path.exists():
-            sys.exit(PkgError.PkgPathNotFound.msg)
+            sys.exit(OrigPkgError.PkgPathNotFound.msg)
         return self
 
     def _validate_setup_files(self):
@@ -62,7 +42,7 @@ class OrigPkgInspector:
             for filename in self._setup_filenames
         ]
         if not any(setup_paths_found):
-            sys.exit(PkgError.NoSetupFilesFound.msg)
+            sys.exit(OrigPkgError.NoSetupFilesFound.msg)
         return self
 
     def _get_all_setup_data(self):
@@ -84,12 +64,12 @@ class OrigPkgInspector:
 
     def _validate_merged_data(self):
         if ("name" not in self._merged_data) or (not self._merged_data["name"]):
-            sys.exit(PkgError.PkgNameNotFound.msg)
+            sys.exit(OrigPkgError.PkgNameNotFound.msg)
 
         if ("console_scripts" not in self._merged_data) or (
             not self._merged_data["console_scripts"]
         ):
-            sys.exit(PkgError.NoCSE.msg)
+            sys.exit(OrigPkgError.NoCSE.msg)
 
         if ("version" not in self._merged_data) or (
             not self._merged_data["version"]
@@ -99,7 +79,8 @@ class OrigPkgInspector:
         return self
 
     def get_orig_pkg_info(self):
-        self._get_all_setup_data()._merge_all_setup_data()._validate_merged_data()
+        self._get_all_setup_data()._merge_all_setup_data()\
+            ._validate_merged_data()
 
         return cd.nt.OrigPkgInfo(
             pkg_name=self._merged_data["name"],

@@ -6,9 +6,9 @@ package.
 
 import sys
 from pathlib import Path
-import custom_datatypes.builder_dest_paths as bdp
-import custom_datatypes.builder_src_paths as bsp
-import custom_datatypes.named_tuples as nt
+import shared_data_structures.builder_dest_paths as bdp
+import shared_data_structures.builder_src_paths as bsp
+import shared_data_structures.named_tuples as nt
 import srepkg.file_structure as pb
 
 

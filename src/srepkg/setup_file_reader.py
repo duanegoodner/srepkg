@@ -5,30 +5,13 @@ import os
 import setuptools
 import sys
 import warnings
-from enum import Enum, auto
+from enum import Enum
 from typing import NamedTuple, List
 from pathlib import Path
 from unittest import mock
-import custom_datatypes as cd
-
-
-class SetupFileReaderError(cd.nt.ErrorMsg, Enum):
-    SetupCfgReadError = cd.nt.ErrorMsg(msg="Unable to read or parse setup.cfg")
-    UnsupportedSetupFileType = cd.nt.ErrorMsg(msg="Unsupported setup file type")
-
-
-class UnsupportedSetupFileType(Exception):
-    def __init__(
-        self,
-        file_name: str,
-        msg=SetupFileReaderError.UnsupportedSetupFileType.msg,
-    ):
-        self._file_name = file_name
-        self._msg = msg
-        super().__init__(self._msg)
-
-    def __str__(self):
-        return f"{self._file_name} -> {self._msg}"
+import shared_data_structures as cd
+from error_handling.error_messages import SetupFileReaderError
+from error_handling.custom_exceptions import UnsupportedSetupFileType
 
 
 class SetupKeys(NamedTuple):
@@ -123,15 +106,17 @@ class _SetupCfgFileReader(_SetupFileReader):
         return self
 
     def _convert_cs_entries_to_objs(self):
-        self._data["console_scripts"] = cd.console_script_entry.CSEntryPoints.from_cfg_string(
+        self._data["console_scripts"] = cd.console_script_entry.CSEntryPoints\
+            .from_cfg_string(
             self._data["console_scripts"]).as_cse_obj_list
 
     def _convert_cs_str_to_list(self):
         if ("console_scripts" in self._data) and (
             type(self._data["console_scripts"]) == str
         ):
-            self._data["console_scripts"] = cd.console_script_entry.CSEntryPoints\
-                .from_cfg_string(self._data["console_scripts"]).as_string_list
+            self._data["console_scripts"] = cd.console_script_entry\
+                .CSEntryPoints.from_cfg_string(self._data["console_scripts"])\
+                .as_string_list
 
         return self
 
@@ -185,8 +170,8 @@ class _SetupPyFileReader(_SetupFileReader):
         return self
 
     def _convert_cs_entries_to_objs(self):
-        self._data["console_scripts"] = cd.console_script_entry.CSEntryPoints.from_string_list(
-            self._data["console_scripts"]).as_cse_obj_list
+        self._data["console_scripts"] = cd.console_script_entry.CSEntryPoints\
+            .from_string_list(self._data["console_scripts"]).as_cse_obj_list
 
     def _match_to_py_format(self):
         return self  # setup.py data already in py format

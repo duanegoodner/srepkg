@@ -7,35 +7,36 @@ from typing import NamedTuple
 import srepkg.orig_pkg_inspector as opi
 import srepkg.test.sfr_valid_cases.sfr_expected_output as ev
 import srepkg.test.package_test_cases.expected_cfg_data as ecd
+from error_handling.error_messages import OrigPkgError
 
 ErrorTest = NamedTuple(
-    "ErrorTest", [("cfg_dir_name", str), ("expected_err", opi.PkgError)]
+    "ErrorTest", [("cfg_dir_name", str), ("expected_err", OrigPkgError)]
 )
 
 error_tests = [
     ErrorTest(
         cfg_dir_name="non_existent_path",
-        expected_err=opi.PkgError.PkgPathNotFound,
+        expected_err=OrigPkgError.PkgPathNotFound,
     ),
     ErrorTest(
         cfg_dir_name="setup_cfg_missing",
-        expected_err=opi.PkgError.NoSetupFilesFound,
+        expected_err=OrigPkgError.NoSetupFilesFound,
     ),
     ErrorTest(
         cfg_dir_name="setup_cfg_empty",
-        expected_err=opi.PkgError.PkgNameNotFound,
+        expected_err=OrigPkgError.PkgNameNotFound,
     ),
     ErrorTest(
         cfg_dir_name="setup_cfg_empty_sections",
-        expected_err=opi.PkgError.PkgNameNotFound,
+        expected_err=OrigPkgError.PkgNameNotFound,
     ),
     ErrorTest(
         cfg_dir_name="setup_cfg_empty_values",
-        expected_err=opi.PkgError.PkgNameNotFound,
+        expected_err=OrigPkgError.PkgNameNotFound,
     ),
-    ErrorTest(cfg_dir_name="setup_cfg_no_cse", expected_err=opi.PkgError.NoCSE),
+    ErrorTest(cfg_dir_name="setup_cfg_no_cse", expected_err=OrigPkgError.NoCSE),
     ErrorTest(
-        cfg_dir_name="setup_cfg_empty_cse", expected_err=opi.PkgError.NoCSE
+        cfg_dir_name="setup_cfg_empty_cse", expected_err=OrigPkgError.NoCSE
     ),
 ]
 
@@ -78,7 +79,7 @@ class TestWarningConditions(unittest.TestCase):
     def test_warning_condition(self):
         with self.assertWarns(UserWarning) as tw:
             self.orig_pkg_inspector._get_all_setup_data()
-        assert str(tw.warning) == opi.PkgError.SetupCfgReadError.msg
+        assert str(tw.warning) == OrigPkgError.SetupCfgReadError.msg
 
 
 class TestOPI(unittest.TestCase):

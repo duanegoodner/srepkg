@@ -4,6 +4,7 @@ import tarfile
 import tempfile
 import zipfile
 from pathlib import Path
+import shared_data_structures.named_tuples as nt
 import srepkg.orig_pkg_inspector as opi
 import srepkg.path_calculator as pc
 import srepkg.srepkg_builder as sb
@@ -43,12 +44,17 @@ class _Repackager(abc.ABC):
             orig_pkg_info, self._construction_dir, self._srepkg_name
         ).calc_builder_paths()
 
-        sb.SrepkgBuilder(
-            orig_pkg_info,
-            builder_src_paths,
-            builder_dest_paths,
-            self._dist_out_dir,
-        ).build_srepkg()
+        task_builder_info = nt.TaskBuilderInfo(
+            orig_pkg_info=orig_pkg_info,
+            src_paths=builder_src_paths,
+            repkg_paths=builder_dest_paths,
+            dist_out_dir=self._dist_out_dir
+        )
+
+        task_builder = sb.SrepkgTaskListBuilder(task_builder_info)
+        construction_tasks = task_builder.ordered_tasks
+
+        sb.SrepkgBuilder(construction_tasks).build_srepkg()
 
         self._cleanup_srepkg_temp_dir()
 

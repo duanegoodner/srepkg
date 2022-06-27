@@ -1,5 +1,5 @@
 import srepkg.setup_file_reader as sfr
-import custom_datatypes as cd
+import shared_data_structures.console_script_entry as cse
 
 file_type_only = {
     ".cfg": {"raw": {}, "filtered": {}, "format_matched": {}},
@@ -215,7 +215,7 @@ def get_final_data(file_type_dataset: dict):
     }
     if "console_scripts" in pre_final_data:
         final_data["console_scripts"] = [
-            cd.console_script_entry.CSEntryPt.from_string(entry)
+            cse.CSEntryPt.from_string(entry)
             for entry in pre_final_data["console_scripts"]
         ]
 
