@@ -65,10 +65,10 @@ class TestPathCalc(unittest.TestCase):
 
     def test_builder_src_paths(self):
         builder_src_paths = calc_paths.locals["builder_src_paths"]
-        assert (
-            builder_src_paths.srepkg_init
-            == repackaging_components / "mid_layer" / "srepkg_init.py"
-        )
+        # assert (
+        #     builder_src_paths.srepkg_init
+        #     == repackaging_components / "mid_layer" / "srepkg_init.py"
+        # )
         assert (
             builder_src_paths.entry_module
             == repackaging_components

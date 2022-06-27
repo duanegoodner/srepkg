@@ -1,4 +1,5 @@
 import srepkg.setup_file_reader as sfr
+import custom_datatypes as cd
 
 file_type_only = {
     ".cfg": {"raw": {}, "filtered": {}, "format_matched": {}},
@@ -22,13 +23,11 @@ match_src_layout = {
         },
         "filtered": {
             "name": "testproj",
-            "package_dir": "\n=src",
             "console_scripts": "\nmy_project = testproj.app:run\n"
             "my_test = testproj.test:simple_test",
         },
         "format_matched": {
             "name": "testproj",
-            "package_dir": {"": "src"},
             "console_scripts": [
                 "my_project = testproj.app:run",
                 "my_test = testproj.test:simple_test",
@@ -50,7 +49,6 @@ match_src_layout = {
         },
         "filtered": {
             "name": "testproj",
-            "package_dir": {"": "src"},
             "console_scripts": [
                 "my_project = testproj.app:run",
                 "my_test = testproj.test:simple_test",
@@ -58,7 +56,6 @@ match_src_layout = {
         },
         "format_matched": {
             "name": "testproj",
-            "package_dir": {"": "src"},
             "console_scripts": [
                 "my_project = testproj.app:run",
                 "my_test = testproj.test:simple_test",
@@ -167,9 +164,8 @@ mixed_src_layout_valid = {
         },
         "filtered": {
             "name": "testproj",
-            "package_dir": {"": "src"},
         },
-        "format_matched": {"name": "testproj", "package_dir": {"": "src"}},
+        "format_matched": {"name": "testproj"},
     },
 }
 
@@ -190,13 +186,11 @@ mixed_src_layout_cse_override = {
         },
         "filtered": {
             "name": "testproj",
-            "package_dir": "\n=src",
             "console_scripts": "\nmy_project = testproj.app:bad_run\n"
             "my_test = testproj.test:bad_test",
         },
         "format_matched": {
             "name": "testproj",
-            "package_dir": {"": "src"},
             "console_scripts": [
                 "my_project = testproj.app:bad_run",
                 "my_test = testproj.test:bad_test",
@@ -212,7 +206,7 @@ def get_final_data(file_type_dataset: dict):
     Helper function for use with testing.
     file_type_dataset is one of above dicts' '.py' or '.cfg' entries
     """
-    exact_item_keys = ["name", "package_dir"]
+    exact_item_keys = ["name"]
     pre_final_data = file_type_dataset["format_matched"]
     final_data = {
         key: pre_final_data[key]
@@ -221,7 +215,7 @@ def get_final_data(file_type_dataset: dict):
     }
     if "console_scripts" in pre_final_data:
         final_data["console_scripts"] = [
-            sfr._SetupFileReader._parse_cs_line(entry)
+            cd.console_script_entry.CSEntryPt.from_string(entry)
             for entry in pre_final_data["console_scripts"]
         ]
 

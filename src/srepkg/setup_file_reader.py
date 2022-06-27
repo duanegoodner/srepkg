@@ -14,14 +14,7 @@ import custom_datatypes as cd
 
 class SetupFileReaderError(cd.nt.ErrorMsg, Enum):
     SetupCfgReadError = cd.nt.ErrorMsg(msg="Unable to read or parse setup.cfg")
-    InvalidPackageDirValue = cd.nt.ErrorMsg(
-        msg="Invalid package_dir value in [options] section of setup.cfg"
-    )
     UnsupportedSetupFileType = cd.nt.ErrorMsg(msg="Unsupported setup file type")
-
-
-class SetupInfoError(cd.nt.ErrorMsg, Enum):
-    InvalidPkgDirValue = cd.nt.ErrorMsg(msg="Invalid value for package_dir")
 
 
 class UnsupportedSetupFileType(Exception):
@@ -35,17 +28,12 @@ class UnsupportedSetupFileType(Exception):
         super().__init__(self._msg)
 
     def __str__(self):
-        return f"{self.file_name} -> {self.message}"
+        return f"{self._file_name} -> {self._msg}"
 
 
 class SetupKeys(NamedTuple):
     single_level: List[str]
     two_level: List[tuple[str, str]]
-
-
-class SetupFileType(Enum):
-    CFG = auto()
-    PY = auto()
 
 
 class _SetupFileReader(abc.ABC):
@@ -71,17 +59,6 @@ class _SetupFileReader(abc.ABC):
 
         return {**single_key_params, **two_key_nested_params}
 
-    @staticmethod
-    def _parse_cs_line(cs_line: str):
-        [command, full_call] = cs_line.split("=")
-        command = command.strip()
-        full_call = full_call.strip()
-        [module_path, funct] = full_call.split(":")
-
-        return cd.nt.CSEntry(
-            command=command, module_path=module_path, funct=funct
-        )
-
     @abc.abstractmethod
     def _read_raw_data(self):
         return self
@@ -96,17 +73,17 @@ class _SetupFileReader(abc.ABC):
     def _match_to_py_format(self):
         return self
 
+    @abc.abstractmethod
+    def _convert_cs_entries_to_objs(self):
+        pass
+
     def _cs_lists_to_cse_objs(self):
         if ("console_scripts" in self._data) and self._data["console_scripts"]:
-            cse_list = [
-                self._parse_cs_line(entry)
-                for entry in self._data["console_scripts"]
-            ]
-            self._data["console_scripts"] = cse_list
+            self._convert_cs_entries_to_objs()
         return self
 
     def get_setup_info(self):
-        self._read_raw_data()._filter_raw_data()._match_to_py_format()._cs_lists_to_cse_objs()
+        self._read_raw_data()._filter_raw_data()._cs_lists_to_cse_objs()
         return self._data
 
 
@@ -119,7 +96,6 @@ class _SetupCfgFileReader(_SetupFileReader):
             ("metadata", "author"),
             ("metadata", "author_email"),
             ("metadata", "long_description"),
-            ("options", "package_dir"),
             ("options.entry_points", "console_scripts"),
         ],
     )
@@ -146,49 +122,21 @@ class _SetupCfgFileReader(_SetupFileReader):
         )
         return self
 
+    def _convert_cs_entries_to_objs(self):
+        self._data["console_scripts"] = cd.console_script_entry.CSEntryPoints.from_cfg_string(
+            self._data["console_scripts"]).as_cse_obj_list
+
     def _convert_cs_str_to_list(self):
         if ("console_scripts" in self._data) and (
             type(self._data["console_scripts"]) == str
         ):
-            self._data["console_scripts"] = (
-                self._data["console_scripts"].strip().splitlines()
-            )
-
-        return self
-
-    def _convert_pkg_dir_str_to_dict(self):
-        dir_dict = {}
-        if ("package_dir" in self._data) and (
-            type(self._data["package_dir"]) == str
-        ):
-            pkg_dir_lines = self._data["package_dir"].strip().split("\n")
-            pkg_dir_lines_parsed = [
-                [item.strip() for item in line]
-                for line in [line.split("=") for line in pkg_dir_lines]
-            ]
-
-            for line in pkg_dir_lines_parsed:
-                if len(line) == 2:
-                    pkg_name = line[0]
-                    pkg_dir = line[1]
-                elif len(line) == 1:
-                    pkg_name = ""
-                    pkg_dir = line[0]
-                else:
-                    sys.exit(SetupFileReaderError.InvalidPackageDirValue.msg)
-
-                # guard against repeat entry of key already in dict
-                if pkg_name in dir_dict:
-                    sys.exit(SetupFileReaderError.InvalidPackageDirValue.msg)
-                else:
-                    dir_dict[pkg_name] = pkg_dir
-
-            self._data["package_dir"] = dir_dict
+            self._data["console_scripts"] = cd.console_script_entry.CSEntryPoints\
+                .from_cfg_string(self._data["console_scripts"]).as_string_list
 
         return self
 
     def _match_to_py_format(self):
-        self._convert_cs_str_to_list()._convert_pkg_dir_str_to_dict()
+        self._convert_cs_str_to_list()
 
         return self
 
@@ -198,7 +146,6 @@ class _SetupPyFileReader(_SetupFileReader):
         single_level=[
             "name",
             "version",
-            "package_dir",
             "author",
             "author_email",
             "url",
@@ -236,6 +183,10 @@ class _SetupPyFileReader(_SetupFileReader):
         os.chdir(cwd)
 
         return self
+
+    def _convert_cs_entries_to_objs(self):
+        self._data["console_scripts"] = cd.console_script_entry.CSEntryPoints.from_string_list(
+            self._data["console_scripts"]).as_cse_obj_list
 
     def _match_to_py_format(self):
         return self  # setup.py data already in py format
