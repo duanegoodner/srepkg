@@ -9,3 +9,5 @@ build/lib/
 *.egg-info/
 
 .DS_Store
+
+logo_concept.svg
