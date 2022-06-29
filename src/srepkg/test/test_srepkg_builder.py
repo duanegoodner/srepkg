@@ -33,8 +33,10 @@ class TestSrepkgBuilder(unittest.TestCase):
             dist_out_dir=self.srepkg_dist_dir
         )
 
-        self.task_builder = sb.SrepkgTaskListBuilder(task_builder_info)
-        self.construction_tasks = self.task_builder.ordered_tasks
+        self.task_catalog_builder = sb.TaskCatalogBuilder(task_builder_info)
+        task_catalog = self.task_catalog_builder.task_catalog
+        self.task_order_arranger = sb.TaskOrderArranger(task_catalog)
+        self.ordered_tasks = self.task_order_arranger.arrange_tasks()
 
     def tearDown(self) -> None:
         if self.srepkg_pkgs_non_temp_dir.exists():
@@ -44,16 +46,16 @@ class TestSrepkgBuilder(unittest.TestCase):
             shutil.rmtree(self.srepkg_dist_dir)
 
     def test_srepkg_builder_paths(self) -> None:
-        assert self.task_builder._info.src_paths == self.builder_src_paths
-        assert self.task_builder._info.repkg_paths == self.builder_dest_paths
+        assert self.task_catalog_builder._info.src_paths == self.builder_src_paths
+        assert self.task_catalog_builder._info.repkg_paths == self.builder_dest_paths
 
     def run_srepkg_builder_through_task(self, task_name: str, expected_path_id: str):
-        end_index = self.task_builder.execution_order.index(task_name) + 1
-        tasks = self.task_builder.ordered_tasks[:end_index]
+        end_index = self.task_order_arranger._task_order.index(task_name) + 1
+        tasks = self.ordered_tasks[:end_index]
         srepkg_builder = sb.SrepkgBuilder(tasks)
         srepkg_builder.build_srepkg()
 
-        expected_path = getattr(self.task_builder._info.repkg_paths, expected_path_id)
+        expected_path = getattr(self.task_catalog_builder._info.repkg_paths, expected_path_id)
         assert expected_path.exists()
 
     def test_inner_pkg_copy(self) -> None:
@@ -96,16 +98,16 @@ class TestSrepkgBuilder(unittest.TestCase):
             task_name='write_manifest', expected_path_id='manifest')
 
     def test_full_srepkg_build(self):
-        srepkg_builder = sb.SrepkgBuilder(self.task_builder.ordered_tasks)
+        srepkg_builder = sb.SrepkgBuilder(self.ordered_tasks)
         srepkg_builder.build_srepkg()
         zipfile_name = "-".join(
             [
-                self.task_builder._info.repkg_paths.srepkg.name,
-                self.task_builder._info.orig_pkg_info.version
+                self.task_catalog_builder._info.repkg_paths.srepkg.name,
+                self.task_catalog_builder._info.orig_pkg_info.version
             ]
         )
 
-        assert (self.task_builder._info.dist_out_dir / (zipfile_name + '.zip')).exists()
+        assert (self.task_catalog_builder._info.dist_out_dir / (zipfile_name + '.zip')).exists()
 
 
 class TestSrepkgBuilderCustomDir(TestSrepkgBuilder):
@@ -130,8 +132,10 @@ class TestSrepkgBuilderCustomDir(TestSrepkgBuilder):
             dist_out_dir=self.srepkg_dist_dir
         )
 
-        self.task_builder = sb.SrepkgTaskListBuilder(task_builder_info)
-        self.construction_tasks = self.task_builder.ordered_tasks
+        self.task_catalog_builder = sb.TaskCatalogBuilder(task_builder_info)
+        task_catalog = self.task_catalog_builder.task_catalog
+        self.task_order_arranger = sb.TaskOrderArranger(task_catalog)
+        self.ordered_tasks = self.task_order_arranger.arrange_tasks()
 
     # TODO add test to inspect contents of srepkg setup.cfg
 

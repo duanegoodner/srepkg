@@ -51,10 +51,10 @@ class _Repackager(abc.ABC):
             dist_out_dir=self._dist_out_dir
         )
 
-        task_builder = sb.SrepkgTaskListBuilder(task_builder_info)
-        construction_tasks = task_builder.ordered_tasks
-
-        sb.SrepkgBuilder(construction_tasks).build_srepkg()
+        task_builder = sb.TaskCatalogBuilder(task_builder_info)
+        task_catalog = task_builder.task_catalog
+        ordered_tasks = sb.TaskOrderArranger(task_catalog).arrange_tasks()
+        sb.SrepkgBuilder(ordered_tasks).build_srepkg()
 
         self._cleanup_srepkg_temp_dir()
 

@@ -90,7 +90,7 @@ class _CallMethod(_ConstructionTask):
         self._call_method()
 
 
-class SrepkgTaskListBuilder:
+class TaskCatalogBuilder:
 
     def __init__(self, info: nt.TaskBuilderInfo):
         self._info = info
@@ -203,31 +203,33 @@ class SrepkgTaskListBuilder:
             'build_distribution': _CallMethod(self.build_distribution)
         }
 
-    @property
-    def execution_order(self):
-        task_order = [
-            'copy_inner_pkg',
-            'create_srepkg_init',
-            'build_entry_pts',
-            'copy_entry_module',
-            'build_srepkg_cfg',
-            'build_inner_pkg_install_cfg',
-            'copy_inner_pkg_installer',
-            'copy_srepkg_setup_py',
-            'write_manifest',
-            'build_distribution'
-        ]
-        
-        assert all([task in self.task_catalog for task in task_order])
 
-        return task_order
-    
-    @property
-    def ordered_tasks(self):
-        task_catalog = self.task_catalog
-        execution_order = self.execution_order
+class TaskOrderArranger:
+    def __init__(self, task_catalog: dict[str, _ConstructionTask],
+                 task_order: List[str] = None):
+        self._task_catalog = task_catalog
+        if task_order is None:
+            task_order = [
+                'copy_inner_pkg',
+                'create_srepkg_init',
+                'build_entry_pts',
+                'copy_entry_module',
+                'build_srepkg_cfg',
+                'build_inner_pkg_install_cfg',
+                'copy_inner_pkg_installer',
+                'copy_srepkg_setup_py',
+                'write_manifest',
+                'build_distribution'
+            ]
+        self._task_order = task_order
+
+    def _validate_task_order(self):
+        assert all([task in self._task_catalog for task in self._task_order])
+
+    def arrange_tasks(self):
+        self._validate_task_order()
         return [
-            task_catalog[task_name] for task_name in execution_order
+            self._task_catalog[task_name] for task_name in self._task_order
         ]
 
 
