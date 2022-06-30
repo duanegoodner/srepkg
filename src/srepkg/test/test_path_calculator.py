@@ -2,6 +2,9 @@ import shutil
 import tempfile
 import unittest
 from pathlib import Path
+
+import pytest
+
 import srepkg.command_input as ci
 import srepkg.orig_pkg_inspector as opi
 import srepkg.path_calculator as pc
@@ -65,10 +68,6 @@ class TestPathCalc(unittest.TestCase):
 
     def test_builder_src_paths(self):
         builder_src_paths = calc_paths.locals["builder_src_paths"]
-        # assert (
-        #     builder_src_paths.srepkg_init
-        #     == repackaging_components / "mid_layer" / "srepkg_init.py"
-        # )
         assert (
             builder_src_paths.entry_module
             == repackaging_components
@@ -95,19 +94,13 @@ class TestPathCalc(unittest.TestCase):
         srepkg_root = calc_paths.locals["srepkg_root"]
 
         srepkg_path = srepkg_root / calc_paths.locals["final_srepkg_name"]
-        # srepkg_control_components = srepkg_path / "srepkg_control_components"
         srepkg_entry_points = srepkg_path / "srepkg_entry_points"
         srepkg_entry_module = srepkg_entry_points / "entry_point_runner.py"
         srepkg_setup_cfg = srepkg_root / "setup.cfg"
         srepkg_setup_py = srepkg_root / "setup.py"
         srepkg_init = srepkg_path / "__init__.py"
 
-        # assert builder_dest_paths.root == srepkg_root
         assert builder_dest_paths.srepkg == srepkg_path
-        # assert (
-        #     builder_dest_paths.srepkg_control_components
-        #     == srepkg_control_components
-        # )
         assert builder_dest_paths.entry_module == srepkg_entry_module
         assert builder_dest_paths.srepkg_entry_points == srepkg_entry_points
         assert builder_dest_paths.srepkg_setup_cfg == srepkg_setup_cfg
@@ -143,3 +136,24 @@ class TestPathCalcCustomDirAndPkgName(TestPathCalc):
                 "custom_name",
             ]
         )
+
+
+def test_srepkg_root_already_exists():
+    orig_pkg_path = (
+            Path(__file__).parent.absolute() / "package_test_cases" / "t_proj"
+    )
+
+    srepkg_pkgs_non_temp_dir = (
+            Path(
+                __file__).parent.absolute() / "package_test_cases"
+    )
+
+    with pytest.raises(SystemExit) as e:
+        builder_src_paths, builder_dest_paths = calc_paths([
+            str(orig_pkg_path), '--construction_dir', str(srepkg_pkgs_non_temp_dir)
+        ])
+    assert str(e.value) ==\
+           f"Destination path " \
+           f"{srepkg_pkgs_non_temp_dir / 't_proj_as_t_projsrepkg'} "\
+           f"already exists"
+

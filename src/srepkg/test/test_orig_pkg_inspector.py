@@ -41,9 +41,6 @@ error_tests = [
 ]
 
 
-# TODO replace Path(__file__)... references in tests with hardcoded paths
-
-
 def sys_exit_condition(condition: ErrorTest):
     setup_cfg_dir = (
         Path(__file__).parent / "sfr_error_cases" / condition.cfg_dir_name

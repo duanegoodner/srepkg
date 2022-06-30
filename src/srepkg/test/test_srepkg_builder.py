@@ -1,9 +1,14 @@
 import unittest
 import shutil
 from pathlib import Path
+
+import pytest
+
 import shared_data_structures.named_tuples as nt
 import srepkg.srepkg_builder as sb
 import srepkg.test.test_path_calculator as tpc
+
+from error_handling.error_messages import SrepkgBuilderError
 
 
 class TestSrepkgBuilder(unittest.TestCase):
@@ -137,8 +142,6 @@ class TestSrepkgBuilderCustomDir(TestSrepkgBuilder):
         self.task_order_arranger = sb.TaskOrderArranger(task_catalog)
         self.ordered_tasks = self.task_order_arranger.arrange_tasks()
 
-    # TODO add test to inspect contents of srepkg setup.cfg
-
 
 class TestSrepkgBuilderNonSrcLayout(TestSrepkgBuilder, unittest.TestCase):
     orig_pkg_path = (
@@ -147,3 +150,23 @@ class TestSrepkgBuilderNonSrcLayout(TestSrepkgBuilder, unittest.TestCase):
     srepkg_pkgs_non_temp_dir = (
         Path(__file__).parent.absolute() / "package_test_cases" / "srepkg_pkgs"
     )
+
+
+def test_task_order_arranger_empty_init():
+    task_order_arranger = sb.TaskOrderArranger(task_catalog={}, task_order=[])
+
+
+def test_direct_copy_dir_without_ignore_pattern():
+    copy_info = sb.CopyInfo(src=Path.cwd(), dest=Path.cwd() / 'new_dir')
+    dummy_copy_op = sb._DirectCopyDir(copy_info)
+
+
+def test_copy_with_invalid_source():
+    copy_info = sb.CopyInfo(src=Path.cwd() / 'non_existent',
+                            dest=Path.cwd() / 'new_item')
+    copy_operation = sb._DirectCopyDir(copy_info)
+    with pytest.raises(SystemExit) as e:
+        copy_operation.execute()
+    assert str(e.value) == SrepkgBuilderError.FileNotFoundForCopy.msg
+
+

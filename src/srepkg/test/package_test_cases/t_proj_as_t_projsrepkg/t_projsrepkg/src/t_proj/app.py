@@ -1,0 +1,6 @@
+def run():
+    print("This is the main routine for t_proj.")
+
+
+if __name__ == '__main__':
+    run()

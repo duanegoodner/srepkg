@@ -1,0 +1,2 @@
+graft t_projsrepkg
+include inner_pkg_installer.py

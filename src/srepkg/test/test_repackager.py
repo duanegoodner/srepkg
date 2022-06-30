@@ -76,14 +76,14 @@ class TestRepackager(unittest.TestCase):
     def test_testproj_dirs_const_dist(self):
         self.run_pkg_test_dirs_const_dist("/Users/duane/dproj/testproj")
 
-    def test_howdoi_pypi_dirs_none(self):
-        self.run_pkg_test_dirs_none("howdoi")
-
-    def test_howdoi_pypi_dirs_const(self):
-        self.run_pkg_test_dirs_const("howdoi")
-
-    def test_howdoi_pypi_dirs_dist(self):
-        self.run_pkg_test_dirs_dist("howdoi")
+    # def test_howdoi_pypi_dirs_none(self):
+    #     self.run_pkg_test_dirs_none("howdoi")
+    #
+    # def test_howdoi_pypi_dirs_const(self):
+    #     self.run_pkg_test_dirs_const("howdoi")
+    #
+    # def test_howdoi_pypi_dirs_dist(self):
+    #     self.run_pkg_test_dirs_dist("howdoi")
     #
     # def test_howdoi_pypi_dirs_const_dist(self):
     #     self.run_pkg_test_dirs_const_dist("howdoi")
