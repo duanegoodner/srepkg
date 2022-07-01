@@ -36,14 +36,15 @@ class CSEntryPt:
 class CSEntryPoints:
     entry_points: List[CSEntryPt]
 
-    @classmethod
-    def from_cfg_string(cls, cfg_string: str):
-        cse_str_list = cfg_string.strip().splitlines()
-        return cls([CSEntryPt.from_string(entry) for entry in cse_str_list])
-
-    @classmethod
-    def from_string_list(cls, cse_str_list):
-        return cls([CSEntryPt.from_string(entry) for entry in cse_str_list])
+    # these class methods not needed after switch to wheel_inspect + dist_info
+    # @classmethod
+    # def from_cfg_string(cls, cfg_string: str):
+    #     cse_str_list = cfg_string.strip().splitlines()
+    #     return cls([CSEntryPt.from_string(entry) for entry in cse_str_list])
+    #
+    # @classmethod
+    # def from_string_list(cls, cse_str_list):
+    #     return cls([CSEntryPt.from_string(entry) for entry in cse_str_list])
 
     @classmethod
     def from_wheel_inspect_cs(cls, wics: dict[str, dict]):

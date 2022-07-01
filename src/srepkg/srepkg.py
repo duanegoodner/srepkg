@@ -2,7 +2,7 @@ import srepkg.command_input as ci
 import srepkg.repackager as rep
 
 
-def main():
+def main(*my_args):
     """
     Builds 'Solo Re-Packaged' (srepkg) version of existing packaged app.
     Command line syntax is:
@@ -15,7 +15,7 @@ def main():
     SRE-packaged version is saved in:
      ~/srepkg_pkgs/<orig_pkg_name>_srepkg/<srepkg_name>
     """
-    args = ci.get_args()
+    args = ci.get_args(*my_args)
     rep.Repackager(
         **vars(args)
         # orig_pkg_ref=args.orig_pkg_ref,
