@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 
 import srepkg.command_input as ci
-import srepkg.orig_pkg_inspector as opi
+import srepkg.orig_pkg_inspector as pi
 import srepkg.path_calculator as pc
 import srepkg.test.t_utils as tu
 
@@ -18,7 +18,7 @@ repackaging_components = (
 @tu.p_loc.PersistentLocals
 def calc_paths(ci_args):
     args = ci.get_args(ci_args)
-    orig_pkg_info = opi.OrigPkgInspector(args.orig_pkg_ref).get_orig_pkg_info()
+    orig_pkg_info = pi.SrcCodeInspector(args.orig_pkg_ref).get_orig_pkg_info()
 
     srepkg_temp_dir = None
 
@@ -52,7 +52,7 @@ def calc_paths(ci_args):
 
 class TestPathCalc(unittest.TestCase):
     orig_pkg_path = (
-        Path(__file__).parent.absolute() / "package_test_cases" / "t_proj"
+        Path(__file__).parent.absolute() / "package_test_cases" / "tproj"
     )
     srepkg_pkgs_non_temp_dir = (
         Path(__file__).parent.absolute() / "package_test_cases" / "srepkg_pkgs"
@@ -140,7 +140,7 @@ class TestPathCalcCustomDirAndPkgName(TestPathCalc):
 
 def test_srepkg_root_already_exists():
     orig_pkg_path = (
-            Path(__file__).parent.absolute() / "package_test_cases" / "t_proj"
+            Path(__file__).parent.absolute() / "package_test_cases" / "tproj"
     )
 
     srepkg_pkgs_non_temp_dir = (
@@ -154,6 +154,6 @@ def test_srepkg_root_already_exists():
         ])
     assert str(e.value) ==\
            f"Destination path " \
-           f"{srepkg_pkgs_non_temp_dir / 't_proj_as_t_projsrepkg'} "\
+           f"{srepkg_pkgs_non_temp_dir / 'tproj_as_tprojsrepkg'} "\
            f"already exists"
 

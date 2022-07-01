@@ -1,4 +1,4 @@
-import t_proj.app as app
+import tproj.app as app
 
 
 def main():

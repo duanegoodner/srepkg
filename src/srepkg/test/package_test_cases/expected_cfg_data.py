@@ -1,25 +1,25 @@
-t_nonsrc = {
+tnonsrc = {
     ".cfg": {
         "format_matched": {
-            "name": "t_nonsrc",
+            "name": "tnonsrc",
             "console_scripts": [
-                "my_project = t_nonsrc.app:run",
-                "my_test = t_nonsrc.test:first_test",
-                "main_entry = t_nonsrc.__main__:main",
+                "my_project = tnonsrc.app:run",
+                "my_test = tnonsrc.test:first_test",
+                "main_entry = tnonsrc.__main__:main",
             ],
         }
     },
     ".py": {"format_matched": {}},
 }
 
-t_proj = {
+tproj = {
     ".cfg": {
         "format_matched": {
-            "name": "t_proj",
+            "name": "tproj",
             "console_scripts": [
-                "my_project = t_nonsrc.app:run",
-                "my_test = t_nonsrc.test:first_test",
-                "main_entry = t_nonsrc.__main__:main",
+                "my_project = tnonsrc.app:run",
+                "my_test = tnonsrc.test:first_test",
+                "main_entry = tnonsrc.__main__:main",
             ],
         }
     },

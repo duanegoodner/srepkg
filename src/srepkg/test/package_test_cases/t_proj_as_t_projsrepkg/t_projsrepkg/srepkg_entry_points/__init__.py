@@ -1,4 +1,0 @@
-import t_projsrepkg.srepkg_entry_points.my_project
-import t_projsrepkg.srepkg_entry_points.my_test
-import t_projsrepkg.srepkg_entry_points.main_entry
-

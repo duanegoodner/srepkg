@@ -1,2 +1,2 @@
-graft t_projsrepkg
+graft tprojsrepkg
 include inner_pkg_installer.py

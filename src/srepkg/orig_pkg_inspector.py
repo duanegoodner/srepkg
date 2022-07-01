@@ -1,90 +1,75 @@
+import abc
+import subprocess
 import sys
-
+import tempfile
+import wheel_inspect as wi
 from pathlib import Path
-from typing import NamedTuple, List
+from shared_data_structures.named_tuples import OrigPkgInfo
+from typing import Callable, NamedTuple
 
-import shared_data_structures as cd
-import srepkg.setup_file_reader as sfr
-from error_handling.error_messages import OrigPkgError
-
-
-class SetupKeys(NamedTuple):
-    single_level: List[str]
-    two_level: List[tuple[str, str]]
+import shared_data_structures as sd
+from utils.cd_context_manager import dir_change_to
 
 
-class SetupDataKeys(NamedTuple):
-    cfg: SetupKeys
-    py: SetupKeys
+class DistInfoFile(NamedTuple):
+    filename: str
+    parser: Callable
+    save_as_key: str
 
 
-class SetupData(NamedTuple):
-    cfg: dict
-    py: dict
+class OrigPkgInspector(abc.ABC):
+
+    @abc.abstractmethod
+    def get_orig_pkg_info(self) -> OrigPkgInfo:
+        pass
 
 
-class OrigPkgInspector:
-    _setup_filenames = ["setup.cfg", "setup.py"]
+class SrcCodeInspector(OrigPkgInspector):
+    DIST_INFO_FILES_OF_INTEREST = [
+        DistInfoFile(filename='METADATA',
+                     parser=wi.metadata.parse_metadata,
+                     save_as_key='metadata'
+                     ),
+        DistInfoFile(filename='entry_points.txt',
+                     parser=wi.inspecting.parse_entry_points,
+                     save_as_key='entry_points')
+    ]
 
-    def __init__(self, orig_pkg_path: str):
-        self._orig_pkg_path = Path(orig_pkg_path)
-        self._all_setup_data = {}
-        self._merged_setup_data = {}
+    def __init__(self, orig_pkg_path: Path):
+        self._orig_pkg_path = orig_pkg_path
 
-    def _validate_orig_pkg_path(self):
-        if not self._orig_pkg_path.exists():
-            sys.exit(OrigPkgError.PkgPathNotFound.msg)
-        return self
+    def get_dist_info(self) -> dict[str, dict]:
 
-    def _validate_setup_files(self):
-        setup_paths_found = [
-            (self._orig_pkg_path / filename).exists()
-            for filename in self._setup_filenames
-        ]
-        if not any(setup_paths_found):
-            sys.exit(OrigPkgError.NoSetupFilesFound.msg)
-        return self
+        dist_info = {}
 
-    def _get_all_setup_data(self):
-        self._validate_orig_pkg_path()._validate_setup_files()
+        dist_info_root = tempfile.TemporaryDirectory()
+        # dist_info_dir = Path('/Users/duane/dproj/srepkg/src/srepkg/test')
 
-        for filename in self._setup_filenames:
-            self._all_setup_data[filename] = sfr.SetupFileReader(
-                self._orig_pkg_path / filename
-            ).get_setup_info()
+        with dir_change_to(self._orig_pkg_path):
+            subprocess.call([sys.executable, 'setup.py', 'dist_info', '-e',
+                             dist_info_root.name])
 
-        return self
+        items_in_dist_info_dir = list(Path(str(dist_info_root.name)).iterdir())
+        assert len(items_in_dist_info_dir) == 1
+        dist_info_dir = items_in_dist_info_dir[0]
 
-    def _merge_all_setup_data(self):
-        self._merged_data = {
-            **self._all_setup_data["setup.cfg"],
-            **self._all_setup_data["setup.py"],
-        }
-        return self
+        for file in self.DIST_INFO_FILES_OF_INTEREST:
+            if (Path(str(dist_info_dir)) / file.filename).exists():
+                with (Path(str(dist_info_dir)) / file.filename).open(mode='r') \
+                        as df:
+                    dist_info[file.save_as_key] = file.parser(df)
 
-    def _validate_merged_data(self):
-        if ("name" not in self._merged_data) or (not self._merged_data["name"]):
-            sys.exit(OrigPkgError.PkgNameNotFound.msg)
+        dist_info_root.cleanup()
 
-        if ("console_scripts" not in self._merged_data) or (
-            not self._merged_data["console_scripts"]
-        ):
-            sys.exit(OrigPkgError.NoCSE.msg)
+        return dist_info
 
-        if ("version" not in self._merged_data) or (
-            not self._merged_data["version"]
-        ):
-            self._merged_data["version"] = "0.0.0"
-
-        return self
-
-    def get_orig_pkg_info(self):
-        self._get_all_setup_data()._merge_all_setup_data()\
-            ._validate_merged_data()
-
-        return cd.nt.OrigPkgInfo(
-            pkg_name=self._merged_data["name"],
-            version=self._merged_data["version"],
+    def get_orig_pkg_info(self) -> OrigPkgInfo:
+        dist_info = self.get_dist_info()
+        return OrigPkgInfo(
+            pkg_name=dist_info['metadata']['name'],
+            version=dist_info['metadata']['version'],
             root_path=self._orig_pkg_path,
-            entry_pts=self._merged_data["console_scripts"],
+            entry_pts=sd.console_script_entry.CSEntryPoints.
+            from_wheel_inspect_cs(
+                dist_info['entry_points']['console_scripts']).as_cse_obj_list
         )

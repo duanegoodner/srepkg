@@ -1,4 +1,3 @@
-import srepkg.setup_file_reader as sfr
 import shared_data_structures.console_script_entry as cse
 
 file_type_only = {

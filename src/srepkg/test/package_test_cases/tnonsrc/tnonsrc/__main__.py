@@ -1,4 +1,4 @@
-import t_proj.app as app
+import tproj_non_src_layout.app as app
 
 
 def main():

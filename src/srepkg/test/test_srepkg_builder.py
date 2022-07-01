@@ -13,7 +13,7 @@ from error_handling.error_messages import SrepkgBuilderError
 
 class TestSrepkgBuilder(unittest.TestCase):
     orig_pkg_path = (
-        Path(__file__).parent.absolute() / "package_test_cases" / "t_proj"
+        Path(__file__).parent.absolute() / "package_test_cases" / "tproj"
     )
     srepkg_pkgs_non_temp_dir = (
         Path(__file__).parent.absolute() / "package_test_cases" / "srepkg_pkgs"
@@ -145,7 +145,7 @@ class TestSrepkgBuilderCustomDir(TestSrepkgBuilder):
 
 class TestSrepkgBuilderNonSrcLayout(TestSrepkgBuilder, unittest.TestCase):
     orig_pkg_path = (
-        Path(__file__).parent.absolute() / "package_test_cases" / "t_proj"
+        Path(__file__).parent.absolute() / "package_test_cases" / "tproj"
     )
     srepkg_pkgs_non_temp_dir = (
         Path(__file__).parent.absolute() / "package_test_cases" / "srepkg_pkgs"

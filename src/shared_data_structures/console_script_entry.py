@@ -16,6 +16,15 @@ class CSEntryPt:
 
         return cls(command=command, module_path=module_path, funct=funct)
 
+    @classmethod
+    def from_wheel_inspect_cs_dict_entry(cls, key: str, value: dict):
+
+        return cls(
+            command=key,
+            module_path=value['module'],
+            funct=value['attr']
+        )
+
     @property
     def as_string(self):
         return "".join(
@@ -35,6 +44,11 @@ class CSEntryPoints:
     @classmethod
     def from_string_list(cls, cse_str_list):
         return cls([CSEntryPt.from_string(entry) for entry in cse_str_list])
+
+    @classmethod
+    def from_wheel_inspect_cs(cls, wics: dict[str, dict]):
+        return cls([CSEntryPt.from_wheel_inspect_cs_dict_entry(key, value)
+                    for (key, value) in list(wics.items())])
 
     @property
     def as_cse_obj_list(self):

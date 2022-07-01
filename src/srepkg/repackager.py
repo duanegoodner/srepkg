@@ -5,8 +5,8 @@ import tempfile
 import zipfile
 from pathlib import Path
 import shared_data_structures.named_tuples as nt
-import srepkg.orig_pkg_inspector as opi
 import srepkg.path_calculator as pc
+import srepkg.orig_pkg_inspector as pi
 import srepkg.srepkg_builder as sb
 
 
@@ -38,7 +38,8 @@ class _Repackager(abc.ABC):
     def _repackage_local(self, orig_pkg: Path):
         print(f"Repackaging {orig_pkg.name}")
 
-        orig_pkg_info = opi.OrigPkgInspector(str(orig_pkg)).get_orig_pkg_info()
+        # orig_pkg_info = opi.OrigPkgInspector(str(orig_pkg)).get_orig_pkg_info()
+        orig_pkg_info = pi.SrcCodeInspector(orig_pkg).get_orig_pkg_info()
 
         builder_src_paths, builder_dest_paths = pc.BuilderPathsCalculator(
             orig_pkg_info, self._construction_dir, self._srepkg_name
