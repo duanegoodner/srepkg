@@ -1,5 +1,5 @@
-from paths_class_builder.__main__ import main as build_pcb
+from srepkg.paths_class_builder.builder import build_for_srepkg
 
 
 def test_paths_class_builder():
-    build_pcb()
+    build_for_srepkg()

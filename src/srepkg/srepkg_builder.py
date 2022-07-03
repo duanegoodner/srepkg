@@ -11,8 +11,8 @@ import sys
 from pathlib import Path
 from typing import List, NamedTuple
 import srepkg.entry_points_builder as epb
-import shared_data_structures.named_tuples as nt
-from error_handling.error_messages import SrepkgBuilderError
+import srepkg.shared_data_structures.named_tuples as nt
+from srepkg.error_handling.error_messages import SrepkgBuilderError
 
 
 class CopyInfo(NamedTuple):

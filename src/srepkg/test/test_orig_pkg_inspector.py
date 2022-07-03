@@ -1,9 +1,15 @@
 import abc
 import unittest
 from pathlib import Path
-import srepkg.test.sfr_valid_cases.sfr_expected_output as ev
+
+import pytest
+
+
+import srepkg.test.sfr_valid_cases.setup_file_test_case_data as sft
 import srepkg.orig_pkg_inspector as pi
 import srepkg.test.package_test_cases.expected_cfg_data as ecd
+
+from srepkg.error_handling.error_messages import OrigPkgError
 
 
 class TestOPI(unittest.TestCase):
@@ -23,8 +29,10 @@ class TestOPI(unittest.TestCase):
     @property
     def expected_data(self):
         return {
-            ".cfg": ev.get_final_data(getattr(ev, self.dataset_name)[".cfg"]),
-            ".py": ev.get_final_data(getattr(ev, self.dataset_name)[".py"]),
+            ".cfg": sft.format_for_merge_and_opi_compare(
+                getattr(sft, self.dataset_name)[".cfg"]),
+            ".py": sft.format_for_merge_and_opi_compare(
+                getattr(sft, self.dataset_name)[".py"]),
         }
 
     def setUp(self) -> None:
@@ -61,8 +69,13 @@ class TestOPISrcLayoutNoCfg(TestOPI):
     dataset_name = "src_layout_no_cfg"
 
 
-# class TestOPISrcLayoutNoPy(TestOPI):
-#     dataset_name = "src_layout_no_py"
+class TestOPISrcLayoutNoPy(TestOPI):
+    dataset_name = "src_layout_no_py"
+
+    def test_get_orig_pkg_info(self):
+        with pytest.raises(SystemExit) as e:
+            orig_pkg_info = self._src_code_inspector.get_orig_pkg_info()
+        assert str(e.value) == OrigPkgError.SetupPyNotFound.msg
 
 
 class TestOPIFullPkgTNonSrc(TestOPI):
@@ -70,6 +83,6 @@ class TestOPIFullPkgTNonSrc(TestOPI):
     base_dir = Path(__file__).parent.absolute() / "package_test_cases"
     full_expected_data = getattr(ecd, dataset_name)
     expected_data = {
-        ".cfg": ev.get_final_data(full_expected_data[".cfg"]),
-        ".py": ev.get_final_data(full_expected_data[".py"]),
+        ".cfg": sft.format_for_merge_and_opi_compare(full_expected_data[".cfg"]),
+        ".py": sft.format_for_merge_and_opi_compare(full_expected_data[".py"]),
     }

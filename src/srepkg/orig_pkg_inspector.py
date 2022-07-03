@@ -4,11 +4,12 @@ import sys
 import tempfile
 import wheel_inspect as wi
 from pathlib import Path
-from shared_data_structures.named_tuples import OrigPkgInfo
+import srepkg.shared_data_structures.console_script_entry as cse
+from srepkg.shared_data_structures.named_tuples import OrigPkgInfo
+from srepkg.error_handling.error_messages import OrigPkgError
 from typing import Callable, NamedTuple
 
-import shared_data_structures as sd
-from utils.cd_context_manager import dir_change_to
+from srepkg.utils.cd_context_manager import dir_change_to
 
 
 class DistInfoFile(NamedTuple):
@@ -38,12 +39,21 @@ class SrcCodeInspector(OrigPkgInspector):
     def __init__(self, orig_pkg_path: Path):
         self._orig_pkg_path = orig_pkg_path
 
+    def validate_orig_pkg_path(self):
+        if not Path(self._orig_pkg_path).exists():
+            sys.exit(OrigPkgError.PkgPathNotFound)
+        return self
+
+    def validate_setup_py(self):
+        if not (Path(self._orig_pkg_path) / 'setup.py').exists():
+            sys.exit(OrigPkgError.SetupPyNotFound.msg)
+        return self
+
     def get_dist_info(self) -> dict[str, dict]:
 
         dist_info = {}
 
         dist_info_root = tempfile.TemporaryDirectory()
-        # dist_info_dir = Path('/Users/duane/dproj/srepkg/src/srepkg/test')
 
         with dir_change_to(self._orig_pkg_path):
             subprocess.call([sys.executable, 'setup.py', 'dist_info', '-e',
@@ -64,12 +74,20 @@ class SrcCodeInspector(OrigPkgInspector):
         return dist_info
 
     def get_orig_pkg_info(self) -> OrigPkgInfo:
+        self.validate_orig_pkg_path().validate_setup_py()
+
         dist_info = self.get_dist_info()
+
+        if not ('entry_points' in dist_info) or (
+                'console_scripts' not in dist_info['entry_points']) or (
+                len(dist_info['entry_points']['console_scripts']) == 0):
+            sys.exit(OrigPkgError.NoCSE)
+
         return OrigPkgInfo(
             pkg_name=dist_info['metadata']['name'],
             version=dist_info['metadata']['version'],
             root_path=self._orig_pkg_path,
-            entry_pts=sd.console_script_entry.CSEntryPoints.
-            from_wheel_inspect_cs(
+            entry_pts=cse.CSEntryPoints.
+                from_wheel_inspect_cs(
                 dist_info['entry_points']['console_scripts']).as_cse_obj_list
         )

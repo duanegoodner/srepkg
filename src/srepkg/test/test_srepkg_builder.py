@@ -4,11 +4,11 @@ from pathlib import Path
 
 import pytest
 
-import shared_data_structures.named_tuples as nt
+import srepkg.shared_data_structures.named_tuples as nt
 import srepkg.srepkg_builder as sb
 import srepkg.test.test_path_calculator as tpc
 
-from error_handling.error_messages import SrepkgBuilderError
+from srepkg.error_handling.error_messages import SrepkgBuilderError
 
 
 class TestSrepkgBuilder(unittest.TestCase):

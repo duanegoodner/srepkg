@@ -2,8 +2,8 @@ import shutil
 from pathlib import Path
 from typing import List
 
-import shared_data_structures.console_script_entry as cs_ent
-import shared_data_structures.named_tuples as nt
+import srepkg.shared_data_structures.named_tuples as nt
+import srepkg.shared_data_structures.console_script_entry as cs_ent
 
 
 class EntryPointsBuilder:

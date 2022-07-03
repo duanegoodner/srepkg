@@ -20,7 +20,6 @@ class TestRepackager(unittest.TestCase):
         self._srepkg_dist_dir.mkdir()
 
         self.orig_cwd_content = list(Path.cwd().iterdir())
-        print(self.orig_cwd_content)
 
     def tearDown(self) -> None:
         if self._construction_dir.exists():
@@ -79,36 +78,36 @@ class TestRepackager(unittest.TestCase):
     def test_howdoi_pypi_dirs_none(self):
         self.run_pkg_test_dirs_none("howdoi")
 
-    def test_howdoi_pypi_dirs_const(self):
-        self.run_pkg_test_dirs_const("howdoi")
-
-    def test_howdoi_pypi_dirs_dist(self):
-        self.run_pkg_test_dirs_dist("howdoi")
-
-    def test_howdoi_pypi_dirs_const_dist(self):
-        self.run_pkg_test_dirs_const_dist("howdoi")
-
     def test_howdoi_github_dirs_none(self):
         self.run_pkg_test_dirs_none(
             'git+https://github.com/gleitz/howdoi.git')
 
-    def test_howdoi_github_dirs_const(self):
-        self.run_pkg_test_dirs_const(
-            'git+https://github.com/gleitz/howdoi.git')
+    # def test_howdoi_pypi_dirs_const(self):
+    #     self.run_pkg_test_dirs_const("howdoi")
+    #
+    # def test_howdoi_pypi_dirs_dist(self):
+    #     self.run_pkg_test_dirs_dist("howdoi")
+    #
+    # def test_howdoi_pypi_dirs_const_dist(self):
+    #     self.run_pkg_test_dirs_const_dist("howdoi")
 
-    def test_howdoi_github_dirs_dist(self):
-        self.run_pkg_test_dirs_dist(
-            'git+https://github.com/gleitz/howdoi.git')
+    # def test_howdoi_github_dirs_const(self):
+    #     self.run_pkg_test_dirs_const(
+    #         'git+https://github.com/gleitz/howdoi.git')
+    #
+    # def test_howdoi_github_dirs_dist(self):
+    #     self.run_pkg_test_dirs_dist(
+    #         'git+https://github.com/gleitz/howdoi.git')
+    #
+    # def test_howdoi_github_dirs_const_dist(self):
+    #     self.run_pkg_test_dirs_const_dist(
+    #         'git+https://github.com/gleitz/howdoi.git')
 
-    def test_howdoi_github_dirs_const_dist(self):
-        self.run_pkg_test_dirs_const_dist(
-            'git+https://github.com/gleitz/howdoi.git')
-
-    def test_cowsay_pypi(self):
-        self.run_pkg_test_dirs_const_dist("cowsay")
-
-    def test_scrape_pypi(self):
-        self.run_pkg_test_dirs_const_dist("scrape")
-
-    def test_flake8_pypi(self):
-        self.run_pkg_test_dirs_const_dist("flake8")
+    # def test_cowsay_pypi(self):
+    #     self.run_pkg_test_dirs_const_dist("cowsay")
+    #
+    # def test_scrape_pypi(self):
+    #     self.run_pkg_test_dirs_const_dist("scrape")
+    #
+    # def test_flake8_pypi(self):
+    #     self.run_pkg_test_dirs_const_dist("flake8")

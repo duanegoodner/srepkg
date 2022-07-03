@@ -8,15 +8,9 @@ class ErrorMsg(NamedTuple):
 
 class OrigPkgError(ErrorMsg, Enum):
     PkgPathNotFound = ErrorMsg(msg="Original package path not found")
-    NoSetupFilesFound = ErrorMsg(
-        msg="No setup.py file found, and no setup.cfg file found.\nsrepkg "
-        "needs at least one of these files."
-    )
-    PkgNameNotFound = ErrorMsg(
-        msg="Unable to find package name in any setup file"
-    )
-    InvalidPkgName = ErrorMsg(msg="Invalid package name")
-    SetupCfgReadError = ErrorMsg(msg="Unable to read or parse setup.cfg")
+    SetupPyNotFound = ErrorMsg(
+        msg="No setup.py file found. srepkg requires a setup.py file with call"
+            "to setuptools.setup()")
     NoCSE = ErrorMsg(msg="No console script entry points found")
 
 

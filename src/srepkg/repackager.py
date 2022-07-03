@@ -4,7 +4,7 @@ import tarfile
 import tempfile
 import zipfile
 from pathlib import Path
-import shared_data_structures.named_tuples as nt
+import srepkg.shared_data_structures.named_tuples as nt
 import srepkg.path_calculator as pc
 import srepkg.orig_pkg_inspector as pi
 import srepkg.srepkg_builder as sb

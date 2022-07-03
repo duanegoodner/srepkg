@@ -6,10 +6,10 @@ package.
 
 import sys
 from pathlib import Path
-import shared_data_structures.builder_dest_paths as bdp
-import shared_data_structures.builder_src_paths as bsp
-import shared_data_structures.named_tuples as nt
-import srepkg.file_structure as pb
+import srepkg.shared_data_structures.named_tuples as nt
+import srepkg.shared_data_structures.builder_dest_paths as bdp
+import srepkg.shared_data_structures.builder_src_paths as bsp
+import srepkg.file_structure as fs
 
 
 class BuilderPathsCalculator:
@@ -56,8 +56,8 @@ class BuilderPathsCalculator:
             sys.exit(err_msg)
 
     def calc_src_paths(self):
-        src_files_util = pb.fs_util.FileStructureUtil(
-            file_struct=pb.fs_specs.repackaging_components,
+        src_files_util = fs.fs_util.FileStructureUtil(
+            file_struct=fs.fs_specs.repackaging_components,
             root_path=self._repackaging_components,
         )
         src_paths = src_files_util.get_path_names()
@@ -65,8 +65,8 @@ class BuilderPathsCalculator:
         return bsp.BuilderSrcPaths(*src_paths)
 
     def calc_dest_paths(self):
-        dest_files_util = pb.fs_util.FileStructureUtil(
-            file_struct=pb.fs_specs.get_srepkg_root(self._srepkg_name),
+        dest_files_util = fs.fs_util.FileStructureUtil(
+            file_struct=fs.fs_specs.get_srepkg_root(self._srepkg_name),
             root_path=self._srepkg_root
         )
 
