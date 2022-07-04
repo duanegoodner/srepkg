@@ -38,11 +38,10 @@ class _Repackager(abc.ABC):
     def _repackage_local(self, orig_pkg: Path):
         print(f"Repackaging {orig_pkg.name}")
 
-        # orig_pkg_info = opi.OrigPkgInspector(str(orig_pkg)).get_orig_pkg_info()
         orig_pkg_info = pi.SrcCodeInspector(orig_pkg).get_orig_pkg_info()
 
         builder_src_paths, builder_dest_paths = pc.BuilderPathsCalculator(
-            orig_pkg_info, self._construction_dir, self._srepkg_name
+            orig_pkg_info.pkg_name, self._construction_dir, self._srepkg_name
         ).calc_builder_paths()
 
         task_builder_info = nt.TaskBuilderInfo(

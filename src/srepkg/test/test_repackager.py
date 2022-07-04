@@ -8,7 +8,7 @@ class TestRepackager(unittest.TestCase):
 
     _construction_dir = Path(__file__).parent.absolute() / "test_srepkg_pkgs"
     _srepkg_dist_dir = Path(__file__).parent.absolute() / "test_srepkg_dists"
-    _orig_pkg_refs = ["howdoi", "numpy", "cowsay"]
+    # _orig_pkg_refs = ["howdoi", "numpy", "cowsay"]
 
     def setUp(self):
         if self._construction_dir.exists():

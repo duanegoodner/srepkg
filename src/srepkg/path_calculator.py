@@ -6,14 +6,12 @@ package.
 
 import sys
 from pathlib import Path
-import srepkg.shared_data_structures.named_tuples as nt
 import srepkg.shared_data_structures.builder_dest_paths as bdp
 import srepkg.shared_data_structures.builder_src_paths as bsp
 import srepkg.file_structure as fs
 
 
 class BuilderPathsCalculator:
-    # TODO validator method to confirm cur file structure matches paths classes
 
     # standard repackaging components location
     _repackaging_components = (
@@ -25,12 +23,12 @@ class BuilderPathsCalculator:
 
     def __init__(
         self,
-        orig_pkg_info: nt.OrigPkgInfo,
+        orig_pkg_name: str,
         construction_dir: Path,
         srepkg_custom_name: str = None,
     ):
 
-        self._orig_pkg_info = orig_pkg_info
+        self._orig_pkg_name = orig_pkg_name
         self._srepkg_custom_name = srepkg_custom_name
         self._construction_dir = construction_dir
 
@@ -39,12 +37,12 @@ class BuilderPathsCalculator:
         if self._srepkg_custom_name:
             return self._srepkg_custom_name
         else:
-            return self._orig_pkg_info.pkg_name + self._auto_srepkg_suffix
+            return self._orig_pkg_name + self._auto_srepkg_suffix
 
     @property
     def _srepkg_root(self):
         return self._construction_dir / (
-            self._orig_pkg_info.pkg_name + "_as_" + self._srepkg_name
+            self._orig_pkg_name + "_as_" + self._srepkg_name
         )
 
     def _validate_srepkg_root(self):
