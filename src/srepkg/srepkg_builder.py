@@ -90,7 +90,7 @@ class _CallMethod(_ConstructionTask):
         self._call_method()
 
 
-class TaskCatalogBuilder:
+class TaskCatalog:
 
     def __init__(self, info: nt.TaskBuilderInfo):
         self._info = info
@@ -204,40 +204,33 @@ class TaskCatalogBuilder:
         }
 
 
-class TaskOrderArranger:
-    def __init__(self, task_catalog: dict[str, _ConstructionTask],
-                 task_order: List[str] = None):
-        self._task_catalog = task_catalog
-        if task_order is None:
-            task_order = [
-                'copy_inner_pkg',
-                'create_srepkg_init',
-                'build_entry_pts',
-                'copy_entry_module',
-                'build_srepkg_cfg',
-                'build_inner_pkg_install_cfg',
-                'copy_inner_pkg_installer',
-                'copy_srepkg_setup_py',
-                'write_manifest',
-                'build_distribution'
-            ]
-        self._task_order = task_order
+class Builder(abc.ABC):
 
-    def _validate_task_order(self):
-        assert all([task in self._task_catalog for task in self._task_order])
-
-    def arrange_tasks(self):
-        self._validate_task_order()
-        return [
-            self._task_catalog[task_name] for task_name in self._task_order
-        ]
+    @abc.abstractmethod
+    def build(self):
+        pass
 
 
 class SrepkgBuilder:
 
-    def __init__(self, construction_tasks: List[_ConstructionTask]):
-        self._construction_tasks = construction_tasks
+    def __init__(self, task_catalog: TaskCatalog, task_order: List[str]):
+        # self._construction_tasks = construction_tasks
+        self._task_catalog = task_catalog
+        self._task_order = task_order
 
-    def build_srepkg(self):
-        for task in self._construction_tasks:
+    def _validate_task_order(self):
+        assert all([task in self._task_catalog.task_catalog for task in self._task_order])
+        return self
+
+    def _arrange_tasks(self):
+        self._validate_task_order()
+        return [
+            self._task_catalog.task_catalog[task_name] for task_name in
+            self._task_order
+        ]
+
+    def build(self):
+        ordered_tasks = self._validate_task_order()._arrange_tasks()
+
+        for task in ordered_tasks:
             task.execute()

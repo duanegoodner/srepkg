@@ -8,6 +8,7 @@ import srepkg.shared_data_structures.named_tuples as nt
 import srepkg.path_calculator as pc
 import srepkg.orig_pkg_inspector as pi
 import srepkg.srepkg_builder as sb
+from srepkg.srepkg_construction_specs import SrepkgConstructionSpecs
 
 
 class _Repackager(abc.ABC):
@@ -40,7 +41,7 @@ class _Repackager(abc.ABC):
 
         orig_pkg_info = pi.SrcCodeInspector(orig_pkg).get_orig_pkg_info()
 
-        builder_src_paths, builder_dest_paths = pc.BuilderPathsCalculator(
+        builder_src_paths, builder_dest_paths = pc.SrepkgBuilderPathsCalculator(
             orig_pkg_info.pkg_name, self._construction_dir, self._srepkg_name
         ).calc_builder_paths()
 
@@ -51,10 +52,12 @@ class _Repackager(abc.ABC):
             dist_out_dir=self._dist_out_dir
         )
 
-        task_builder = sb.TaskCatalogBuilder(task_builder_info)
-        task_catalog = task_builder.task_catalog
-        ordered_tasks = sb.TaskOrderArranger(task_catalog).arrange_tasks()
-        sb.SrepkgBuilder(ordered_tasks).build_srepkg()
+        task_catalog = sb.TaskCatalog(task_builder_info)
+        construction_specs = SrepkgConstructionSpecs().sdist_procedure
+        # task_catalog = task_builder.task_catalog
+        # ordered_tasks = sb.TaskOrderArranger(task_catalog).arrange_tasks()
+        sb.SrepkgBuilder(task_catalog=task_catalog,
+                         task_order=construction_specs).build()
 
         self._cleanup_srepkg_temp_dir()
 

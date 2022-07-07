@@ -1,11 +1,11 @@
 import abc
 import tempfile
 import uuid
-from functools import singledispatch
+from functools import singledispatch, singledispatchmethod
 from pathlib import Path
 
 
-class _ConstructionDir(abc.ABC):
+class ConstructionDir(abc.ABC):
     def __init__(self, construction_dir: Path):
         self._construction_dir = construction_dir
         self._srepkg_root = construction_dir / uuid.uuid4().hex
@@ -21,12 +21,16 @@ class _ConstructionDir(abc.ABC):
         self._srepkg_root = self._srepkg_root.parent.absolute() / srepkg_root
         self._srepkg = self._srepkg_root / srepkg
 
+    @classmethod
+    @singledispatchmethod
+
+
     @abc.abstractmethod
     def settle(self):
         pass
 
 
-class _CustomConstructionDir(_ConstructionDir):
+class _CustomConstructionDir(ConstructionDir):
     def __init__(self, construction_dir: Path):
         super().__init__(construction_dir)
 
@@ -35,7 +39,7 @@ class _CustomConstructionDir(_ConstructionDir):
               f"{str(self._srepkg_root)}")
 
 
-class _TemporaryConstructionDir(_ConstructionDir):
+class _TemporaryConstructionDir(ConstructionDir):
     def __init__(self):
         self._temp_dir_obj = tempfile.TemporaryDirectory()
         super().__init__(Path(self._temp_dir_obj.name))
@@ -44,21 +48,23 @@ class _TemporaryConstructionDir(_ConstructionDir):
         self._temp_dir_obj.cleanup()
 
 
-@singledispatch
-def create_construction_dir(arg) -> _ConstructionDir:
-    raise NotImplementedError
+class ConstructionDirBuilder:
 
+    def __init__(self):
+        pass
 
-@create_construction_dir.register
-def _(arg: None):
-    return _TemporaryConstructionDir()
+    @singledispatchmethod
+    def create(self, arg):
+        raise NotImplementedError
 
+    @create.register
+    def _(self, arg: None):
+        return _TemporaryConstructionDir()
 
-@create_construction_dir.register
-def _(arg: str):
-    return _CustomConstructionDir(Path(arg))
+    @create.register
+    def _(self, arg: str):
+        return _CustomConstructionDir(Path(arg))
 
-
-@create_construction_dir.register
-def _(arg: Path):
-    return _CustomConstructionDir(arg)
+    @create.register
+    def _(self, arg: Path):
+        return _CustomConstructionDir(arg)

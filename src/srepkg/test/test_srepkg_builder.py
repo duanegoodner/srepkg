@@ -9,6 +9,7 @@ import srepkg.srepkg_builder as sb
 import srepkg.test.test_path_calculator as tpc
 
 from srepkg.error_handling.error_messages import SrepkgBuilderError
+from srepkg.srepkg_construction_specs import SrepkgConstructionSpecs
 
 
 class TestSrepkgBuilder(unittest.TestCase):
@@ -38,10 +39,14 @@ class TestSrepkgBuilder(unittest.TestCase):
             dist_out_dir=self.srepkg_dist_dir
         )
 
-        self.task_catalog_builder = sb.TaskCatalogBuilder(task_builder_info)
-        task_catalog = self.task_catalog_builder.task_catalog
-        self.task_order_arranger = sb.TaskOrderArranger(task_catalog)
-        self.ordered_tasks = self.task_order_arranger.arrange_tasks()
+        self.task_catalog = sb.TaskCatalog(task_builder_info)
+        # task_catalog = self.task_catalog_builder.task_catalog
+        # self.task_order_arranger = sb.TaskOrderArranger(task_catalog)
+        # self.ordered_tasks = self.task_order_arranger.arrange_tasks()
+        # construction_specs = SrepkgConstructionSpecs()
+        # self.srepkg_builder = sb.SrepkgBuilder(
+        #     task_catalog=task_catalog,
+        #     task_order=construction_specs.sdist_procedure)
 
     def tearDown(self) -> None:
         if self.srepkg_pkgs_non_temp_dir.exists():
@@ -51,16 +56,29 @@ class TestSrepkgBuilder(unittest.TestCase):
             shutil.rmtree(self.srepkg_dist_dir)
 
     def test_srepkg_builder_paths(self) -> None:
-        assert self.task_catalog_builder._info.src_paths == self.builder_src_paths
-        assert self.task_catalog_builder._info.repkg_paths == self.builder_dest_paths
+        srepkg_builder = sb.SrepkgBuilder(
+            task_catalog=self.task_catalog,
+            task_order=SrepkgConstructionSpecs().sdist_procedure)
+
+        assert srepkg_builder._task_catalog._info.src_paths ==\
+               self.builder_src_paths
+        assert srepkg_builder._task_catalog._info.repkg_paths ==\
+               self.builder_dest_paths
 
     def run_srepkg_builder_through_task(self, task_name: str, expected_path_id: str):
-        end_index = self.task_order_arranger._task_order.index(task_name) + 1
-        tasks = self.ordered_tasks[:end_index]
-        srepkg_builder = sb.SrepkgBuilder(tasks)
-        srepkg_builder.build_srepkg()
+        end_index = SrepkgConstructionSpecs().sdist_procedure.index(task_name) + 1
+        construction_specs = SrepkgConstructionSpecs().sdist_procedure[:end_index]
+        srepkg_builder = sb.SrepkgBuilder(
+            task_catalog=self.task_catalog,
+            task_order=construction_specs)
 
-        expected_path = getattr(self.task_catalog_builder._info.repkg_paths, expected_path_id)
+        # end_index = self.srepkg_builder._task_order.index(task_name) + 1
+        # tasks = self.srepkg_builder._arrange_tasks()[:end_index]
+        # srepkg_builder = sb.SrepkgBuilder(tasks)
+        srepkg_builder.build()
+
+        expected_path = getattr(self.task_catalog._info.repkg_paths,
+                                expected_path_id)
         assert expected_path.exists()
 
     def test_inner_pkg_copy(self) -> None:
@@ -103,16 +121,18 @@ class TestSrepkgBuilder(unittest.TestCase):
             task_name='write_manifest', expected_path_id='manifest')
 
     def test_full_srepkg_build(self):
-        srepkg_builder = sb.SrepkgBuilder(self.ordered_tasks)
-        srepkg_builder.build_srepkg()
+        srepkg_builder = sb.SrepkgBuilder(
+            task_catalog=self.task_catalog,
+            task_order=SrepkgConstructionSpecs().sdist_procedure)
+        srepkg_builder.build()
         zipfile_name = "-".join(
             [
-                self.task_catalog_builder._info.repkg_paths.srepkg.name,
-                self.task_catalog_builder._info.orig_pkg_info.version
+                self.task_catalog._info.repkg_paths.srepkg.name,
+                self.task_catalog._info.orig_pkg_info.version
             ]
         )
 
-        assert (self.task_catalog_builder._info.dist_out_dir / (zipfile_name + '.zip')).exists()
+        assert (self.task_catalog._info.dist_out_dir / (zipfile_name + '.zip')).exists()
 
 
 class TestSrepkgBuilderCustomDir(TestSrepkgBuilder):
@@ -137,10 +157,10 @@ class TestSrepkgBuilderCustomDir(TestSrepkgBuilder):
             dist_out_dir=self.srepkg_dist_dir
         )
 
-        self.task_catalog_builder = sb.TaskCatalogBuilder(task_builder_info)
-        task_catalog = self.task_catalog_builder.task_catalog
-        self.task_order_arranger = sb.TaskOrderArranger(task_catalog)
-        self.ordered_tasks = self.task_order_arranger.arrange_tasks()
+        self.task_catalog= sb.TaskCatalog(task_builder_info)
+        # task_catalog = self.task_catalog_builder.task_catalog
+        # self.task_order_arranger = sb.TaskOrderArranger(task_catalog)
+        # self.ordered_tasks = self.task_order_arranger.arrange_tasks()
 
 
 class TestSrepkgBuilderNonSrcLayout(TestSrepkgBuilder, unittest.TestCase):
@@ -152,8 +172,8 @@ class TestSrepkgBuilderNonSrcLayout(TestSrepkgBuilder, unittest.TestCase):
     )
 
 
-def test_task_order_arranger_empty_init():
-    task_order_arranger = sb.TaskOrderArranger(task_catalog={}, task_order=[])
+# def test_task_order_arranger_empty_init():
+#     task_order_arranger = sb.TaskOrderArranger(task_catalog={}, task_order=[])
 
 
 def test_direct_copy_dir_without_ignore_pattern():

@@ -28,7 +28,7 @@ def calc_paths(ci_args):
     else:
         construction_dir = Path(args.construction_dir)
 
-    builder_paths_calculator = pc.BuilderPathsCalculator(
+    builder_paths_calculator = pc.SrepkgBuilderPathsCalculator(
         orig_pkg_name=orig_pkg_info.pkg_name,
         construction_dir=construction_dir,
         srepkg_custom_name=args.srepkg_name,

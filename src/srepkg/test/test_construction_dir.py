@@ -3,7 +3,7 @@ import shutil
 import unittest
 from pathlib import Path
 
-import srepkg.construction_dir as cd
+from srepkg.construction_dir import ConstructionDirBuilder
 
 
 class TestConstructionDir(unittest.TestCase):
@@ -15,8 +15,8 @@ class TestConstructionDir(unittest.TestCase):
             shutil.rmtree(Path(__file__).parent / 'construction_test')
         (Path(__file__).parent / 'construction_test').mkdir()
 
-        self.construction_dir = cd.create_construction_dir(
-            self.args.construction_dir)
+        construction_dir_builder = ConstructionDirBuilder()
+        self.construction_dir = construction_dir_builder.create(self.args.construction_dir)
         print(self.construction_dir._construction_dir.absolute())
 
     def tearDown(self) -> None:

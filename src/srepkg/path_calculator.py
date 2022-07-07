@@ -4,6 +4,7 @@ and destination paths used when building a new sre-package from an existing
 package.
 """
 
+import abc
 import sys
 from pathlib import Path
 import srepkg.shared_data_structures.builder_dest_paths as bdp
@@ -11,7 +12,18 @@ import srepkg.shared_data_structures.builder_src_paths as bsp
 import srepkg.file_structure as fs
 
 
-class BuilderPathsCalculator:
+class BuilderPathsCalculator(abc.ABC):
+
+    @abc.abstractmethod
+    def calc_src_paths(self) -> bsp.BuilderSrcPaths:
+        pass
+
+    @abc.abstractmethod
+    def calc_dest_paths(self) -> bdp.BuilderDestPaths:
+        pass
+
+
+class SrepkgBuilderPathsCalculator(BuilderPathsCalculator):
 
     # standard repackaging components location
     _repackaging_components = (
