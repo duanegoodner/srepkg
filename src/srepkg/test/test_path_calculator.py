@@ -93,14 +93,14 @@ class TestPathCalc(unittest.TestCase):
         builder_dest_paths = calc_paths.locals["builder_dest_paths"]
         srepkg_root = calc_paths.locals["srepkg_root"]
 
-        srepkg_path = srepkg_root / calc_paths.locals["final_srepkg_name"]
-        srepkg_entry_points = srepkg_path / "srepkg_entry_points"
+        srepkg_content_path = srepkg_root / calc_paths.locals["final_srepkg_name"]
+        srepkg_entry_points = srepkg_content_path / "srepkg_entry_points"
         srepkg_entry_module = srepkg_entry_points / "entry_point_runner.py"
         srepkg_setup_cfg = srepkg_root / "setup.cfg"
         srepkg_setup_py = srepkg_root / "setup.py"
-        srepkg_init = srepkg_path / "__init__.py"
+        srepkg_init = srepkg_content_path / "__init__.py"
 
-        assert builder_dest_paths.srepkg == srepkg_path
+        assert builder_dest_paths.srepkg == srepkg_content_path
         assert builder_dest_paths.entry_module == srepkg_entry_module
         assert builder_dest_paths.srepkg_entry_points == srepkg_entry_points
         assert builder_dest_paths.srepkg_setup_cfg == srepkg_setup_cfg

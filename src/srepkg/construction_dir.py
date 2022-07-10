@@ -5,7 +5,7 @@ from functools import singledispatch, singledispatchmethod
 from pathlib import Path
 
 
-class ConstructionDir(abc.ABC):
+class ConstructionDirInterface(abc.ABC):
     def __init__(self, construction_dir: Path):
         self._construction_dir = construction_dir
         self._srepkg_root = construction_dir / uuid.uuid4().hex
@@ -21,16 +21,12 @@ class ConstructionDir(abc.ABC):
         self._srepkg_root = self._srepkg_root.parent.absolute() / srepkg_root
         self._srepkg = self._srepkg_root / srepkg
 
-    @classmethod
-    @singledispatchmethod
-
-
     @abc.abstractmethod
     def settle(self):
         pass
 
 
-class _CustomConstructionDir(ConstructionDir):
+class _CustomConstructionDir(ConstructionDirInterface):
     def __init__(self, construction_dir: Path):
         super().__init__(construction_dir)
 
@@ -39,7 +35,7 @@ class _CustomConstructionDir(ConstructionDir):
               f"{str(self._srepkg_root)}")
 
 
-class _TemporaryConstructionDir(ConstructionDir):
+class _TemporaryConstructionDir(ConstructionDirInterface):
     def __init__(self):
         self._temp_dir_obj = tempfile.TemporaryDirectory()
         super().__init__(Path(self._temp_dir_obj.name))

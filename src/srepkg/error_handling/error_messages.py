@@ -40,3 +40,47 @@ class SrepkgBuilderError(ErrorMsg, Enum):
     CopyDestinationPathExists = ErrorMsg(
         msg="Error when attempting to copy. Destination path already exists"
     )
+
+
+class PkgRetrieverError(ErrorMsg, Enum):
+    InvalidPkgRef = ErrorMsg(
+        msg="Package reference provided to srepkg is not recognized as a valid "
+            "package."
+    )
+
+
+class PkgIdentifierError(ErrorMsg, Enum):
+    PkgNotFound = ErrorMsg(
+        msg="Package reference provided to srepkg is not recognized as a valid "
+            "package."
+    )
+    MultiplePotentialPackages = ErrorMsg(
+        msg="Package reference is consistent with more than one package."
+    )
+
+
+class ConstructionDirError(ErrorMsg, Enum):
+    MissingORigPkgContent = ErrorMsg(
+        msg="Srepkg construction directory does not contain any original "
+            "content. Expect to find a wheel or source distribution, but "
+            "neither found."
+    )
+    MultiplePackagesPresent = ErrorMsg(
+        msg="Srepkg build directory contains distributions from multiple "
+            "packages and/or versions."
+    )
+    TargetDistTypeNotSupported = ErrorMsg(
+        msg="Srepkg does not support conversion of original package to this "
+            "type"
+    )
+    NoSupportedSrcDistTypes = ErrorMsg(
+        msg="Construction of missing distribution type(s) is requested, but "
+            "found no supported Dist types to build from."
+    )
+
+
+
+class ArchiveFileError(ErrorMsg, Enum):
+    UnsupportedFileType = ErrorMsg(
+        msg="Extraction of item at provided path is not supported."
+    )
