@@ -40,3 +40,20 @@ class SrepkgBuilderError(ErrorMsg, Enum):
     CopyDestinationPathExists = ErrorMsg(
         msg="Error when attempting to copy. Destination path already exists"
     )
+
+
+class PkgRetrieverError(ErrorMsg, Enum):
+    InvalidPkgRef = ErrorMsg(
+        msg="Package reference provided to srepkg is not recognized as a valid "
+            "package."
+    )
+
+
+class PkgIdentifierError(ErrorMsg, Enum):
+    PkgNotFound = ErrorMsg(
+        msg="Package reference provided to srepkg is not recognized as a valid "
+            "package."
+    )
+    MultiplePotentialPackages = ErrorMsg(
+        msg="Package reference is consistent with more than one package."
+    )

@@ -214,7 +214,6 @@ class Builder(abc.ABC):
 class SrepkgBuilder:
 
     def __init__(self, task_catalog: TaskCatalog, task_order: List[str]):
-        # self._construction_tasks = construction_tasks
         self._task_catalog = task_catalog
         self._task_order = task_order
 
