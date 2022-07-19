@@ -6,14 +6,13 @@ import sys
 from pathlib import Path
 import tempfile
 import srepkg.orig_src_preparer_interfaces as osp_int
-import srepkg.shared_interfaces as shared_int
 from srepkg.utils.cd_context_manager import dir_change_to
 
 
 class ConstructedDistProvider(osp_int.DistProviderInterface):
 
     def __init__(self, orig_pkg_path: str,
-                 pkg_receiver: shared_int.WritableSrepkgDirInterface):
+                 pkg_receiver: osp_int.WritableSrepkgDirInterface):
         self._orig_pkg_path = orig_pkg_path
         self._pkg_receiver = pkg_receiver
 

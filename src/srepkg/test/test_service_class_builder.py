@@ -27,11 +27,11 @@ def test_scb_create_src_preparer():
 
 
 def test_pkg_type_identifier_pypi_black():
-    assert sb.PkgTypeIdentifier("black")._is_pypi_pkg()
+    assert sb.PkgRefIdentifier("black").is_pypi_pkg()
 
 
 def test_pkg_type_identifier_testproj():
-    my_identifier = sb.PkgTypeIdentifier(
+    my_identifier = sb.PkgRefIdentifier(
         '/Users/duane/dproj/srepkg/src/srepkg/test/package_test_cases/testproj'
     )
-    assert my_identifier.get_potential_pkg_type() == sb.PkgRefType.LOCAL_SRC
+    assert my_identifier.identify_specific_type() == sb.PkgRefType.LOCAL_SRC

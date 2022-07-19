@@ -11,11 +11,7 @@ class SrepkgCommandInterface(abc.ABC):
         pass
 
 
-class RenamableSrepkgDirInterface(abc.ABC):
-
-    @abc.abstractmethod
-    def rename_sub_dirs(self, srepkg_root: str, srepkg: str):
-        pass
+class SettleableSrepkgDirInterface(abc.ABC):
 
     @abc.abstractmethod
     def settle(self):
