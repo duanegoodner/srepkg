@@ -46,15 +46,15 @@ class OrigPkgDistReviewer:
 
     def __init__(
             self,
-            srepkg_path: Path,
+            srepkg_content_path: Path,
             target_dist_types:
             tuple[Callable[..., pkginfo.Distribution]] = DEFAULT_DIST_CLASSES):
-        self._srepkg_path = srepkg_path
+        self._srepkg_content_path = srepkg_content_path
         self._target_dist_types = target_dist_types
 
     @property
     def _srepkg_contents(self):
-        return list(self._srepkg_path.iterdir())
+        return list(self._srepkg_content_path.iterdir())
 
     def _get_dist_name_version(self, dist_path: Path):
         for dist_class in self._target_dist_types:
@@ -68,11 +68,11 @@ class OrigPkgDistReviewer:
             except ValueError:
                 pass
 
-    @staticmethod
     def _validate_dists_info(
+            self,
             dists_info: dict[PkgNameVersion, List[DistNameType]]):
         if not dists_info:
-            raise ce.MissingOrigPkgContent
+            raise ce.MissingOrigPkgContent(str(self._srepkg_content_path))
         if len(dists_info) > 1:
             raise ce.MultiplePackagesPresent
 
@@ -102,17 +102,16 @@ class OriginalSourceCompleter:
 
     def __init__(
             self,
-            srepkg_path: Path,
+            srepkg_content_path: Path,
             required_dist_types:
             tuple[Callable[..., pkginfo.Distribution]] = DEFAULT_DIST_CLASSES):
-        self._srepkg_path = srepkg_path
+        self._srepkg_content_path = srepkg_content_path
         self._required_dist_types = required_dist_types
 
     def _id_missing_dist_types(
             self,
             existing_dists_info: PkgWithFoundDists) -> \
             DistTypesStatus:
-        assert len(existing_dists_info) == 1
         dist_types_found = [
             item.dist_type for item in existing_dists_info.all_dists]
 
@@ -124,12 +123,12 @@ class OriginalSourceCompleter:
                                missing=missing_dist_types)
 
     def build_missing_dist_types(self):
-        existing_dists_info = OrigPkgDistReviewer(self._srepkg_path) \
+        existing_dists_info = OrigPkgDistReviewer(self._srepkg_content_path) \
             .get_existing_dists_info()
         dist_types_status = self._id_missing_dist_types(existing_dists_info)
 
         dist_converter = DistConverter(
-            srepkg_path=self._srepkg_path,
+            srepkg_content_path=self._srepkg_content_path,
             existing_dists_info=existing_dists_info,
             dist_types_status=dist_types_status)
 
@@ -146,10 +145,10 @@ class DistConverter:
 
     def __init__(
             self,
-            srepkg_path: Path,
+            srepkg_content_path: Path,
             existing_dists_info: PkgWithFoundDists,
             dist_types_status: DistTypesStatus):
-        self._srepkg_path = srepkg_path
+        self._srepkg_content_path = srepkg_content_path
         self._existing_dists_info = existing_dists_info
         self._dist_types_status = dist_types_status
         self._compressed_file_extractor = cft.CompressedFileExtractor()
@@ -162,7 +161,7 @@ class DistConverter:
 
         if len(self._dist_types_status.missing) > 0 and not any([
             item in self._supported_dist_types for item
-                in self._dist_types_status.found]):
+            in self._dist_types_status.found]):
             raise ce.NoSupportedSrcDistTypes
 
         return self
@@ -172,14 +171,13 @@ class DistConverter:
             [item in self._supported_dist_types for item in
              self._dist_types_status.found].index(True)]
 
-        # TODO extract filename of filename, dist_type tuple with dist_type matching build_from_dist
         build_from_filename = [
             item.file_name for item in self._existing_dists_info.all_dists if
             item.dist_type == build_from_dist][0]
         temp_unpack_dir_obj = tempfile.TemporaryDirectory()
         unpack_dir = Path(temp_unpack_dir_obj.name)
 
-        existing_dist = self._srepkg_path / build_from_filename
+        existing_dist = self._srepkg_content_path / build_from_filename
 
         self._compressed_file_extractor.extract(existing_dist, unpack_dir)
 
@@ -187,7 +185,7 @@ class DistConverter:
             with dir_change_to(str(unpack_dir)):
                 subprocess.call([
                     sys.executable, '-m', 'build', '--outdir',
-                    str(self._srepkg_path),
+                    str(self._srepkg_content_path),
                     self._dist_type_build_args[missing_dist]])
 
         temp_unpack_dir_obj.cleanup()
@@ -206,7 +204,11 @@ class ConstructionDir(re_int.SettleableSrepkgDirInterface,
         self._srepkg.mkdir()
 
     @property
-    def srepkg_path(self):
+    def srepkg_root_path(self):
+        return self._srepkg_root
+
+    @property
+    def srepkg_content_path(self):
         return self._srepkg
 
     def rename_sub_dirs(self, srepkg_root: str, srepkg: str):
@@ -217,7 +219,7 @@ class ConstructionDir(re_int.SettleableSrepkgDirInterface,
         self._srepkg = self._srepkg_root / srepkg
 
     def build_missing_items(self):
-        source_completer = OriginalSourceCompleter(srepkg_path=self._srepkg)
+        source_completer = OriginalSourceCompleter(srepkg_content_path=self._srepkg)
         source_completer.build_missing_dist_types()
 
 
@@ -237,6 +239,3 @@ class TempConstructionDir(ConstructionDir):
 
     def settle(self):
         self._temp_dir_obj.cleanup()
-
-
-

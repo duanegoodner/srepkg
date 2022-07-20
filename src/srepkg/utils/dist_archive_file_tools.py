@@ -74,7 +74,7 @@ class CompressedFileExtractor:
     @staticmethod
     def _extract_whl(compressed_file: Path, output_dir: Path):
         subprocess.call(
-            ['wheel', 'unpack', str(compressed_file), '--dest-dir',
+            ['wheel', 'unpack', str(compressed_file), '--dest',
              str(output_dir)])
 
     @staticmethod
