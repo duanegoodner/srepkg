@@ -6,7 +6,7 @@ class WritableSrepkgDirInterface(abc.ABC):
 
     @property
     @abc.abstractmethod
-    def srepkg_content_path(self):
+    def srepkg_inner(self):
         pass
 
     @abc.abstractmethod

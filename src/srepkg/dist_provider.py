@@ -2,9 +2,6 @@ import abc
 import shutil
 import subprocess
 import sys
-# import wheel_inspect
-from pathlib import Path
-import tempfile
 import srepkg.orig_src_preparer_interfaces as osp_int
 from srepkg.utils.cd_context_manager import dir_change_to
 
@@ -33,10 +30,10 @@ class WheelAndSdistProvider(ConstructedDistProvider):
         with dir_change_to(self._orig_pkg_path):
             subprocess.call([
                 sys.executable, '-m', 'build', '--outdir',
-                str(self._pkg_receiver.srepkg_content_path)])
+                str(self._pkg_receiver.srepkg_inner)])
 
 
 class DistCopyProvider(ConstructedDistProvider):
 
     def provide(self):
-        shutil.copy2(self._orig_pkg_path, self._pkg_receiver.srepkg_content_path)
+        shutil.copy2(self._orig_pkg_path, self._pkg_receiver.srepkg_inner)

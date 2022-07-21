@@ -17,7 +17,32 @@ class WritableSrepkgDirInterface(abc.ABC):
 
     @property
     @abc.abstractmethod
-    def srepkg_content_path(self):
+    def root(self):
+        pass
+
+    @property
+    @abc.abstractmethod
+    def root_contents(self):
+        pass
+
+    @property
+    @abc.abstractmethod
+    def srepkg_root(self):
+        pass
+
+    @property
+    @abc.abstractmethod
+    def srepkg_root_contents(self):
+        pass
+
+    @property
+    @abc.abstractmethod
+    def srepkg_inner(self):
+        pass
+
+    @property
+    @abc.abstractmethod
+    def srepkg_inner_contents(self):
         pass
 
     @abc.abstractmethod

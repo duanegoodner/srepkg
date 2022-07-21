@@ -35,13 +35,13 @@ class InvalidPkgRef(Exception):
 class MissingOrigPkgContent(Exception):
     def __init__(
             self,
-            srepkg_content_path: str,
+            srepkg_inner: str,
             msg=ConstructionDirError.MissingORigPkgContent.msg):
-        self._srepkg_content_path = srepkg_content_path
+        self._srepkg_inner = srepkg_inner
         self._msg = msg
 
     def __str__(self):
-        return f"{self._srepkg_content_path} -> {self._msg}"
+        return f"{self._srepkg_inner} -> {self._msg}"
 
 
 class UnsupportedCompressionType(Exception):
