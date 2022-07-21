@@ -10,8 +10,9 @@ class Repackager:
         self._service_class_builder = service_class_builder
 
     def _create_construction_dir(self):
-        self._service_class_builder.create_orig_src_preparer()
-        # self._service_class_builder.create_construction_dir()
+        source_preparer = self._service_class_builder.create_orig_src_preparer()
+        source_preparer.prepare()
+        # self._s  ervice_class_builder.create_construction_dir()
 
 
 

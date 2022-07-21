@@ -33,10 +33,10 @@ class WheelAndSdistProvider(ConstructedDistProvider):
         with dir_change_to(self._orig_pkg_path):
             subprocess.call([
                 sys.executable, '-m', 'build', '--outdir',
-                str(self._pkg_receiver.srepkg_content_path)])
+                str(self._pkg_receiver.srepkg_inner)])
 
 
 class DistCopyProvider(ConstructedDistProvider):
 
     def provide(self):
-        shutil.copy2(self._orig_pkg_path, self._pkg_receiver.srepkg_content_path)
+        shutil.copy2(self._orig_pkg_path, self._pkg_receiver.srepkg_inner)

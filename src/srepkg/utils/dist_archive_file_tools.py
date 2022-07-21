@@ -2,7 +2,6 @@ import subprocess
 import zipfile
 import tarfile
 from enum import Enum, auto
-from functools import singledispatchmethod
 from pathlib import Path
 from srepkg.error_handling.custom_exceptions import UnsupportedCompressionType
 
