@@ -1,8 +1,10 @@
 import pytest
-import srepkg.utils.dist_archive_file_tools as daft
-import srepkg.utils.cd_context_manager as cdcm
 from pathlib import Path
 from typing import NamedTuple
+import srepkg.utils.dist_archive_file_tools as daft
+import srepkg.utils.cd_context_manager as cdcm
+import srepkg.error_handling.custom_exceptions as ce
+
 
 
 def test_dir_change_to(tmp_path):
@@ -60,7 +62,30 @@ class TestArchiveIdentifier:
             self.run_file_and_dist_id_test(test_case)
 
 
-# class TestCompressedFileExtractor:
-#
-#     extractor = daft.CompressedFileExtractor()
-#
+class TestCompressedFileExtractor:
+
+    test_cases_path = Path(__file__).parent.absolute() / \
+                      'package_test_cases'
+
+    archive_filenames = [
+        'testproj-0.0.0.tar.gz',
+        'testproj-0.0.0.zip',
+        'testproj-0.0.0-py3-none-any.whl'
+    ]
+
+    extractor = daft.CompressedFileExtractor()
+
+    def run_expected_good_extraction(self, file_name: str, output_dir: Path):
+        self.extractor.extract(self.test_cases_path / file_name, output_dir)
+        assert (output_dir / 'testproj-0.0.0').exists()
+
+    def test_expected_good_extractions(self, tmp_path):
+        for file_name in self.archive_filenames:
+            self.run_expected_good_extraction(file_name, tmp_path)
+
+    def test_bad_extraction(self, tmp_path):
+        with pytest.raises(ce.UnsupportedCompressionType):
+            self.extractor.extract(
+                self.test_cases_path / 'testproj-0.0.0-not-a-distribution.py',
+                tmp_path)
+
