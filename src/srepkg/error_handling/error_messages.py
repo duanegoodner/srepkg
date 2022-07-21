@@ -73,9 +73,9 @@ class ConstructionDirError(ErrorMsg, Enum):
         msg="Srepkg does not support conversion of original package to this "
             "type"
     )
-    NoSupportedSrcDistTypes = ErrorMsg(
-        msg="Construction of missing distribution type(s) is requested, but "
-            "found no supported Dist types to build from."
+    NoSDistForWheelConstruction = ErrorMsg(
+        msg="Conversion of Sdist to Wheel is requested, but no Sdist found in "
+            "srepkg construction directory."
     )
 
 

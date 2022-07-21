@@ -3,7 +3,19 @@ Module for collecting command line input.
 """
 import abc
 import argparse
-from srepkg.srepkg import SrepkgInput
+
+
+
+class SrepkgInput:
+
+    def __init__(self, orig_pkg_ref: str,
+                 srepkg_name: str,
+                 construction_dir: str,
+                 dist_out_dir: str):
+        self._orig_pkg_ref = orig_pkg_ref
+        self._srepkg_name = srepkg_name
+        self._construction_dir = construction_dir
+        self._dist_out_dir = dist_out_dir
 
 
 class CommandInput(abc.ABC):

@@ -2,7 +2,6 @@ import subprocess
 import zipfile
 import tarfile
 from enum import Enum, auto
-from functools import singledispatchmethod
 from pathlib import Path
 from srepkg.error_handling.custom_exceptions import UnsupportedCompressionType
 
@@ -57,10 +56,6 @@ class ArchiveIdentifier:
 
 class CompressedFileExtractor:
 
-    # def __init__(self, compressed_file: Path, output_dir: Path):
-    #     self._compressed_file = compressed_file
-    #     self._output_dir = output_dir
-
     @staticmethod
     def _extract_zip(compressed_file: Path, output_dir: Path):
         with zipfile.ZipFile(compressed_file, 'r') as zf:
@@ -79,7 +74,7 @@ class CompressedFileExtractor:
 
     @staticmethod
     def _extract_unknown(compressed_file: Path, output_dir: Path):
-        raise UnsupportedCompressionType
+        raise UnsupportedCompressionType(str(compressed_file))
 
     @property
     def _dispatch_method(self):

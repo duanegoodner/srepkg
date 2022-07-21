@@ -31,11 +31,16 @@ class OrigSrcPreparerInterface(abc.ABC):
     def prepare(self):
         pass
 
+    @property
+    @abc.abstractmethod
+    def receiver(self) -> SettleableSrepkgDirInterface:
+        pass
 
-class OrigPkgInspectorInterface(abc.ABC):
+
+class SrepkgBuilderInterface(abc.ABC):
 
     @abc.abstractmethod
-    def get_orig_pkg_info(self) -> nt.OrigPkgInfo:
+    def build(self):
         pass
 
 
@@ -48,13 +53,12 @@ class PathCalculatorInterface(abc.ABC):
 
 class ServiceBuilderInterface(abc.ABC):
 
-    # @abc.abstractmethod
-    # def create_construction_dir(self) -> RenamableSrepkgDir:
-    #     pass
+    @abc.abstractmethod
+    def create_orig_src_preparer(self) -> OrigSrcPreparerInterface:
+        pass
 
     @abc.abstractmethod
-    def create_orig_src_preparer(self)\
-            -> OrigSrcPreparerInterface:
+    def create_srepkg_builder(self) -> SrepkgBuilderInterface:
         pass
 
     # @abc.abstractmethod
