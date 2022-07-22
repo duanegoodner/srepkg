@@ -226,7 +226,7 @@ def test_scb_create_src_preparer_custom_dir():
     my_command = nds.SrepkgCommand(
         orig_pkg_ref='/Users/duane/dproj/srepkg/src/srepkg/test/package_test_cases/testproj-0.0.0-py3-none-any.whl',
         srepkg_name=None,
-        construction_dir='/package_test_cases/construction_test',
+        construction_dir='/Users/duane/dproj/srepkg/src/srepkg/test/package_test_cases/construction_test',
         dist_out_dir=None
     )
 

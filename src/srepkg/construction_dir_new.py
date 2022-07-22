@@ -51,15 +51,31 @@ class ConstructionDir(re_int.SettleableSrepkgDirInterface,
     @abc.abstractmethod
     def __init__(
             self,
-            construction_dir: Path,
+            construction_dir_arg: Path,
             required_dist_types:
             tuple[Callable[..., pkginfo.Distribution]] = DEFAULT_DIST_CLASSES):
-        self._construction_dir = construction_dir
-        self._srepkg_root = construction_dir / uuid.uuid4().hex
+        self._root = construction_dir_arg
+        self._srepkg_root = construction_dir_arg / uuid.uuid4().hex
         self._srepkg_root.mkdir()
         self._srepkg_inner = self._srepkg_root / uuid.uuid4().hex
         self._srepkg_inner.mkdir()
         self._required_dist_types = required_dist_types
+
+    @property
+    def root(self):
+        return self._root
+
+    @property
+    def root_contents(self):
+        return list(self._root.iterdir())
+
+    @property
+    def srepkg_root(self):
+        return self._srepkg_root
+
+    @property
+    def srepkg_root_contents(self):
+        return list(self._srepkg_root.iterdir())
 
     @property
     def srepkg_inner(self):
@@ -73,12 +89,12 @@ class ConstructionDir(re_int.SettleableSrepkgDirInterface,
     def required_dist_types(self):
         return self._required_dist_types
 
-    def rename_sub_dirs(self, srepkg_root: str, srepkg: str):
-        self._srepkg_inner.rename(self._srepkg_inner.parent.absolute() / srepkg)
+    def rename_sub_dirs(self, srepkg_root: str, srepkg_inner: str):
+        self._srepkg_inner.rename(self._srepkg_inner.parent.absolute() / srepkg_inner)
         self._srepkg_root.rename(self._srepkg_root.parent.absolute()
                                  / srepkg_root)
         self._srepkg_root = self._srepkg_root.parent.absolute() / srepkg_root
-        self._srepkg_inner = self._srepkg_root / srepkg
+        self._srepkg_inner = self._srepkg_root / srepkg_inner
 
     def build_missing_items(self):
         construction_dir_summary = ConstructionDirReviewer(self).get_summary()
@@ -89,8 +105,8 @@ class ConstructionDir(re_int.SettleableSrepkgDirInterface,
 
 
 class CustomConstructionDir(ConstructionDir):
-    def __init__(self, construction_dir: Path):
-        super().__init__(construction_dir)
+    def __init__(self, construction_dir_arg: Path):
+        super().__init__(construction_dir_arg)
 
     def settle(self):
         print(
