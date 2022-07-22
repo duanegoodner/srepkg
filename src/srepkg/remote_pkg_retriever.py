@@ -4,7 +4,9 @@ import srepkg.orig_src_preparer_interfaces as osp_int
 
 class ConstructedPkgRetriever(osp_int.RemotePkgRetrieverInterface):
 
-    def __init__(self, pkg_ref, copy_dest):
+    def __init__(self,
+                 pkg_ref: str,
+                 copy_dest: osp_int.WritableSrepkgDirInterface):
         self._pkg_ref = pkg_ref
         self._copy_dest = copy_dest
 

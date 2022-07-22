@@ -2,9 +2,6 @@ import abc
 import shutil
 import subprocess
 import sys
-# import wheel_inspect
-from pathlib import Path
-import tempfile
 import srepkg.orig_src_preparer_interfaces as osp_int
 from srepkg.utils.cd_context_manager import dir_change_to
 

@@ -12,11 +12,3 @@ class Repackager:
     def _create_construction_dir(self):
         source_preparer = self._service_class_builder.create_orig_src_preparer()
         source_preparer.prepare()
-        # self._service_class_builder.create_construction_dir()
-
-
-
-
-
-        # self._service_class_builder.build_construction_dir(
-        #     self._srepkg_command.construction_dir)
