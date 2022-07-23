@@ -3,28 +3,58 @@ import srepkg.service_builder as sb
 import srepkg.shared_data_structures.new_data_structures as nds
 
 
-class TestOrigSrcPreparerRetrieverOps:
+class OrigSrcPreparerComponentTest:
     local_test_pkgs_path = Path(__file__).parent.absolute() / \
                            'package_test_cases'
 
-    local_src_path = local_test_pkgs_path / 'testproj'
-    local_wheel_path = local_test_pkgs_path / 'testproj-0.0.0-py3-none-any.whl'
-    local_targz_path = local_wheel_path / 'testproj-0.0.0.tar.gz'
-    local_zip_path = local_test_pkgs_path / 'testproj-0.0.0.zip'
+    local_pkg_paths = {
+        # 'src_code': local_test_pkgs_path / 'testproj',
+        'wheel': local_test_pkgs_path /
+        'testproj-0.0.0-py3-none-any.whl',
+        # 'targz': local_test_pkgs_path / 'testproj-0.0.0.tar.gz',
+        # 'zip': local_test_pkgs_path / 'testproj-0.0.0.zip'
+    }
 
     @staticmethod
-    def create_src_preparer(
-            orig_pkg_ref: str,
-            srepkg_name: str = None,
-            construction_dir: str = None,
-            dist_out_dir: str = None):
-        command = nds.SrepkgCommand(
-            orig_pkg_ref=orig_pkg_ref,
-            srepkg_name=srepkg_name,
-            construction_dir=construction_dir,
-            dist_out_dir=dist_out_dir)
-
-        src_preparer = sb.ServiceBuilder(command).create_orig_src_preparer()
+    def create_src_preparer(command: nds.SrepkgCommand):
+        return sb.ServiceBuilder(command).create_orig_src_preparer()
 
 
+class TestRemotePkgRetriever(OrigSrcPreparerComponentTest):
+
+    def test_src_preparer_retrieve(self):
+        for path in self.local_pkg_paths:
+            cur_command = nds.SrepkgCommand(
+                orig_pkg_ref=str(self.local_pkg_paths[path]))
+            src_preparer = self.create_src_preparer(cur_command)
+            src_preparer._retriever.retrieve()
+
+
+class TestDistProvider(OrigSrcPreparerComponentTest):
+
+    def run_provide(self, command: nds.SrepkgCommand):
+        src_preparer = self.create_src_preparer(command)
+        src_preparer._retriever.retrieve()
+        src_preparer._provider.provide()
+
+    def test_src_preparer_provide(self):
+        for path in self.local_pkg_paths:
+            cur_command = nds.SrepkgCommand(
+                orig_pkg_ref=str(self.local_pkg_paths[path]))
+            self.run_provide(cur_command)
+
+
+class TestReceiver(OrigSrcPreparerComponentTest):
+
+    def run_build_missing_items(self, command: nds.SrepkgCommand):
+        src_preparer = self.create_src_preparer(command)
+        src_preparer._retriever.retrieve()
+        src_preparer._provider.provide()
+        src_preparer._receiver.build_missing_items()
+
+    def test_src_preparer_build_missing_items(self):
+        for path in self.local_pkg_paths:
+            cur_command = nds.SrepkgCommand(
+                orig_pkg_ref=str(self.local_pkg_paths[path]))
+            self.run_build_missing_items(cur_command)
 

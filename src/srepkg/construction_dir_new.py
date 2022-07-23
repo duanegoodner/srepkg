@@ -139,6 +139,14 @@ class DistConverter:
         self._construction_dir_summary = construction_dir_summary
         self._compressed_file_extractor = cft.CompressedFileExtractor()
 
+    @property
+    def _unpacked_src_dir_name(self):
+        pkg_name = self._construction_dir_summary.pkg_with_found_dists.pkg_inf\
+            .pkg_name
+        pkg_version = self._construction_dir_summary.pkg_with_found_dists\
+            .pkg_inf.pkg_version
+        return f"{pkg_name}-{pkg_version}"
+
     def _validate_dist_types_status(self):
 
         if any([item not in self._supported_dist_types for item in
@@ -174,7 +182,7 @@ class DistConverter:
 
         for missing_dist in self._construction_dir_summary.dist_types_status\
                 .missing:
-            with dir_change_to(str(unpack_dir)):
+            with dir_change_to(str(unpack_dir / self._unpacked_src_dir_name)):
                 subprocess.call([
                     sys.executable, '-m', 'build', '--outdir',
                     str(self._construction_dir.srepkg_inner),

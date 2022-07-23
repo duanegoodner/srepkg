@@ -2,9 +2,9 @@ from pathlib import Path
 import srepkg.command_input_new as ci
 import pytest
 
-arg_1 = str(Path.home() / "dproj" / "my_project")
+arg_1 = str(Path(__file__) / "package_test_cases" / "testproj")
 arg_2 = "custom_package_name"
-arg_3 = str(Path.home() / "srepkg_pkgs_alternate")
+arg_3 = str(Path(__file__) / "package_test_cases" / "alternate_proj")
 
 
 def test_zero_args(capsys):
@@ -23,20 +23,24 @@ def test_zero_args(capsys):
 
 def test_one_arg():
     args = ci.SrepkgCommandLine().get_args([arg_1])
-    assert args.orig_pkg_ref == str(Path.home() / "dproj" / "my_project")
+    assert args.orig_pkg_ref == str(Path(__file__) / "package_test_cases" /
+                                    "testproj")
     assert args.srepkg_name is None
 
 
 def test_valid_custom_name():
     args = ci.SrepkgCommandLine().get_args([arg_1, "--srepkg_name", arg_2])
-    assert args.orig_pkg_ref == str(Path.home() / "dproj" / "my_project")
+    assert args.orig_pkg_ref == str(Path(__file__) / "package_test_cases" /
+                                    "testproj")
     assert args.srepkg_name == "custom_package_name"
 
 
 def test_custom_construction_dir():
     args = ci.SrepkgCommandLine().get_args([arg_1, "--construction_dir", arg_3])
-    assert args.orig_pkg_ref == str(Path.home() / "dproj" / "my_project")
-    assert args.construction_dir == str(Path.home() / "srepkg_pkgs_alternate")
+    assert args.orig_pkg_ref == str(Path(__file__) / "package_test_cases" /
+                                    "testproj")
+    assert args.construction_dir == str(
+        Path(__file__) / "package_test_cases" / "alternate_proj")
 
 
 def test_too_many_args(capsys):
