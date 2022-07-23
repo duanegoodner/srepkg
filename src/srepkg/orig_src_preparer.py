@@ -15,4 +15,4 @@ class OrigSrcPreparer(re_int.OrigSrcPreparerInterface):
     def prepare(self):
         self._retriever.retrieve()
         self._provider.provide()
-        self._receiver.build_missing_items()
+        self._receiver.finalize()

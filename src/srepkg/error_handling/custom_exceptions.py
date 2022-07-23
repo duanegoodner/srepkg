@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import List
 
 from .error_messages import SetupFileReaderError
@@ -80,12 +81,15 @@ class TargetDistTypeNotSupported(Exception):
         return f"{self._unsupported_dist_type} -> {self._msg}"
 
 
-class NoSupportedSrcDistTypes(Exception):
+class NoSDistForWheelConstruction(Exception):
     def __init__(
             self,
-            msg=ConstructionDirError.TargetDistTypeNotSupported.msg):
+            construction_dir: Path,
+            msg=ConstructionDirError.NoSDistForWheelConstruction.msg):
+        self._construction_dir = construction_dir
         self._msg = msg
 
     def __str__(self):
-        return self._msg
+        return f"{str(self._construction_dir)} -> {self._msg}"
+
 

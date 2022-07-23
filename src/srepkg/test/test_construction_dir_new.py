@@ -15,7 +15,7 @@ class TestConstructionDir:
         assert len(construction_dir.srepkg_inner.name) == 32
         assert construction_dir.srepkg_inner.parent == construction_dir\
             .srepkg_root
-        assert construction_dir.required_dist_types == cdn.DEFAULT_DIST_CLASSES
+        assert construction_dir.supported_dist_types == cdn.DEFAULT_DIST_CLASSES
         assert construction_dir.root_contents == [construction_dir.srepkg_root]
         assert construction_dir.srepkg_root_contents == [construction_dir.srepkg_inner]
         assert construction_dir.srepkg_inner_contents == []
