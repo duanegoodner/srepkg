@@ -46,9 +46,13 @@ class WritableSrepkgDirInterface(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def build_missing_items(self):
+    def finalize(self):
         pass
 
-    @abc.abstractmethod
-    def rename_sub_dirs(self, srepkg_root: str, srepkg: str):
-        pass
+    # @abc.abstractmethod
+    # def finalize_orig_dists(self):
+    #     pass
+    #
+    # @abc.abstractmethod
+    # def rename_sub_dirs(self, srepkg_root: str, srepkg: str):
+    #     pass

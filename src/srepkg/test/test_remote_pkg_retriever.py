@@ -46,15 +46,15 @@ class TestDistProvider(OrigSrcPreparerComponentTest):
 
 class TestReceiver(OrigSrcPreparerComponentTest):
 
-    def run_build_missing_items(self, command: nds.SrepkgCommand):
+    def run_finalize_orig_dists(self, command: nds.SrepkgCommand):
         src_preparer = self.create_src_preparer(command)
         src_preparer._retriever.retrieve()
         src_preparer._provider.provide()
-        src_preparer._receiver.build_missing_items()
+        src_preparer._receiver.finalize_orig_dists()
 
-    def test_src_preparer_build_missing_items(self):
+    def test_src_preparer_finalize_orig_dists(self):
         for path in self.local_pkg_paths:
             cur_command = nds.SrepkgCommand(
                 orig_pkg_ref=str(self.local_pkg_paths[path]))
-            self.run_build_missing_items(cur_command)
+            self.run_finalize_orig_dists(cur_command)
 

@@ -8,11 +8,11 @@ class TestOrigSrcPreparer:
     local_test_pkgs_path = Path(__file__).parent.absolute() / \
                            'package_test_cases'
 
-    def test_local_src(self):
+    def test_local_src(self, tmp_path):
         my_command = nds.SrepkgCommand(
             orig_pkg_ref=str(self.local_test_pkgs_path / 'testproj'),
             srepkg_name=None,
-            construction_dir=None,
+            construction_dir=str(tmp_path),
             dist_out_dir=None
         )
 
@@ -22,15 +22,29 @@ class TestOrigSrcPreparer:
 
         assert orig_src_preparer._receiver.srepkg_inner.exists()
 
-    def test_local_wheel(self):
+    def test_local_wheel(self, tmp_path):
         my_command = nds.SrepkgCommand(
             orig_pkg_ref=str(self.local_test_pkgs_path /
                              'testproj-0.0.0-py3-none-any.whl'),
             srepkg_name=None,
-            construction_dir=self.local_test_pkgs_path / 'construction_test',
+            construction_dir=str(tmp_path),
             dist_out_dir=None
         )
 
         service_builder = sb.ServiceBuilder(my_command)
         orig_src_preparer = service_builder.create_orig_src_preparer()
         orig_src_preparer.prepare()
+
+    def test_local_targz(self, tmp_path):
+        my_command = nds.SrepkgCommand(
+            orig_pkg_ref=str(self.local_test_pkgs_path /
+                             'testproj-0.0.0.tar.gz'),
+            srepkg_name=None,
+            construction_dir=str(tmp_path),
+            dist_out_dir=None
+        )
+
+        service_builder = sb.ServiceBuilder(my_command)
+        orig_src_preparer = service_builder.create_orig_src_preparer()
+        orig_src_preparer.prepare()
+

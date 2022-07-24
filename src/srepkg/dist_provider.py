@@ -24,7 +24,7 @@ class NullDistProvider(ConstructedDistProvider):
         pass
 
 
-class WheelAndSdistProvider(ConstructedDistProvider):
+class DistProviderFromSrc(ConstructedDistProvider):
 
     def provide(self):
         with dir_change_to(self._orig_pkg_path):

@@ -1,7 +1,7 @@
 import abc
 from functools import singledispatchmethod
 from pathlib import Path
-from typing import Callable, Union
+from typing import Callable, Type, Union
 
 import srepkg.construction_dir_new as cdn
 import srepkg.dist_provider as opr
@@ -17,20 +17,24 @@ from srepkg.utils.pkg_type_identifier import PkgRefType, PkgRefIdentifier
 class ConstructionDirDispatch:
 
     @singledispatchmethod
-    def create(self, arg) -> cdn.ConstructionDir:
+    def create(self, construction_dir_arg, srepkg_name_arg: str = None) -> cdn.ConstructionDir:
         raise NotImplementedError
 
     @create.register
-    def _(self, arg: None):
-        return cdn.TempConstructionDir()
+    def _(self, construction_dir_arg: None, srepkg_name_arg: str = None):
+        return cdn.TempConstructionDir(srepkg_name_arg=srepkg_name_arg)
 
     @create.register
-    def _(self, arg: str):
-        return cdn.CustomConstructionDir(Path(arg))
+    def _(self, construction_dir_arg: str, srepkg_name_arg: str = None):
+        return cdn.CustomConstructionDir(
+            construction_dir_arg=Path(construction_dir_arg),
+            srepkg_name_arg=srepkg_name_arg)
 
     @create.register
-    def _(self, arg: Path):
-        return cdn.CustomConstructionDir(arg)
+    def _(self, construction_dir_arg: Path, srepkg_name_arg: str = None):
+        return cdn.CustomConstructionDir(
+            construction_dir_arg=construction_dir_arg,
+            srepkg_name_arg=srepkg_name_arg)
 
 
 class PkgRefDispatchWithConstructionDir(abc.ABC):
@@ -64,10 +68,10 @@ class DistProviderDispatch(PkgRefDispatchWithConstructionDir):
     @property
     def _dispatch_table(self) -> dict[PkgRefType, Callable]:
         return {
-            PkgRefType.LOCAL_SRC: opr.WheelAndSdistProvider,
+            PkgRefType.LOCAL_SRC: opr.DistProviderFromSrc,
             PkgRefType.LOCAL_SDIST: opr.DistCopyProvider,
             PkgRefType.LOCAL_WHEEL: opr.DistCopyProvider,
-            PkgRefType.GITHUB_REPO: opr.WheelAndSdistProvider,
+            PkgRefType.GITHUB_REPO: opr.DistProviderFromSrc,
             PkgRefType.PYPI_PKG: opr.NullDistProvider
         }
 
@@ -76,16 +80,18 @@ class OrigSrcPreparerBuilder:
 
     def __init__(self,
                  construction_dir_command: Union[str, None],
-                 orig_pkg_ref_command: str):
+                 orig_pkg_ref_command: str,
+                 srepkg_name_arg: str = None):
         self._construction_dir_command = construction_dir_command
         self._orig_pkg_ref_command = orig_pkg_ref_command
+        self._srepkg_name_arg = srepkg_name_arg
         self._construction_dir_dispatch = ConstructionDirDispatch()
         self._retriever_dispatch = PkgRetrieverDispatch()
         self._provider_dispatch = DistProviderDispatch()
 
     def create(self):
         construction_dir = self._construction_dir_dispatch.create(
-            self._construction_dir_command)
+            self._construction_dir_command, self._srepkg_name_arg)
         pkg_retriever = self._retriever_dispatch.create(
             self._orig_pkg_ref_command, construction_dir)
         dist_provider = self._provider_dispatch.create(
@@ -103,7 +109,8 @@ class ServiceBuilder(re_new_int.ServiceBuilderInterface):
         self._srepkg_command = srepkg_command
         self._osp_builder = OrigSrcPreparerBuilder(
             construction_dir_command=srepkg_command.construction_dir,
-            orig_pkg_ref_command=srepkg_command.orig_pkg_ref)
+            orig_pkg_ref_command=srepkg_command.orig_pkg_ref,
+            srepkg_name_arg=srepkg_command.srepkg_name)
 
     def create_orig_src_preparer(self) -> osp.OrigSrcPreparer:
         return self._osp_builder.create()

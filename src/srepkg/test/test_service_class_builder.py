@@ -17,7 +17,8 @@ class TestConstructionDirDispatch:
         assert type(construction_dir).__name__ == 'CustomConstructionDir'
 
     def test_path_create_arg(self, tmp_path):
-        construction_dir = self.dispatch.create(tmp_path)
+        construction_dir = self.dispatch.create(
+            tmp_path)
         assert type(construction_dir).__name__ == 'CustomConstructionDir'
 
 
@@ -39,7 +40,7 @@ class TestPkgRetrieverAndDistProviderDispatch:
         RetrieverDistProviderDispatchTestCondition(
             pkg_ref_command=str(Path(package_test_cases) / 'testproj'),
             retriever_type='NullPkgRetriever',
-            dist_provider_type='WheelAndSdistProvider'
+            dist_provider_type='DistProviderFromSrc'
         ),
         RetrieverDistProviderDispatchTestCondition(
             pkg_ref_command=str(
@@ -63,7 +64,7 @@ class TestPkgRetrieverAndDistProviderDispatch:
         RetrieverDistProviderDispatchTestCondition(
             pkg_ref_command='https://github.com/psf/black',
             retriever_type='GithubPkgRetriever',
-            dist_provider_type='WheelAndSdistProvider')
+            dist_provider_type='DistProviderFromSrc')
     ]
 
     def run_test_condition(
@@ -97,7 +98,7 @@ class TestOrigSrcPreparerBuilder:
         '01': OrigSrcPreparerTestCondition(
            orig_pkg_ref_command=str(local_test_pkgs_path / 'testproj'),
            retriever_type='NullPkgRetriever',
-           provider_type='WheelAndSdistProvider'
+           provider_type='DistProviderFromSrc'
         ),
         '02': OrigSrcPreparerTestCondition(
             orig_pkg_ref_command=str(
@@ -125,7 +126,7 @@ class TestOrigSrcPreparerBuilder:
         '06': OrigSrcPreparerTestCondition(
             orig_pkg_ref_command='https://github.com/psf/black',
             retriever_type='GithubPkgRetriever',
-            provider_type='WheelAndSdistProvider'
+            provider_type='DistProviderFromSrc'
         )
     }
 
@@ -203,54 +204,5 @@ class TestServiceBuilder:
         my_service_builder = sb.ServiceBuilder(my_command)
         osp_builder = my_service_builder.create_orig_src_preparer()
         assert type(osp_builder._retriever).__name__ == 'NullPkgRetriever'
-        assert type(osp_builder._provider).__name__ == 'WheelAndSdistProvider'
+        assert type(osp_builder._provider).__name__ == 'DistProviderFromSrc'
         assert type(osp_builder._receiver).__name__ == 'TempConstructionDir'
-
-
-# TODO Move tests below this line to test_orig_src_preparer.py
-
-def test_scb_create_src_preparer():
-    my_command = nds.SrepkgCommand(
-        orig_pkg_ref='/Users/duane/dproj/srepkg/src/srepkg/test/package_test_cases/testproj',
-        srepkg_name=None,
-        construction_dir=None,
-        dist_out_dir=None
-    )
-
-    my_service_builder = sb.ServiceBuilder(my_command)
-    my_src_preparer = my_service_builder.create_orig_src_preparer()
-    my_src_preparer.prepare()
-
-
-def test_scb_create_src_preparer_custom_dir():
-    my_command = nds.SrepkgCommand(
-        orig_pkg_ref='/Users/duane/dproj/srepkg/src/srepkg/test/package_test_cases/testproj-0.0.0-py3-none-any.whl',
-        srepkg_name=None,
-        construction_dir='/Users/duane/dproj/srepkg/src/srepkg/test/package_test_cases/construction_test',
-        dist_out_dir=None
-    )
-
-    my_service_builder = sb.ServiceBuilder(my_command)
-    my_src_preparer = my_service_builder.create_orig_src_preparer()
-    my_src_preparer.prepare()
-    # my_src_preparer._retriever.retrieve()
-    # my_src_preparer._provider.provide()
-    # my_src_preparer._receiver.build_missing_items()
-
-    # print('break_for_test')
-    # my_src_preparer._receiver.build_missing_items()
-
-
-def test_src_preparer_prepare():
-    my_command = nds.SrepkgCommand(
-        orig_pkg_ref='/Users/duane/dproj/srepkg/src/srepkg/test/package_test_cases/testproj',
-        srepkg_name=None,
-        construction_dir=None,
-        dist_out_dir=None
-    )
-
-    my_service_builder = sb.ServiceBuilder(my_command)
-    my_src_preparer = my_service_builder.create_orig_src_preparer()
-    my_src_preparer.prepare()
-
-
