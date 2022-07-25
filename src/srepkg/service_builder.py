@@ -1,7 +1,7 @@
 import abc
 from functools import singledispatchmethod
 from pathlib import Path
-from typing import Callable, Type, Union
+from typing import Callable, Union
 
 import srepkg.construction_dir_new as cdn
 import srepkg.dist_provider as opr
@@ -20,18 +20,18 @@ class ConstructionDirDispatch:
     def create(self, construction_dir_arg, srepkg_name_arg: str = None) -> cdn.ConstructionDir:
         raise NotImplementedError
 
-    @create.register
-    def _(self, construction_dir_arg: None, srepkg_name_arg: str = None):
+    @create.register(type(None))
+    def _(self, construction_dir_arg, srepkg_name_arg: str = None):
         return cdn.TempConstructionDir(srepkg_name_arg=srepkg_name_arg)
 
-    @create.register
-    def _(self, construction_dir_arg: str, srepkg_name_arg: str = None):
+    @create.register(str)
+    def _(self, construction_dir_arg, srepkg_name_arg: str = None):
         return cdn.CustomConstructionDir(
             construction_dir_arg=Path(construction_dir_arg),
             srepkg_name_arg=srepkg_name_arg)
 
-    @create.register
-    def _(self, construction_dir_arg: Path, srepkg_name_arg: str = None):
+    @create.register(Path)
+    def _(self, construction_dir_arg, srepkg_name_arg: str = None):
         return cdn.CustomConstructionDir(
             construction_dir_arg=construction_dir_arg,
             srepkg_name_arg=srepkg_name_arg)
@@ -90,12 +90,13 @@ class OrigSrcPreparerBuilder:
         self._provider_dispatch = DistProviderDispatch()
 
     def create(self):
+        # ConstructionDirDispatch (w/ @singledispatchmethod) can't take kwargs
         construction_dir = self._construction_dir_dispatch.create(
             self._construction_dir_command, self._srepkg_name_arg)
         pkg_retriever = self._retriever_dispatch.create(
-            self._orig_pkg_ref_command, construction_dir)
+            pkg_ref_command=self._orig_pkg_ref_command, construction_dir=construction_dir)
         dist_provider = self._provider_dispatch.create(
-            self._orig_pkg_ref_command, construction_dir)
+           pkg_ref_command=self._orig_pkg_ref_command, construction_dir=construction_dir)
 
         return osp.OrigSrcPreparer(
             retriever=pkg_retriever,
