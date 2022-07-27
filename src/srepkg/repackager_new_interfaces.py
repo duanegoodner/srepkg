@@ -37,7 +37,7 @@ class OrigSrcPreparerInterface(abc.ABC):
         pass
 
 
-class SrepkgBuilderInterface(abc.abstractmethod):
+class SrepkgBuilderInterface(abc.ABC):
 
     @abc.abstractmethod
     def build(self):
