@@ -9,9 +9,9 @@ class OrigSrcPreparerComponentTest:
                            'package_test_cases'
 
     local_pkg_paths = {
-        # 'src_code': local_test_pkgs_path / 'testproj',
-        'wheel': local_test_pkgs_path /
-        'testproj-0.0.0-py3-none-any.whl',
+        'src_code': local_test_pkgs_path / 'testproj',
+        # 'wheel': local_test_pkgs_path /
+        # 'testproj-0.0.0-py3-none-any.whl',
         # 'targz': local_test_pkgs_path / 'testproj-0.0.0.tar.gz',
         # 'zip': local_test_pkgs_path / 'testproj-0.0.0.zip'
     }
@@ -81,7 +81,9 @@ class TestReceiver(OrigSrcPreparerComponentTest):
     def test_src_preparer_finalize_orig_dists(self):
         for path in self.local_pkg_paths:
             cur_command = nds.SrepkgCommand(
-                orig_pkg_ref=str(self.local_pkg_paths[path]))
+                orig_pkg_ref=str(self.local_pkg_paths[path]),
+                # construction_dir=str(Path(__file__).parent / 'custom_construction_dir')
+            )
             receiver = self.run_finalize_orig_dists(cur_command)
 
             final_dist_types = {
