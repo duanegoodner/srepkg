@@ -31,10 +31,10 @@ class OrigSrcPreparerInterface(abc.ABC):
     def prepare(self):
         pass
 
-    @property
-    @abc.abstractmethod
-    def receiver(self) -> SettleableSrepkgDirInterface:
-        pass
+    # @property
+    # @abc.abstractmethod
+    # def receiver(self) -> SettleableSrepkgDirInterface:
+    #     pass
 
 
 class SrepkgBuilderInterface(abc.ABC):

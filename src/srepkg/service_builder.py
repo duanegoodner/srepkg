@@ -137,13 +137,13 @@ class SrepkgBuilderDispatch:
     def _dispatch_table(self) -> dict[SourceStatus, Callable]:
         return {
             SourceStatus(wheel_is_none_any=True, has_sdist=True):
-                sbn.OuterSdistInnerWheelBuilder,
+                sbn.SdistWheelBuilder,
             SourceStatus(wheel_is_none_any=True, has_sdist=False):
-                sbn.FullWheelBuilder,
+                sbn.WheelWheelBuilder,
             SourceStatus(wheel_is_none_any=False, has_sdist=True):
-                sbn.FullSdistBuilder,
+                sbn.SdistSdistBuilder,
             SourceStatus(wheel_is_none_any=False, has_sdist=False):
-                sbn.FullWheelBuilder
+                sbn.WheelWheelBuilder
         }
 
     def create(
