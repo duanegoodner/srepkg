@@ -25,27 +25,31 @@ class WritableSrepkgDirInterface(abc.ABC):
     # def root_contents(self):
     #     pass
     #
-    # @property
-    # @abc.abstractmethod
-    # def srepkg_root(self):
-    #     pass
+    @property
+    @abc.abstractmethod
+    def srepkg_root(self):
+        pass
     #
     # @property
     # @abc.abstractmethod
     # def srepkg_root_contents(self):
     #     pass
     #
-    # @property
-    # @abc.abstractmethod
-    # def srepkg_inner(self):
-    #     pass
+
+    @property
+    @abc.abstractmethod
+    def srepkg_inner(self):
+        pass
     #
     # @property
     # @abc.abstractmethod
     # def srepkg_inner_contents(self):
     #     pass
 
+    @property
+    def wheel_data(self):
+        return self._wheel_data
+
     @abc.abstractmethod
     def finalize(self):
         pass
-

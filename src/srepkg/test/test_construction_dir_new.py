@@ -35,7 +35,8 @@ class TestConstructionDir:
 
     def test_rename_sub_dirs(self):
         construction_dir = cdn.TempConstructionDir()
-        construction_dir.rename_sub_dirs(srepkg_root='hello', srepkg_inner='friend')
+        construction_dir._rename_sub_dirs(srepkg_root_new='hello',
+                                          srepkg_inner_new='friend')
         assert construction_dir.srepkg_inner.exists()
         assert construction_dir.srepkg_root.name == 'hello'
         assert construction_dir.srepkg_inner.name == 'friend'
