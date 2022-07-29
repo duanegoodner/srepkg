@@ -1,10 +1,8 @@
 import abc
 import build
 import shutil
-import subprocess
 import sys
 import srepkg.orig_src_preparer_interfaces as osp_int
-from srepkg.utils.cd_context_manager import dir_change_to
 
 
 class ConstructedDistProvider(osp_int.DistProviderInterface):
@@ -27,6 +25,9 @@ class NullDistProvider(ConstructedDistProvider):
 
 class DistProviderFromSrc(ConstructedDistProvider):
 
+    # Using build.ProjectBuilder is 10x faster than subprocess
+    # Could get another ~40% reduction with threading or multiprocess
+    # but at least for small packages, provide() takes less than 1 sed as is
     def provide(self):
         dist_builder = build.ProjectBuilder(
             srcdir=self._orig_pkg_path,
@@ -38,11 +39,6 @@ class DistProviderFromSrc(ConstructedDistProvider):
             distribution='wheel',
             output_directory=str(self._pkg_receiver.srepkg_inner)
         )
-        # with dir_change_to(self._orig_pkg_path):
-        #     subprocess.call([
-        #         sys.executable, '-m', 'build', '--outdir',
-        #         str(self._pkg_receiver.srepkg_inner)])
-
 
 
 class DistCopyProvider(ConstructedDistProvider):
