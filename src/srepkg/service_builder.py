@@ -13,7 +13,6 @@ import srepkg.srepkg_builder_new as sbn
 import srepkg.orig_src_preparer_interfaces as osp_int
 import srepkg.repackager_new_interfaces as re_new_int
 
-
 import srepkg.shared_data_structures.new_data_structures as nds
 from srepkg.utils.pkg_type_identifier import PkgRefType, PkgRefIdentifier
 from srepkg.utils.thread_safe_singletong import ThreadSafeSingleton
@@ -149,18 +148,16 @@ class SrepkgBuilderDispatch:
     def create(
             self,
             source_status: SourceStatus,
-            construction_dir: osp_int.WritableSrepkgDirInterface):
+            construction_dir: osp_int.ManageableConstructionDir):
         return self._dispatch_table[source_status](construction_dir)
 
 
-
 class SrepkgBuilderBuilder:
-
     _builder_dispatch = SrepkgBuilderDispatch()
 
     def _get_construction_dir_source_status(
             self,
-            construction_dir: osp_int.WritableSrepkgDirInterface)\
+            construction_dir: osp_int.ManageableConstructionDir) \
             -> SourceStatus:
         pass
 
@@ -244,4 +241,3 @@ class ServiceBuilder(re_new_int.ServiceBuilderInterface):
 
     def create_srepkg_builder(self) -> re_new_int.SrepkgBuilderInterface:
         return self._srepkg_build_builder.create()
-

@@ -11,3 +11,5 @@ build/lib/
 .DS_Store
 
 logo_concept.svg
+
+dual_build_notes.txt

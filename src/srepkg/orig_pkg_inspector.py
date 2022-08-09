@@ -88,6 +88,5 @@ class SrcCodeInspector(OrigPkgInspector):
             version=dist_info['metadata']['version'],
             root_path=self._orig_pkg_path,
             entry_pts=cse.CSEntryPoints.
-                from_wheel_inspect_cs(
-                dist_info['entry_points']['console_scripts']).as_cse_obj_list
-        )
+            from_wheel_inspect_cs(
+                dist_info['entry_points']['console_scripts']).as_cse_obj_list)

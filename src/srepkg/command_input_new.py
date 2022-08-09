@@ -34,8 +34,8 @@ class SrepkgCommandLine(rep_int.SrepkgCommandInterface):
             nargs="?",
             action="store",
             help="Directory where non-compressed repackage will be built and "
-                 "saved. If not specified, srepkg is built in a temp directory and"
-                 " deleted after distribution archive creation",
+                 "saved. If not specified, srepkg is built in a temp "
+                 "directory and deleted after distribution archive creation",
         )
 
         self._parser.add_argument(
@@ -44,12 +44,11 @@ class SrepkgCommandLine(rep_int.SrepkgCommandInterface):
             type=str,
             nargs="?",
             action="store",
-            help="Directory where srepkg distribution .zip file is saved. Default "
-                 "is the current working directory.",
+            help="Directory where srepkg distribution .zip file is saved. "
+                 "Default is the current working directory.",
         )
 
     def get_args(self, *args) -> nds.SrepkgCommand:
         self._attach_args()
         args_namespace = self._parser.parse_args(*args)
         return nds.SrepkgCommand(**vars(args_namespace))
-

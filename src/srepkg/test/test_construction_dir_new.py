@@ -10,27 +10,28 @@ class TestConstructionDir:
     def standard_init_tests(construction_dir: cdn.ConstructionDir):
         assert construction_dir.srepkg_root.exists()
         assert len(construction_dir.srepkg_root.name) == 32
-        assert construction_dir.srepkg_root.parent == construction_dir.root
+        assert construction_dir.srepkg_root.parent == construction_dir._root
         assert construction_dir.srepkg_inner.exists()
         assert len(construction_dir.srepkg_inner.name) == 32
         assert construction_dir.srepkg_inner.parent == construction_dir\
             .srepkg_root
         assert construction_dir.supported_dist_types == cdn.DEFAULT_DIST_CLASSES
-        assert construction_dir.root_contents == [construction_dir.srepkg_root]
-        assert construction_dir.srepkg_root_contents == [construction_dir.srepkg_inner]
+        assert construction_dir._root_contents == [construction_dir.srepkg_root]
+        assert construction_dir._srepkg_root_contents ==\
+               [construction_dir.srepkg_inner]
         assert construction_dir.srepkg_inner_contents == []
 
     def test_init_custom(self, tmp_path):
         construction_dir = cdn.CustomConstructionDir(
             construction_dir_arg=tmp_path)
         self.standard_init_tests(construction_dir)
-        assert construction_dir.root == tmp_path
+        assert construction_dir._root == tmp_path
 
     def test_init_temp(self):
         construction_dir = cdn.TempConstructionDir()
         self.standard_init_tests(construction_dir)
         assert construction_dir._temp_dir_obj is not None
-        assert construction_dir.root == Path(
+        assert construction_dir._root == Path(
             construction_dir._temp_dir_obj.name)
 
     def test_rename_sub_dirs(self):
@@ -92,17 +93,3 @@ class TestConstructionDirReviewer:
         assert len(src_preparer._receiver.srepkg_inner_contents) == 1
         assert src_preparer._receiver.srepkg_inner_contents[0].name == \
                'testproj-0.0.0-py3-none-any.whl'
-
-
-
-
-
-
-
-
-
-
-
-
-
-

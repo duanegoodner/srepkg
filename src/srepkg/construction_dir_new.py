@@ -12,10 +12,11 @@ from typing import Any, Callable, List, Union
 
 import wheel_inspect
 
+import srepkg.srepkg_builder_new_interfaces as sb_new_int
 import srepkg.error_handling.custom_exceptions as ce
 import srepkg.utils.dist_archive_file_tools as cft
 import srepkg.orig_src_preparer_interfaces as osp_int
-import srepkg.repackager_new_interfaces as re_int
+import srepkg.retriever_provider_shared_interface as rp_shared_int
 from srepkg.utils.cd_context_manager import dir_change_to
 
 DEFAULT_DIST_CLASSES = (pkginfo.SDist, pkginfo.Wheel)
@@ -51,19 +52,9 @@ class OrigPkgSrcSummary:
                     self.dists])
 
 
-class WriteableSettleableSrepkgDirInterface(re_int.SettleableSrepkgDirInterface,
-                                            osp_int.WritableSrepkgDirInterface):
-    @abc.abstractmethod
-    def settle(self):
-        pass
-
-    @abc.abstractmethod
-    def finalize(self):
-        pass
-
-
-class ConstructionDir(WriteableSettleableSrepkgDirInterface):
-    @abc.abstractmethod
+class ConstructionDir(
+        rp_shared_int.OrigPkgReceiver, osp_int.ManageableConstructionDir,
+        sb_new_int.SrepkgComponentReceiver):
     def __init__(
             self,
             construction_dir_arg: Path,
@@ -83,11 +74,7 @@ class ConstructionDir(WriteableSettleableSrepkgDirInterface):
         self._wheel_data = wheel_data
 
     @property
-    def root(self):
-        return self._root
-
-    @property
-    def root_contents(self):
+    def _root_contents(self):
         return list(self._root.iterdir())
 
     @property
@@ -95,8 +82,12 @@ class ConstructionDir(WriteableSettleableSrepkgDirInterface):
         return self._srepkg_root
 
     @property
-    def srepkg_root_contents(self):
+    def _srepkg_root_contents(self):
         return list(self._srepkg_root.iterdir())
+
+    @property
+    def orig_pkg_dest(self) -> Path:
+        return self._srepkg_inner
 
     @property
     def srepkg_inner(self):
@@ -117,11 +108,11 @@ class ConstructionDir(WriteableSettleableSrepkgDirInterface):
     @orig_pkg_src_summary.setter
     def orig_pkg_src_summary(self, construction_dir_summary: OrigPkgSrcSummary):
         self._orig_pkg_src_summary = construction_dir_summary
-    
+
     @property
     def wheel_data(self):
         return self._wheel_data
-    
+
     @wheel_data.setter
     def wheel_data(self, inspect_wheel_result: dict[str, Any]):
         self._wheel_data = inspect_wheel_result
@@ -159,9 +150,10 @@ class ConstructionDir(WriteableSettleableSrepkgDirInterface):
 
         if (not prelim_orig_pkg_src_summary.has_wheel) and \
                 prelim_orig_pkg_src_summary.has_sdist:
-            SdistToWheelConverter(self, prelim_orig_pkg_src_summary).build_wheel()
+            SdistToWheelConverter(self,
+                                  prelim_orig_pkg_src_summary).build_wheel()
 
-        self._orig_pkg_src_summary = ConstructionDirReviewer(self)\
+        self._orig_pkg_src_summary = ConstructionDirReviewer(self) \
             .get_existing_dists_summary()
 
         self._wheel_data = wheel_inspect.inspect_wheel(
@@ -169,6 +161,10 @@ class ConstructionDir(WriteableSettleableSrepkgDirInterface):
 
         self._update_sub_dir_names(
             discovered_pkg_name=prelim_orig_pkg_src_summary.pkg_name)
+
+    @abc.abstractmethod
+    def settle(self):
+        pass
 
 
 class CustomConstructionDir(ConstructionDir):
