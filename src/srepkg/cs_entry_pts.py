@@ -1,12 +1,9 @@
 import configparser
 import shutil
 
-import wheel_inspect
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, List
-
-import srepkg.orig_src_preparer_interfaces as osp_int
 
 
 @dataclass
@@ -28,7 +25,8 @@ class PkgCSEntryPoints:
     @classmethod
     def from_wheel_inspect_data(cls, wi_data: dict[str, Any]):
         cs_entry_pts = []
-        wheel_inspect_epcs = wi_data['dist_info']['entry_points']['console_scripts']
+        wheel_inspect_epcs =\
+            wi_data['dist_info']['entry_points']['console_scripts']
         for key, value in wheel_inspect_epcs.items():
             cs_entry_pts.append(
                 CSEntryPoint(
@@ -104,8 +102,3 @@ class EntryPointsBuilder:
     def build_entry_pts(self):
         self._write_entry_point_files()._write_entry_point_init()\
             ._update_srepkg_config()
-
-
-
-
-

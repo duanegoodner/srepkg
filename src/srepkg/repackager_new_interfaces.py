@@ -60,7 +60,3 @@ class ServiceBuilderInterface(abc.ABC):
     @abc.abstractmethod
     def create_srepkg_builder(self) -> SrepkgBuilderInterface:
         pass
-
-    # @abc.abstractmethod
-    # def create_orig_pkg_inspector(self) -> OrigPkgInspectorInterface:
-    #     pass

@@ -1,7 +1,7 @@
 import abc
 import tempfile
 import uuid
-from functools import singledispatch, singledispatchmethod
+from functools import singledispatchmethod
 from pathlib import Path
 
 

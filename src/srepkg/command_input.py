@@ -5,7 +5,6 @@ import abc
 import argparse
 
 
-
 class SrepkgInput:
 
     def __init__(self, orig_pkg_ref: str,
@@ -26,7 +25,6 @@ class CommandInput(abc.ABC):
 
 
 class SrepkgCommandInput(CommandInput):
-
     _parser = argparse.ArgumentParser()
 
     def _attach_args(self):
@@ -55,8 +53,8 @@ class SrepkgCommandInput(CommandInput):
             nargs="?",
             action="store",
             help="Directory where non-compressed repackage will be built and "
-                 "saved. If not specified, srepkg is built in a temp directory and"
-                 " deleted after distribution archive creation",
+                 "saved. If not specified, srepkg is built in a temp "
+                 "directory and deleted after distribution archive creation",
         )
 
         self._parser.add_argument(
@@ -65,8 +63,8 @@ class SrepkgCommandInput(CommandInput):
             type=str,
             nargs="?",
             action="store",
-            help="Directory where srepkg distribution .zip file is saved. Default "
-                 "is the current working directory.",
+            help="Directory where srepkg distribution .zip file is saved. "
+                 "Default is the current working directory.",
         )
 
     def get_args(self, *args) -> SrepkgInput:

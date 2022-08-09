@@ -6,7 +6,7 @@ from enum import Enum, auto
 from pathlib import Path
 import srepkg.cs_entry_pts as cse
 import srepkg.repackager_new_interfaces as re_new_int
-import srepkg.orig_src_preparer_interfaces as osp_int
+import srepkg.srepkg_builder_new_interfaces as sb_new_int
 
 
 class SrcID(Enum):
@@ -40,7 +40,8 @@ class SrepkgBuilderSources:
             SrcID.SREPKG_INNER:
                 self.repkg_components / 'srepkg_inner',
             SrcID.MANIFEST_TEMPLATE:
-                self.repkg_components / 'partially_built' / 'MANIFEST.in.template',
+                self.repkg_components / 'partially_built' /
+                'MANIFEST.in.template',
             SrcID.SREPKG_SETUP_CFG_STARTER:
                 self.repkg_components / 'partially_built' / 'starter_setup.cfg',
             SrcID.ENTRY_PT_TEMPLATE:
@@ -77,7 +78,7 @@ class SrepkgBuilderDestinations:
 
 class SrepkgBuilder(re_new_int.SrepkgBuilderInterface):
 
-    def __init__(self, construction_dir: osp_int.WritableSrepkgDirInterface):
+    def __init__(self, construction_dir: sb_new_int.SrepkgComponentReceiver):
         self._construction_dir = construction_dir
         self._sources = SrepkgBuilderSources(
             repkg_components=Path(__file__).parent.absolute() /

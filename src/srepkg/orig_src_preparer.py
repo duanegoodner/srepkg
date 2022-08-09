@@ -7,7 +7,7 @@ class OrigSrcPreparer(re_int.OrigSrcPreparerInterface):
     def __init__(self,
                  retriever: osp_int.RemotePkgRetrieverInterface,
                  provider: osp_int.DistProviderInterface,
-                 receiver: osp_int.WritableSrepkgDirInterface):
+                 receiver: osp_int.ManageableConstructionDir):
         self._retriever = retriever
         self._provider = provider
         self._receiver = receiver
