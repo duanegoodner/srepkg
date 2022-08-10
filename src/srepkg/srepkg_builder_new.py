@@ -6,7 +6,8 @@ from enum import Enum, auto
 from pathlib import Path
 import srepkg.cs_entry_pts as cse
 import srepkg.repackager_new_interfaces as re_new_int
-import srepkg.srepkg_builder_new_interfaces as sb_new_int
+import srepkg.srepkg_builder_new_ds_and_int as sb_new_int
+import srepkg.repackaging_components_new.partially_built.generic_entry as entry_funct
 
 
 class SrcID(Enum):
@@ -109,11 +110,13 @@ class SrepkgBuilder(re_new_int.SrepkgBuilderInterface):
 
     def _build_entry_points(self):
         cse.EntryPointsBuilder(
-            wheel_inspect_data=self._construction_dir.wheel_data,
+            orig_pkg_entry_pts=self._construction_dir.orig_pkg_entry_pts,
             entry_pt_template=self._sources.paths[SrcID.ENTRY_PT_TEMPLATE],
             srepkg_entry_pt_dir=self._destinations.paths[DestinationID.SREPKG_ENTRY_PTS_DIR],
             srepkg_name=self._construction_dir.srepkg_inner.name,
-            srepkg_config=self._srepkg_config).build_entry_pts()
+            srepkg_config=self._srepkg_config,
+            generic_entry_funct_name=entry_funct.__name__
+        ).build_entry_pts(),
 
     def _build_inner_pkg_install_cfg(self):
         ipi_config = configparser.ConfigParser()
