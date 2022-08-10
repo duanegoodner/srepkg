@@ -87,10 +87,10 @@ class SrepkgComponentReceiver(abc.ABC):
 
     @property
     @abc.abstractmethod
-    def srepkg_name(self) -> Path:
+    def srepkg_name(self) -> str:
         pass
 
     @property
     @abc.abstractmethod
-    def orig_pkg_entry_pts(self) -> PkgCSEntryPoints:
+    def orig_pkg_src_summary(self) -> OrigPkgSrcSummary:
         pass

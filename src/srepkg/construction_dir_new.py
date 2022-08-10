@@ -22,36 +22,6 @@ DEFAULT_DIST_CLASSES = (pkginfo.SDist, pkginfo.Wheel)
 DEFAULT_SREPKG_SUFFIX = "srepkg"
 
 
-# @dataclass
-# class DistInfo:
-#     path: Path
-#     dist_obj: pkginfo.Distribution
-#
-#
-# @dataclass
-# class OrigPkgSrcSummary:
-#     pkg_name: str
-#     pkg_version: str
-#     dists: List[DistInfo]
-#     entry_pts: sb_new_int.PkgCSEntryPoints = None
-#
-#     @property
-#     def has_wheel(self):
-#         return any([type(dist.dist_obj) == pkginfo.Wheel for dist in
-#                     self.dists])
-#
-#     @property
-#     def wheel_path(self):
-#         if self.has_wheel:
-#             return [dist.path for dist in self.dists if type(dist.dist_obj) ==
-#                     pkginfo.Wheel][0]
-#
-#     @property
-#     def has_sdist(self):
-#         return any([type(dist.dist_obj) == pkginfo.SDist for dist in
-#                     self.dists])
-
-
 class ConstructionDir(
         rp_shared_int.OrigPkgReceiver, osp_int.ManageableConstructionDir,
         sb_new_int.SrepkgComponentReceiver):
@@ -102,16 +72,6 @@ class ConstructionDir(
     def orig_pkg_src_summary(self):
         return self._orig_pkg_src_summary
 
-    @orig_pkg_src_summary.setter
-    def orig_pkg_src_summary(
-            self,
-            construction_dir_summary: sb_new_int.OrigPkgSrcSummary):
-        self._orig_pkg_src_summary = construction_dir_summary
-
-    @property
-    def orig_pkg_entry_pts(self) -> sb_new_int.PkgCSEntryPoints:
-        return self._orig_pkg_src_summary.entry_pts
-
     def _rename_sub_dirs(self, srepkg_root_new: str, srepkg_inner_new: str):
         new_srepkg_root_path = Path(self._root / srepkg_root_new)
         new_srepkg_root_path.mkdir()
@@ -128,7 +88,7 @@ class ConstructionDir(
         self._srepkg_root.rmdir()
         self._srepkg_root = new_srepkg_root_path
 
-    def _update_sub_dir_names(self, discovered_pkg_name: str):
+    def _update_srepkg_and_dir_names(self, discovered_pkg_name: str):
         if self._custom_srepkg_name:
             srepkg_name = self._custom_srepkg_name
         else:
@@ -137,6 +97,8 @@ class ConstructionDir(
         self._rename_sub_dirs(
             srepkg_root_new=f"{discovered_pkg_name}_as_{srepkg_name}",
             srepkg_inner_new=srepkg_name)
+
+        self._srepkg_name = srepkg_name
 
     def _extract_cs_entry_pts_from_wheel(self):
         wheel_data = wheel_inspect.inspect_wheel(
@@ -171,7 +133,7 @@ class ConstructionDir(
         self._orig_pkg_src_summary.entry_pts =\
             self._extract_cs_entry_pts_from_wheel()
 
-        self._update_sub_dir_names(
+        self._update_srepkg_and_dir_names(
             discovered_pkg_name=prelim_orig_pkg_src_summary.pkg_name)
 
     @abc.abstractmethod

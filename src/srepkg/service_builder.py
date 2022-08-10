@@ -12,6 +12,7 @@ import srepkg.srepkg_builder_new as sbn
 
 import srepkg.orig_src_preparer_interfaces as osp_int
 import srepkg.repackager_new_interfaces as re_new_int
+import srepkg.srepkg_builder_new_ds_and_int as sb_new_int
 
 import srepkg.shared_data_structures.new_data_structures as nds
 from srepkg.utils.pkg_type_identifier import PkgRefType, PkgRefIdentifier
@@ -161,14 +162,19 @@ class SrepkgBuilderBuilder:
             -> SourceStatus:
         pass
 
-    def create(self) -> re_new_int.SrepkgBuilderInterface:
+    @staticmethod
+    def create()\
+            -> re_new_int.SrepkgBuilderInterface:
         registry = ServiceRegistry()
+
         construction_dir = registry.get_service(
             ServiceObjectID.CONSTRUCTION_DIR)
-        source_status = self._get_construction_dir_source_status(
-            construction_dir)
-        srepkg_builder = self._builder_dispatch.create(
-            source_status=source_status, construction_dir=construction_dir)
+        # source_status = self._get_construction_dir_source_status(
+        #     construction_dir)
+        # srepkg_builder = self._builder_dispatch.create(
+        #     source_status=source_status, construction_dir=construction_dir)
+
+        srepkg_builder = sbn.SrepkgBuilder(construction_dir)
         registry.register({ServiceObjectID.BUILDER: srepkg_builder})
 
         return srepkg_builder
@@ -184,10 +190,12 @@ class ServiceObjectID(Enum):
 
 class ServiceRegistry(ThreadSafeSingleton):
 
-    def __init__(self, registry: dict[ServiceObjectID, Any] = None):
-        if registry is None:
-            registry = {}
-        self._registry = registry
+    # def __init__(self, registry: dict[ServiceObjectID, Any] = None):
+    #     if registry is None:
+    #         registry = {}
+    #     self._registry = registry
+
+    _registry = {}
 
     def register(self, new_items: dict[ServiceObjectID, object]):
         for item in new_items:
@@ -235,6 +243,7 @@ class ServiceBuilder(re_new_int.ServiceBuilderInterface):
             orig_pkg_ref_command=srepkg_command.orig_pkg_ref,
             srepkg_name_arg=srepkg_command.srepkg_name)
         self._srepkg_build_builder = SrepkgBuilderBuilder()
+        self._service_registry = ServiceRegistry()
 
     def create_orig_src_preparer(self) -> re_new_int.OrigSrcPreparerInterface:
         return self._osp_builder.create()
