@@ -136,22 +136,6 @@ class VenvManager:
         self._update_rogue_pip_cs_shebang()
 
 
-# class VenvInstallPaths(NamedTuple):
-#     inner_src: Path
-#     venv_py: Path
-#     venv_pip: Path
-#
-#     @classmethod
-#     def from_inner_src(cls, inner_src: Path):
-#         venv_path = inner_src.parent.absolute() / (
-#             str(inner_src.name) + "_venv"
-#         )
-#         venv_py = venv_path / "bin" / "python"
-#         venv_pip = venv_path / "bin" / "pip"
-#
-#         return cls(inner_src=inner_src, venv_py=venv_py, venv_pip=venv_pip)
-
-
 class InnerPkgCfgReader:
     def __init__(self, inner_pkg_cfg: Path):
         self._inner_pkg_cfg_file = inner_pkg_cfg
@@ -172,10 +156,6 @@ class InnerPkgInstaller:
             self, venv_path: Path, inner_pkg_install_ref: Path):
         self._venv_path = venv_path
         self._inner_pkg_install_ref = inner_pkg_install_ref
-
-    # @classmethod
-    # def from_inner_src(cls, inner_src: Path):
-    #     return cls(VenvInstallPaths.from_inner_src(inner_src))
 
     def build_venv(self):
         env_builder = CustomVenvBuilder()

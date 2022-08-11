@@ -2,6 +2,11 @@ import abc
 import build
 import shutil
 import sys
+
+import wheel_inspect
+from pathlib import Path
+from wheel_filename import parse_wheel_filename
+
 import srepkg.orig_src_preparer_interfaces as osp_int
 import srepkg.retriever_provider_shared_interface as rpsi
 
@@ -33,13 +38,19 @@ class DistProviderFromSrc(ConstructedDistProvider):
         dist_builder = build.ProjectBuilder(
             srcdir=self._orig_pkg_path,
             python_executable=sys.executable)
-        dist_builder.build(
-            distribution='sdist',
-            output_directory=str(self._pkg_receiver.orig_pkg_dest))
-        dist_builder.build(
+
+        # build wheel first
+        wheel_path_str = dist_builder.build(
             distribution='wheel',
-            output_directory=str(self._pkg_receiver.orig_pkg_dest)
-        )
+            output_directory=str(self._pkg_receiver.orig_pkg_dest))
+
+        wheel_path = Path(wheel_path_str)
+
+        # only build sdist if wheel is NOT platform-independent
+        if 'any' not in parse_wheel_filename(wheel_path.name).platform_tags:
+            dist_builder.build(
+                distribution='sdist',
+                output_directory=str(self._pkg_receiver.orig_pkg_dest))
 
 
 class DistCopyProvider(ConstructedDistProvider):

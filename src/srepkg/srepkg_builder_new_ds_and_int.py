@@ -3,6 +3,7 @@ import pkginfo
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, List
+from wheel_filename import parse_wheel_filename
 
 
 @dataclass
@@ -68,9 +69,23 @@ class OrigPkgSrcSummary:
                     pkginfo.Wheel][0]
 
     @property
+    def has_platform_independent_wheel(self):
+        return self.has_wheel and\
+               ('any' in parse_wheel_filename(self.wheel_path.name)
+                .platform_tags)
+
+
+
+    @property
     def has_sdist(self):
         return any([type(dist.dist_obj) == pkginfo.SDist for dist in
                     self.dists])
+
+    @property
+    def sdist_path(self):
+        if self.has_sdist:
+            return [dist.path for dist in self.dists if type(dist.dist_obj) ==
+                    pkginfo.SDist]
 
 
 class SrepkgComponentReceiver(abc.ABC):

@@ -1,4 +1,3 @@
-import abc
 import configparser
 import shutil
 import string
@@ -8,8 +7,6 @@ from pathlib import Path
 import srepkg.cs_entry_pts as cse
 import srepkg.repackager_new_interfaces as re_new_int
 import srepkg.srepkg_builder_new_ds_and_int as sb_new_int
-# import \
-#     srepkg.repackaging_components_new.partially_built.generic_entry as entry_funct
 
 
 class SrcID(Enum):
