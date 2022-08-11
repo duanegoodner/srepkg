@@ -4,6 +4,8 @@ from pathlib import Path
 from typing import NamedTuple
 import pytest
 
+from srepkg.service_registry import SERVICE_REGISTRY
+
 
 class TestConstructionDirDispatch:
     dispatch = sb.ConstructionDirDispatch()
@@ -81,6 +83,10 @@ class TestPkgRetrieverAndDistProviderDispatch:
     def test_all_conditions(self):
         for condition in self.test_conditions:
             self.run_test_condition(condition)
+            SERVICE_REGISTRY.reset()
+
+    def teardown_method(self):
+        SERVICE_REGISTRY.reset()
 
 
 class OrigSrcPreparerTestCondition(NamedTuple):
@@ -150,6 +156,8 @@ class TestOrigSrcPreparerBuilder:
         assert type(temp_dir_osp._receiver).__name__ ==\
                'TempConstructionDir'
 
+        SERVICE_REGISTRY.reset()
+
         custom_dir_osp = self.build_osp(
             condition_id=condition_id,
             construction_dir_command=str(custom_dir_path))
@@ -163,6 +171,10 @@ class TestOrigSrcPreparerBuilder:
     def test_all_conditions(self, tmp_path):
         for test_condition in self.test_conditions.keys():
             self.run_osp_tests(test_condition, tmp_path)
+            SERVICE_REGISTRY.reset()
+
+    def teardown_method(self):
+        SERVICE_REGISTRY.reset()
 
 
 class TestServiceBuilder:
@@ -206,3 +218,6 @@ class TestServiceBuilder:
         assert type(osp_builder._retriever).__name__ == 'NullPkgRetriever'
         assert type(osp_builder._provider).__name__ == 'DistProviderFromSrc'
         assert type(osp_builder._receiver).__name__ == 'TempConstructionDir'
+
+    def teardown_method(self):
+        SERVICE_REGISTRY.reset()

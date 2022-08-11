@@ -136,20 +136,20 @@ class VenvManager:
         self._update_rogue_pip_cs_shebang()
 
 
-class VenvInstallPaths(NamedTuple):
-    inner_src: Path
-    venv_py: Path
-    venv_pip: Path
-
-    @classmethod
-    def from_inner_src(cls, inner_src: Path):
-        venv_path = inner_src.parent.absolute() / (
-            str(inner_src.name) + "_venv"
-        )
-        venv_py = venv_path / "bin" / "python"
-        venv_pip = venv_path / "bin" / "pip"
-
-        return cls(inner_src=inner_src, venv_py=venv_py, venv_pip=venv_pip)
+# class VenvInstallPaths(NamedTuple):
+#     inner_src: Path
+#     venv_py: Path
+#     venv_pip: Path
+#
+#     @classmethod
+#     def from_inner_src(cls, inner_src: Path):
+#         venv_path = inner_src.parent.absolute() / (
+#             str(inner_src.name) + "_venv"
+#         )
+#         venv_py = venv_path / "bin" / "python"
+#         venv_pip = venv_path / "bin" / "pip"
+#
+#         return cls(inner_src=inner_src, venv_py=venv_py, venv_pip=venv_pip)
 
 
 class InnerPkgCfgReader:
@@ -160,7 +160,11 @@ class InnerPkgCfgReader:
 
     @property
     def srepkg_name(self):
-        return self._inner_pkg_cfg.get("metadata", "name")
+        return self._inner_pkg_cfg.get("metadata", "srepkg_name")
+
+    @property
+    def sdist_src(self):
+        return self._inner_pkg_cfg.get("metadata", "sdist_src")
 
 
 class InnerPkgInstaller:
@@ -195,12 +199,13 @@ def custom_command():
     inner_pkg_cfg_reader = InnerPkgCfgReader(Path(__file__).parent /
                                              'inner_pkg_install.cfg')
     srepkg_name = inner_pkg_cfg_reader.srepkg_name
+    sdist_src = inner_pkg_cfg_reader.sdist_src
 
     inner_pkg_installer = InnerPkgInstaller(
         venv_path=Path(__file__).parent.absolute()
         / srepkg_name
         / "srepkg_venv",
-        inner_pkg_install_ref=Path(__file__).parent.absolute() / srepkg_name,
+        inner_pkg_install_ref=Path(__file__).parent.absolute() / srepkg_name / sdist_src,
     )
 
     inner_pkg_installer.build_venv()
