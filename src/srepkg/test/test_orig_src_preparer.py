@@ -3,6 +3,8 @@ import srepkg.service_builder as sb
 import srepkg.shared_data_structures.new_data_structures as nds
 import srepkg.utils.dist_archive_file_tools as daft
 
+from srepkg.service_registry import SERVICE_REGISTRY
+
 
 class OrigSrcPreparerComponentTest:
     local_test_pkgs_path = Path(__file__).parent.absolute() / \
@@ -19,6 +21,10 @@ class OrigSrcPreparerComponentTest:
     @staticmethod
     def create_src_preparer(command: nds.SrepkgCommand):
         return sb.ServiceBuilder(command).create_orig_src_preparer()
+
+    @classmethod
+    def teardown_class(cls):
+        SERVICE_REGISTRY.reset()
 
 
 class TestRemotePkgRetriever(OrigSrcPreparerComponentTest):
