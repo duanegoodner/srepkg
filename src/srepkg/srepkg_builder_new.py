@@ -168,11 +168,11 @@ class SrepkgBuilder(re_new_int.SrepkgBuilderInterface):
     # change to a concrete method while developing build scheme(s)
     # @abc.abstractmethod
     def build(self):
-        self._simple_construction_tasks()\
-            ._build_entry_points()\
-            ._write_srepkg_cfg_non_entry_data()\
-            ._build_srepkg_cfg()\
-            ._build_inner_pkg_install_cfg()\
+        self._simple_construction_tasks() \
+            ._build_entry_points() \
+            ._write_srepkg_cfg_non_entry_data() \
+            ._build_srepkg_cfg() \
+            ._build_inner_pkg_install_cfg() \
             ._build_srepkg_manifest()
 
 
