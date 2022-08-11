@@ -1,8 +1,7 @@
 import abc
-from enum import Enum, auto
 from functools import singledispatchmethod
 from pathlib import Path
-from typing import Any, Callable, NamedTuple, Union
+from typing import Callable, NamedTuple, Union
 
 import srepkg.construction_dir_new as cdn
 import srepkg.dist_provider as opr
@@ -16,7 +15,8 @@ import srepkg.srepkg_builder_new_ds_and_int as sb_new_int
 
 import srepkg.shared_data_structures.new_data_structures as nds
 from srepkg.utils.pkg_type_identifier import PkgRefType, PkgRefIdentifier
-from srepkg.utils.thread_safe_singletong import ThreadSafeSingleton
+
+from srepkg.service_registry import ServiceObjectID, SERVICE_REGISTRY
 
 
 class ConstructionDirDispatch:
@@ -112,7 +112,7 @@ class OrigSrcPreparerBuilder:
             provider=dist_provider,
             receiver=construction_dir)
 
-        registry = ServiceRegistry()
+        registry = SERVICE_REGISTRY
         registry.register({
             ServiceObjectID.ORIG_SRC_PREPARER: orig_src_preparer,
             ServiceObjectID.CONSTRUCTION_DIR: construction_dir,
@@ -165,7 +165,7 @@ class SrepkgBuilderBuilder:
     @staticmethod
     def create()\
             -> re_new_int.SrepkgBuilderInterface:
-        registry = ServiceRegistry()
+        registry = SERVICE_REGISTRY
 
         construction_dir = registry.get_service(
             ServiceObjectID.CONSTRUCTION_DIR)
@@ -180,60 +180,6 @@ class SrepkgBuilderBuilder:
         return srepkg_builder
 
 
-class ServiceObjectID(Enum):
-    ORIG_SRC_PREPARER = auto()
-    RETRIEVER = auto()
-    PROVIDER = auto()
-    CONSTRUCTION_DIR = auto()
-    BUILDER = auto()
-
-
-class ServiceRegistry(ThreadSafeSingleton):
-
-    # def __init__(self, registry: dict[ServiceObjectID, Any] = None):
-    #     if registry is None:
-    #         registry = {}
-    #     self._registry = registry
-
-    _registry = {}
-
-    def register(self, new_items: dict[ServiceObjectID, object]):
-        for item in new_items:
-            if item in self._registry:
-                raise DuplicateServiceObjectID(item)
-        self._registry.update(new_items)
-
-    def get_service(self, object_id: ServiceObjectID):
-        try:
-            return self._registry[object_id]
-        except KeyError:
-            raise UnregisteredServiceObjectID(object_id)
-
-
-class DuplicateServiceObjectID(Exception):
-    def __init__(
-            self,
-            service_object_id: ServiceObjectID,
-            msg="Service object ID already entered in ServiceRegistry"):
-        self._service_object_id = service_object_id
-        self._msg = msg
-
-    def __str__(self):
-        return f"{str(self._service_object_id)} -> {self._msg}"
-
-
-class UnregisteredServiceObjectID(Exception):
-    def __init__(
-            self,
-            service_object_id: ServiceObjectID,
-            msg="Object ID not found in service registry"):
-        self._service_object_id = service_object_id
-        self._msg = msg
-
-    def __str__(self):
-        return f"{str(self._service_object_id)} -> {self._msg}"
-
-
 class ServiceBuilder(re_new_int.ServiceBuilderInterface):
 
     def __init__(self, srepkg_command: nds.SrepkgCommand):
@@ -243,7 +189,7 @@ class ServiceBuilder(re_new_int.ServiceBuilderInterface):
             orig_pkg_ref_command=srepkg_command.orig_pkg_ref,
             srepkg_name_arg=srepkg_command.srepkg_name)
         self._srepkg_build_builder = SrepkgBuilderBuilder()
-        self._service_registry = ServiceRegistry()
+        self._service_registry = SERVICE_REGISTRY
 
     def create_orig_src_preparer(self) -> re_new_int.OrigSrcPreparerInterface:
         return self._osp_builder.create()
