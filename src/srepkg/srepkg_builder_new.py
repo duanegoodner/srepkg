@@ -8,8 +8,8 @@ from pathlib import Path
 import srepkg.cs_entry_pts as cse
 import srepkg.repackager_new_interfaces as re_new_int
 import srepkg.srepkg_builder_new_ds_and_int as sb_new_int
-import \
-    srepkg.repackaging_components_new.partially_built.generic_entry as entry_funct
+# import \
+#     srepkg.repackaging_components_new.partially_built.generic_entry as entry_funct
 
 
 class SrcID(Enum):
@@ -122,7 +122,7 @@ class SrepkgBuilder(re_new_int.SrepkgBuilderInterface):
                 .paths[DestinationID.SREPKG_ENTRY_PTS_DIR],
             srepkg_name=self._construction_dir.srepkg_inner.name,
             srepkg_config=self._srepkg_config,
-            generic_entry_funct_name=entry_funct.__name__
+            generic_entry_funct_name='entry_funct'
         ).build_entry_pts()
 
         return self
@@ -146,7 +146,12 @@ class SrepkgBuilder(re_new_int.SrepkgBuilderInterface):
         ipi_config = configparser.ConfigParser()
         ipi_config.add_section("metadata")
         ipi_config.set(
-            "metadata", "name", self._construction_dir.srepkg_inner.name)
+            "metadata", "srepkg_name", self._construction_dir.srepkg_name)
+        ipi_config.set(
+            "metadata", "sdist_src",
+            self._construction_dir.orig_pkg_src_summary.wheel_path.name)
+        # ipi_config.set(
+        #     "metadata", "name", self._construction_dir.srepkg_inner.name)
         with self._destinations.paths[DestinationID.INNER_PKG_INSTALL_CFG] \
                 .open(mode="w") as icf:
             ipi_config.write(icf)

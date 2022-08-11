@@ -1,2 +1,3 @@
 graft $srepkg_name
 include inner_pkg_installer.py
+include inner_pkg_install.cfg

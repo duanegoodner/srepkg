@@ -2,6 +2,7 @@ from pathlib import Path
 import srepkg.construction_dir_new as cdn
 import srepkg.shared_data_structures.new_data_structures as nds
 import srepkg.service_builder as sb
+from srepkg.service_registry import SERVICE_REGISTRY
 
 
 class TestConstructionDir:
@@ -41,6 +42,9 @@ class TestConstructionDir:
         assert construction_dir.srepkg_inner.exists()
         assert construction_dir.srepkg_root.name == 'hello'
         assert construction_dir.srepkg_inner.name == 'friend'
+
+    def teardown_method(self):
+        SERVICE_REGISTRY.reset()
 
 
 class TestConstructionDirReviewer:
@@ -93,3 +97,7 @@ class TestConstructionDirReviewer:
         assert len(src_preparer._receiver.srepkg_inner_contents) == 1
         assert src_preparer._receiver.srepkg_inner_contents[0].name == \
                'testproj-0.0.0-py3-none-any.whl'
+
+    def teardown_method(self):
+        SERVICE_REGISTRY.reset()
+
