@@ -85,11 +85,11 @@ class TestConstructionDirReviewer:
 
         src_preparer = self.build_and_copy_to_construction_dir_from(
             self.local_src_path)
-        assert len(src_preparer._receiver.srepkg_inner_contents) == 2
+        assert len(src_preparer._receiver.srepkg_inner_contents) == 1
         srepkg_inner_contents_filenames = [
             item.name for item in src_preparer._receiver.srepkg_inner_contents]
         assert set(srepkg_inner_contents_filenames) ==\
-               {'testproj-0.0.0.tar.gz', 'testproj-0.0.0-py3-none-any.whl'}
+               {'testproj-0.0.0-py3-none-any.whl'}
 
     def test_local_whl_init(self):
         src_preparer = self.build_and_copy_to_construction_dir_from(
@@ -100,4 +100,28 @@ class TestConstructionDirReviewer:
 
     def teardown_method(self):
         SERVICE_REGISTRY.reset()
+
+
+# def test_numpy_sdist_to_wheel():
+#     numpy_sdist_path = Path(
+#         '/Users/duane/dproj/srepkg/src/srepkg/test/package_test_cases/'
+#         'numpy-1.23.1.tar.gz')
+#
+#     cur_command = nds.SrepkgCommand(
+#         orig_pkg_ref=str(numpy_sdist_path),
+#         construction_dir='/Users/duane/srepkg_pkgs'
+#     )
+#
+#     src_preparer = sb.ServiceBuilder(cur_command).create_orig_src_preparer()
+#     src_preparer._retriever.retrieve()
+#     src_preparer._provider.provide()
+#
+#     reviewer = cdn.ConstructionDirReviewer(src_preparer._receiver)
+#     existing_dists_summary = reviewer.get_existing_dists_summary()
+#     converter = cdn.SdistToWheelConverter(
+#         construction_dir=src_preparer._receiver,
+#         construction_dir_summary=existing_dists_summary
+#     )
+#
+#     converter.build_wheel()
 

@@ -40,7 +40,7 @@ class TestRemotePkgRetriever(OrigSrcPreparerComponentTest):
 class TestDistProvider(OrigSrcPreparerComponentTest):
 
     expected_types_provided_from = {
-        'src_code': {daft.ArchiveDistType.SDIST, daft.ArchiveDistType.WHEEL},
+        'src_code': {daft.ArchiveDistType.WHEEL},
         'wheel': {daft.ArchiveDistType.WHEEL},
         'targz': {daft.ArchiveDistType.SDIST},
         'zip': {daft.ArchiveDistType.SDIST}
@@ -70,7 +70,7 @@ class TestDistProvider(OrigSrcPreparerComponentTest):
 class TestReceiver(OrigSrcPreparerComponentTest):
 
     expected_dist_types_finally_present = {
-        'src_code': {daft.ArchiveDistType.SDIST, daft.ArchiveDistType.WHEEL},
+        'src_code': {daft.ArchiveDistType.WHEEL},
         'wheel': {daft.ArchiveDistType.WHEEL},
         'targz': {daft.ArchiveDistType.SDIST, daft.ArchiveDistType.WHEEL},
         'zip': {daft.ArchiveDistType.SDIST, daft.ArchiveDistType.WHEEL}
@@ -103,7 +103,7 @@ class TestReceiver(OrigSrcPreparerComponentTest):
 
 class TestOrigSrcPreparer(OrigSrcPreparerComponentTest):
     expected_dist_types_finally_present = {
-        'src_code': {daft.ArchiveDistType.SDIST, daft.ArchiveDistType.WHEEL},
+        'src_code': {daft.ArchiveDistType.WHEEL},
         'wheel': {daft.ArchiveDistType.WHEEL},
         'targz': {daft.ArchiveDistType.SDIST, daft.ArchiveDistType.WHEEL},
         'zip': {daft.ArchiveDistType.SDIST, daft.ArchiveDistType.WHEEL}

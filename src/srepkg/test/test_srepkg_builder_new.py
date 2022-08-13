@@ -13,7 +13,7 @@ def test_quickly():
     local_test_pkgs_path = Path(__file__).parent.absolute() / \
         'package_test_cases'
 
-    src_code = local_test_pkgs_path / 'testproj'
+    src_code = local_test_pkgs_path / 'testproj-0.0.0.tar.gz'
 
     cur_command = nds.SrepkgCommand(
         orig_pkg_ref=str(src_code),
