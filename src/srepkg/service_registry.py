@@ -6,6 +6,8 @@ class ServiceObjectID(Enum):
     RETRIEVER = auto()
     PROVIDER = auto()
     CONSTRUCTION_DIR = auto()
+    SDIST_COMPLETER = auto()
+    WHEEL_COMPLETER = auto()
     BUILDER = auto()
 
 

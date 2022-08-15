@@ -11,10 +11,13 @@ def test_build_from_src():
 
     cur_command = nds.SrepkgCommand(
         orig_pkg_ref=str(test_case_dir / 'testproj-0.0.0.tar.gz'),
-        construction_dir=str(test_case_dir))
+        construction_dir='/Users/duane/srepkg_pkgs')
 
     service_builder = sb.ServiceBuilder(srepkg_command=cur_command)
     osp = service_builder.create_orig_src_preparer()
     osp.prepare()
     srepkg_builder = service_builder.create_srepkg_builder()
     srepkg_builder.build()
+
+    srepkg_builder._srepkg_completers[0].adjust_base_pkg()
+    srepkg_builder._srepkg_completers[0]._build_dist()

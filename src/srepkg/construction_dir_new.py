@@ -1,13 +1,14 @@
 import abc
 import shutil
 
+import build
 import pkginfo
 import subprocess
 import sys
 import tempfile
 import uuid
 from pathlib import Path
-from typing import List
+from typing import List, Union
 
 import wheel_inspect
 
@@ -25,13 +26,15 @@ DEFAULT_SREPKG_SUFFIX = "srepkg"
 class ConstructionDir(
         rp_shared_int.OrigPkgReceiver, osp_int.ManageableConstructionDir,
         sb_new_int.SrepkgComponentReceiver):
-    def __init__(self, construction_dir_arg: Path, srepkg_name_arg: str = None):
-        self._root = construction_dir_arg
-        self._srepkg_root = construction_dir_arg / uuid.uuid4().hex
+    def __init__(self, construction_dir_command: Path, srepkg_name_command: str = None):
+        self._root = construction_dir_command
+        self._srepkg_root = construction_dir_command / uuid.uuid4().hex
         self._srepkg_inner = self._srepkg_root / uuid.uuid4().hex
+        # self._orig_pkg_dists = self._srepkg_root / 'orig_dist'
         self._srepkg_root.mkdir()
         self._srepkg_inner.mkdir()
-        self._custom_srepkg_name = srepkg_name_arg
+        (self._srepkg_root / 'orig_dist').mkdir()
+        self._custom_srepkg_name = srepkg_name_command
         self._supported_dist_types = DEFAULT_DIST_CLASSES
         self._srepkg_name = None
         self._orig_pkg_src_summary = None
@@ -49,8 +52,12 @@ class ConstructionDir(
         return list(self._srepkg_root.iterdir())
 
     @property
-    def orig_pkg_dest(self) -> Path:
-        return self._srepkg_inner
+    def orig_pkg_dists(self) -> Path:
+        return self._srepkg_root / 'orig_dist'
+
+    @property
+    def orig_pkg_dists_contents(self) -> list[Path]:
+        return list(self.orig_pkg_dists.iterdir())
 
     @property
     def srepkg_name(self) -> str:
@@ -73,20 +80,27 @@ class ConstructionDir(
         return self._orig_pkg_src_summary
 
     def _rename_sub_dirs(self, srepkg_root_new: str, srepkg_inner_new: str):
-        new_srepkg_root_path = Path(self._root / srepkg_root_new)
-        new_srepkg_root_path.mkdir()
-        new_srepkg_inner_path = Path(
-            self._root / srepkg_root_new / srepkg_inner_new)
-        new_srepkg_inner_path.mkdir()
-        for item in self._srepkg_inner.iterdir():
-            shutil.move(item, new_srepkg_inner_path)
-        self._srepkg_inner.rmdir()
-        self._srepkg_inner = new_srepkg_inner_path
 
-        for item in self._srepkg_root.iterdir():
-            shutil.move(item, new_srepkg_root_path)
-        self._srepkg_root.rmdir()
-        self._srepkg_root = new_srepkg_root_path
+        self._srepkg_inner.replace(self._srepkg_inner.parent.absolute() / srepkg_inner_new)
+        self._srepkg_root.replace(self._srepkg_root.parent.absolute() / srepkg_root_new)
+
+        self._srepkg_root = self._srepkg_root.parent.absolute() / srepkg_root_new
+        self._srepkg_inner = self._srepkg_root / srepkg_inner_new
+
+        # new_srepkg_root_path = Path(self._root / srepkg_root_new)
+        # new_srepkg_root_path.mkdir()
+        # new_srepkg_inner_path = Path(
+        #     self._root / srepkg_root_new / srepkg_inner_new)
+        # new_srepkg_inner_path.mkdir()
+        # for item in self._srepkg_inner.iterdir():
+        #     shutil.move(item, new_srepkg_inner_path)
+        # self._srepkg_inner.rmdir()
+        # self._srepkg_inner = new_srepkg_inner_path
+        #
+        # for item in self._srepkg_root.iterdir():
+        #     shutil.move(item, new_srepkg_root_path)
+        # self._srepkg_root.rmdir()
+        # self._srepkg_root = new_srepkg_root_path
 
     def _update_srepkg_and_dir_names(self, discovered_pkg_name: str):
         if self._custom_srepkg_name:
@@ -127,14 +141,17 @@ class ConstructionDir(
             SdistToWheelConverter(self,
                                   prelim_orig_pkg_src_summary).build_wheel()
 
+        self._update_srepkg_and_dir_names(
+            discovered_pkg_name=prelim_orig_pkg_src_summary.pkg_name)
+
         self._orig_pkg_src_summary = ConstructionDirReviewer(self) \
             .get_existing_dists_summary()
 
         self._orig_pkg_src_summary.entry_pts =\
             self._extract_cs_entry_pts_from_wheel()
 
-        self._update_srepkg_and_dir_names(
-            discovered_pkg_name=prelim_orig_pkg_src_summary.pkg_name)
+        # self._update_srepkg_and_dir_names(
+        #     discovered_pkg_name=prelim_orig_pkg_src_summary.pkg_name)
 
     @abc.abstractmethod
     def settle(self):
@@ -142,8 +159,8 @@ class ConstructionDir(
 
 
 class CustomConstructionDir(ConstructionDir):
-    def __init__(self, construction_dir_arg: Path, srepkg_name_arg: str = None):
-        super().__init__(construction_dir_arg, srepkg_name_arg)
+    def __init__(self, construction_dir_command: Path, srepkg_name_command: str = None):
+        super().__init__(construction_dir_command, srepkg_name_command)
 
     def settle(self):
         print(
@@ -152,9 +169,11 @@ class CustomConstructionDir(ConstructionDir):
 
 
 class TempConstructionDir(ConstructionDir):
-    def __init__(self, srepkg_name_arg: str = None):
+    def __init__(self, srepkg_name_command: str = None):
         self._temp_dir_obj = tempfile.TemporaryDirectory()
-        super().__init__(Path(self._temp_dir_obj.name), srepkg_name_arg)
+        super().__init__(
+            construction_dir_command=Path(self._temp_dir_obj.name),
+            srepkg_name_command=srepkg_name_command)
 
     def settle(self):
         self._temp_dir_obj.cleanup()
@@ -194,10 +213,21 @@ class SdistToWheelConverter:
         self._compressed_file_extractor.extract(
             build_from_dist.path, unpack_root)
 
-        with dir_change_to(str(unpack_root / self._unpacked_src_dir_name)):
-            subprocess.call([
-                sys.executable, '-m', 'build', '--outdir',
-                str(self._construction_dir.srepkg_inner), '--wheel'])
+        dist_builder = build.ProjectBuilder(
+            srcdir=str(unpack_root / self._unpacked_src_dir_name),
+            python_executable=sys.executable
+        )
+
+        new_wheel = dist_builder.build(
+            distribution='wheel',
+            output_directory=str(self._construction_dir.orig_pkg_dists)
+        )
+
+        # with dir_change_to(str(unpack_root / self._unpacked_src_dir_name)):
+        #     subprocess.call([sys.executable, 'setup.py', 'bdist_wheel'])
+            # subprocess.call([
+            #     sys.executable, '-m', 'build', '--outdir',
+            #     str(self._construction_dir.srepkg_inner), '--wheel'])
 
         temp_unpack_dir_obj.cleanup()
 
@@ -220,7 +250,7 @@ class ConstructionDirReviewer:
     def _get_existing_dists(self) -> List[sb_new_int.DistInfo]:
         existing_dists = []
 
-        for item in self._construction_dir.srepkg_inner_contents:
+        for item in self._construction_dir.orig_pkg_dists_contents:
             item_info = self._get_dist_info(item)
             if item_info:
                 existing_dists.append(item_info)

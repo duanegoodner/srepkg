@@ -1,196 +1,339 @@
+import abc
 import configparser
 import shutil
 import string
-from dataclasses import dataclass
 from enum import Enum, auto
 from pathlib import Path
+from typing import NamedTuple, Union
+from zipfile import ZIP_DEFLATED, ZipFile
 import srepkg.cs_entry_pts as cse
-import srepkg.repackager_new_interfaces as re_new_int
+import srepkg.repackager_interfaces as re_int
 import srepkg.srepkg_builder_new_ds_and_int as sb_new_int
 
 
 class SrcID(Enum):
-    SREPKG_ROOT = auto()
-    SREPKG_INNER = auto()
     MANIFEST_TEMPLATE = auto()
     SREPKG_SETUP_CFG_STARTER = auto()
+    SREPKG_BASE_SETUP_CFG = auto()
+    SETUP_PY = auto()
     ENTRY_PT_TEMPLATE = auto()
+    INNER_PKG_INSTALLER = auto()
+    CMD_CLASS_CFG = auto()
+    CMD_CLASSES = auto()
 
 
-class DestinationID(Enum):
-    SREPKG_ROOT = auto()
+class DestID(Enum):
+    CMD_CLASSES = auto()
+    INNER_PKG_INSTALLER = auto()
     INNER_PKG_INSTALL_CFG = auto()
     MANIFEST = auto()
+    SREPKG_BASE_SETUP_CFG = auto()
     SREPKG_SETUP_CFG = auto()
-    SREPKG_INNER = auto()
+    SETUP_PY = auto()
     SREPKG_INIT = auto()
     SREPKG_ENTRY_PTS_DIR = auto()
-    SREPKG_ENTRY_POINTS_INIT = auto()
 
 
-@dataclass
-class SrepkgBuilderSources:
-    repkg_components: Path
-
-    @property
-    def paths(self) -> dict[SrcID, Path]:
-        return {
-            SrcID.SREPKG_ROOT:
-                self.repkg_components / 'srepkg_root',
-            SrcID.SREPKG_INNER:
-                self.repkg_components / 'srepkg_inner',
-            SrcID.MANIFEST_TEMPLATE:
-                self.repkg_components / 'partially_built' /
-                'MANIFEST.in.template',
-            SrcID.SREPKG_SETUP_CFG_STARTER:
-                self.repkg_components / 'partially_built' / 'starter_setup.cfg',
-            SrcID.ENTRY_PT_TEMPLATE:
-                self.repkg_components / 'partially_built' / 'generic_entry.py'
-        }
+class SimpleCopyPair(NamedTuple):
+    src: SrcID
+    dst: DestID
 
 
-@dataclass
-class SrepkgBuilderDestinations:
-    srepkg_root: Path
-    srepkg_inner: Path
-
-    @property
-    def paths(self) -> dict[DestinationID, Path]:
-        return {
-            DestinationID.SREPKG_ROOT:
-                self.srepkg_root,
-            DestinationID.SREPKG_INNER:
-                self.srepkg_inner,
-            DestinationID.INNER_PKG_INSTALL_CFG:
-                self.srepkg_root / 'inner_pkg_install.cfg',
-            DestinationID.MANIFEST:
-                self.srepkg_root / 'MANIFEST.in',
-            DestinationID.SREPKG_SETUP_CFG:
-                self.srepkg_root / 'setup.cfg',
-            DestinationID.SREPKG_INIT:
-                self.srepkg_inner / '__init__.py',
-            DestinationID.SREPKG_ENTRY_PTS_DIR:
-                self.srepkg_inner / 'srepkg_entry_points',
-            DestinationID.SREPKG_ENTRY_POINTS_INIT:
-                self.srepkg_inner / 'srepkg_entry_points/__init__.py'
-        }
-
-
-class SrepkgBuilder(re_new_int.SrepkgBuilderInterface):
-
-    def __init__(self, construction_dir: sb_new_int.SrepkgComponentReceiver):
+class SrepkgCompleter(sb_new_int.SrepkgCompleterInterface):
+    def __init__(
+            self,
+            construction_dir: sb_new_int.SrepkgComponentReceiver):
         self._construction_dir = construction_dir
-        self._sources = SrepkgBuilderSources(
-            repkg_components=Path(__file__).parent.absolute() /
-                             'repackaging_components_new')
-        self._destinations = SrepkgBuilderDestinations(
-            srepkg_root=construction_dir.srepkg_root,
-            srepkg_inner=construction_dir.srepkg_inner)
-        self._srepkg_config = configparser.ConfigParser()
-        self._srepkg_config.read(
-            self._sources.paths[SrcID.SREPKG_SETUP_CFG_STARTER])
+
+    @property
+    @abc.abstractmethod
+    def _gen_component_src_dir(self) -> Path:
+        pass
+
+    @property
+    @abc.abstractmethod
+    def _orig_src_dist(self) -> Union[Path, None]:
+        return
+
+    @property
+    def _gen_sources(self) -> dict[SrcID, Path]:
+        return {
+            SrcID.MANIFEST_TEMPLATE:
+                self._gen_component_src_dir / 'MANIFEST.in.template',
+            SrcID.SETUP_PY: self._gen_component_src_dir / 'setup.py',
+            SrcID.SREPKG_BASE_SETUP_CFG:
+                self._construction_dir.srepkg_root / 'base_setup.cfg'
+        }
+
+    @property
+    def _gen_dests(self):
+        srepkg_root = self._construction_dir.srepkg_root
+        return {
+            DestID.SREPKG_SETUP_CFG: srepkg_root / 'setup.cfg',
+            DestID.SETUP_PY: srepkg_root / 'setup.py',
+            DestID.MANIFEST: srepkg_root / 'MANIFEST.in',
+        }
+
+    @property
+    @abc.abstractmethod
+    def _all_sources(self) -> dict[SrcID, Path]:
+        pass
+
+    @property
+    @abc.abstractmethod
+    def _all_dests(self) -> dict[DestID, Path]:
+        pass
+
+    @property
+    @abc.abstractmethod
+    def _simple_copy_pairs(self) -> list[SimpleCopyPair]:
+        pass
+
+    def _simple_copy_ops(self):
+        for pair in self._simple_copy_pairs:
+            shutil.copy2(
+                src=self._all_sources[pair.src],
+                dst=self._all_dests[pair.dst])
+
+    def _build_manifest(self):
+        with self._gen_sources[SrcID.MANIFEST_TEMPLATE].open(mode="r") as tf:
+            template_text = tf.read()
+        template = string.Template(template_text)
+        result = template.substitute(
+            {"srepkg_name": self._construction_dir.srepkg_name})
+        with self._gen_dests[DestID.MANIFEST].open(mode="w") as manifest_file:
+            manifest_file.write(result)
+
+
+class SrepkgSdistCompleter(SrepkgCompleter):
+
+    @property
+    def _gen_component_src_dir(self) -> Path:
+        return Path(__file__).parent.absolute() / \
+               'repackaging_components_new' / 'sdist_completer_components'
+
+    @property
+    def _orig_src_dist(self) -> Union[Path, None]:
+        return self._construction_dir.orig_pkg_src_summary.src_for_srepkg_sdist
+
+    @property
+    def _ipi_sources(self) -> dict[SrcID, Path]:
+        ipi_sub_pkg = Path(__file__).parent.parent.absolute() / \
+                      'inner_pkg_installer'
+        return {
+            SrcID.INNER_PKG_INSTALLER:
+                ipi_sub_pkg / 'inner_pkg_installer.py',
+            SrcID.CMD_CLASSES: ipi_sub_pkg / 'cmd_classes.py',
+            SrcID.CMD_CLASS_CFG: ipi_sub_pkg / 'cmd_class.cfg'
+        }
+
+    @property
+    def _all_sources(self) -> dict[SrcID, Path]:
+        return {**self._gen_sources, **self._ipi_sources}
+
+    @property
+    def _ipi_dests(self) -> dict[DestID, Path]:
+        srepkg_root = self._construction_dir.srepkg_root
+        return {
+            DestID.INNER_PKG_INSTALLER:
+                srepkg_root / 'inner_pkg_installer.py',
+            DestID.INNER_PKG_INSTALL_CFG:
+                srepkg_root / 'inner_pkg_install.cfg',
+            DestID.CMD_CLASSES: srepkg_root / 'cmd_classes.py'
+        }
+
+    @property
+    def _all_dests(self) -> dict[DestID, Path]:
+        return {**self._gen_dests, **self._ipi_dests}
+
+    @property
+    def _simple_copy_pairs(self) -> list[SimpleCopyPair]:
+        return [
+            SimpleCopyPair(
+                src=SrcID.SETUP_PY,
+                dst=DestID.SETUP_PY),
+            SimpleCopyPair(
+                src=SrcID.INNER_PKG_INSTALLER,
+                dst=DestID.INNER_PKG_INSTALLER),
+            SimpleCopyPair(
+                src=SrcID.CMD_CLASSES,
+                dst=DestID.CMD_CLASSES)
+        ]
+
+    def _build_srepkg_cfg(self):
+        config = configparser.ConfigParser()
+        config.read([
+            self._all_sources[SrcID.CMD_CLASS_CFG],
+            self._all_sources[SrcID.SREPKG_BASE_SETUP_CFG]
+        ])
+        with self._all_dests[DestID.SREPKG_SETUP_CFG] \
+                .open(mode="w") as cfg_file:
+            config.write(cfg_file)
+
+    def _build_inner_pkg_install_cfg(self):
+        ipi_config = configparser.ConfigParser()
+        ipi_config.add_section("metadata")
+        ipi_config.set("metadata", "srepkg_name",
+                       self._construction_dir.srepkg_name)
+        ipi_config.set("metadata", "dist_dir", "orig_dist")
+        ipi_config.set("metadata", "sdist_src", self._orig_src_dist.name)
+        with self._all_dests[DestID.INNER_PKG_INSTALL_CFG] \
+                .open(mode="w") as ipi_cfg_file:
+            ipi_config.write(ipi_cfg_file)
 
     @staticmethod
-    def _copy_contents_to_existing_dir(src: Path, dest: Path):
-        assert src.is_dir() and dest.is_dir()
-        for item in src.iterdir():
-            if item.is_dir():
-                shutil.copytree(item, dest / item.name)
-            else:
-                shutil.copy2(item, dest)
+    def zip_dir(zip_name: str, src_path: Path, exclude_paths: list[Path]):
+        with ZipFile(zip_name, 'w', ZIP_DEFLATED) as zf:
+            for file in list(src_path.rglob('*')):
+                if file not in exclude_paths:
+                    zf.write(file, file.relative_to(src_path.parent))
+
+    def _build_dist(self):
+        exclude_paths = list(
+            (self._construction_dir.srepkg_root / 'orig_dist').iterdir())
+        exclude_paths.remove(self._orig_src_dist)
+
+        self.zip_dir('/Users/duane/srepkg_pkgs/myzip.zip',
+                     self._construction_dir.srepkg_root,
+                     exclude_paths=exclude_paths)
+
+    def adjust_base_pkg(self):
+        self._simple_copy_ops()
+        self._build_manifest()
+        self._build_srepkg_cfg()
+        self._build_inner_pkg_install_cfg()
+
+    def build_srepkg_dist(self):
+        pass
+
+
+class SrepkgWheelCompleter(SrepkgCompleter):
+
+    @property
+    def _gen_component_src_dir(self) -> Path:
+        return Path(__file__).parent.absolute() / \
+               'repackaging_components_new' / 'wheel_completer_components'
+    
+    @property
+    def _orig_src_dist(self) -> Union[Path, None]:
+        return self._construction_dir.orig_pkg_src_summary.src_for_srepkg_wheel
+
+    def _all_dests(self):
+        return self._gen_dests
+
+    def _all_sources(self):
+        return self._gen_sources
+
+    def adjust_base_pkg(self):
+        pass
+
+    def build_srepkg_dist(self):
+        pass
+
+    def _simple_copy_pairs(self):
+        return [
+            SimpleCopyPair(
+                src=SrcID.SETUP_PY,
+                dst=DestID.SETUP_PY),
+        ]
+
+
+class SrepkgNullCompleter(SrepkgCompleter):
+
+    def _gen_component_src_dir(self):
+        pass
+    
+    def adjust_base_pkg(self):
+        pass
+
+    def build_srepkg_dist(self):
+        pass
+    
+    def _all_dests(self):
+        pass
+
+    def _all_sources(self):
+        pass
+    
+    def _simple_copy_pairs(self):
+        pass
+
+
+class SrepkgBuilder(re_int.SrepkgBuilderInterface):
+
+    def __init__(
+            self,
+            construction_dir: sb_new_int.SrepkgComponentReceiver,
+            srepkg_completers: list[SrepkgCompleter] = None
+    ):
+        if srepkg_completers is None:
+            srepkg_completers = []
+        self._srepkg_completers = srepkg_completers
+        self._construction_dir = construction_dir
+        self._base_setup_cfg = configparser.ConfigParser()
+        self._base_setup_cfg.read(
+            self._sources[SrcID.SREPKG_SETUP_CFG_STARTER])
+
+    @property
+    def _sources(self):
+        return {
+            SrcID.SREPKG_SETUP_CFG_STARTER:
+                Path(__file__).parent / 'repackaging_components_new' /
+                'base_components' / 'starter_setup.cfg',
+            SrcID.ENTRY_PT_TEMPLATE:
+                Path(__file__).parent / 'repackaging_components_new' /
+                'base_components' / 'generic_entry.py'
+        }
+
+    @property
+    def _destinations(self):
+        return {
+            DestID.SREPKG_BASE_SETUP_CFG:
+                self._construction_dir.srepkg_root / 'base_setup.cfg',
+            DestID.SREPKG_INIT:
+                self._construction_dir.srepkg_inner / '__init__.py',
+            DestID.SREPKG_ENTRY_PTS_DIR:
+                self._construction_dir.srepkg_inner / 'srepkg_entry_points',
+        }
 
     def _simple_construction_tasks(self):
-        self._copy_contents_to_existing_dir(
-            src=self._sources.paths[SrcID.SREPKG_INNER],
-            dest=self._destinations.paths[DestinationID.SREPKG_INNER])
-        self._copy_contents_to_existing_dir(
-            src=self._sources.paths[SrcID.SREPKG_ROOT],
-            dest=self._destinations.paths[DestinationID.SREPKG_ROOT])
-        self._destinations.paths[DestinationID.SREPKG_INIT].touch()
+        self._destinations[DestID.SREPKG_ENTRY_PTS_DIR].mkdir()
+        self._destinations[DestID.SREPKG_INIT].touch()
 
         return self
 
     def _build_entry_points(self):
         cse.EntryPointsBuilder(
             orig_pkg_entry_pts=self._construction_dir
-                .orig_pkg_src_summary.entry_pts,
-            entry_pt_template=self._sources.paths[SrcID.ENTRY_PT_TEMPLATE],
-            srepkg_entry_pt_dir=self._destinations
-                .paths[DestinationID.SREPKG_ENTRY_PTS_DIR],
+            .orig_pkg_src_summary.entry_pts,
+            entry_pt_template=self._sources[
+                SrcID.ENTRY_PT_TEMPLATE],
+            srepkg_entry_pt_dir=self._destinations[
+                DestID.SREPKG_ENTRY_PTS_DIR],
             srepkg_name=self._construction_dir.srepkg_inner.name,
-            srepkg_config=self._srepkg_config,
+            srepkg_config=self._base_setup_cfg,
             generic_entry_funct_name='entry_funct'
         ).build_entry_pts()
 
         return self
 
     def _write_srepkg_cfg_non_entry_data(self):
-        self._srepkg_config.set(
+        self._base_setup_cfg.set(
             "metadata", "name", self._construction_dir.srepkg_name)
-        self._srepkg_config.set("metadata", "version", self._construction_dir
-                                .orig_pkg_src_summary.pkg_version)
+        self._base_setup_cfg.set("metadata", "version", self._construction_dir
+                                 .orig_pkg_src_summary.pkg_version)
 
         return self
 
-    def _build_srepkg_cfg(self):
-        with self._destinations.paths[DestinationID.SREPKG_SETUP_CFG].open(
-                mode="w") as cfg_file:
-            self._srepkg_config.write(cfg_file)
+    def _build_base_setup_cfg(self):
+        with self._destinations[DestID.SREPKG_BASE_SETUP_CFG] \
+                .open(mode="w") as cfg_file:
+            self._base_setup_cfg.write(cfg_file)
 
         return self
 
-    def _build_inner_pkg_install_cfg(self):
-        ipi_config = configparser.ConfigParser()
-        ipi_config.add_section("metadata")
-        ipi_config.set(
-            "metadata", "srepkg_name", self._construction_dir.srepkg_name)
-        ipi_config.set(
-            "metadata", "sdist_src",
-            self._construction_dir.orig_pkg_src_summary.wheel_path.name)
-        # ipi_config.set(
-        #     "metadata", "name", self._construction_dir.srepkg_inner.name)
-        with self._destinations.paths[DestinationID.INNER_PKG_INSTALL_CFG] \
-                .open(mode="w") as icf:
-            ipi_config.write(icf)
-
-        return self
-
-    def _build_srepkg_manifest(self):
-        with self._sources.paths[SrcID.MANIFEST_TEMPLATE].open(mode="r") as tf:
-            template_text = tf.read()
-        template = string.Template(template_text)
-        result = template.substitute(
-            {"srepkg_name": self._construction_dir.srepkg_name})
-        with self._destinations.paths[DestinationID.MANIFEST] \
-                .open(mode="w") as output_file:
-            output_file.write(result)
-
-        return self
-
-    # change to a concrete method while developing build scheme(s)
-    # @abc.abstractmethod
     def build(self):
         self._simple_construction_tasks() \
             ._build_entry_points() \
             ._write_srepkg_cfg_non_entry_data() \
-            ._build_srepkg_cfg() \
-            ._build_inner_pkg_install_cfg() \
-            ._build_srepkg_manifest()
-
-
-class WheelWheelBuilder(SrepkgBuilder):
-
-    def build(self):
-        pass
-
-
-class SdistWheelBuilder(SrepkgBuilder):
-
-    def build(self):
-        pass
-
-
-class SdistSdistBuilder(SrepkgBuilder):
-
-    def build(self):
-        pass
+            ._build_base_setup_cfg()

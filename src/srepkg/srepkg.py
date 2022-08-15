@@ -1,5 +1,5 @@
 import srepkg.command_input_new as ci_new
-import srepkg.repackager_new as rep_new
+import srepkg.repackager as rep_new
 import srepkg.service_builder as scb
 
 

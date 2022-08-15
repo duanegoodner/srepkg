@@ -58,7 +58,7 @@ class PkgRefIdentifier:
             PkgRefType.GITHUB_REPO: self.is_github_repo()
         }
 
-    def identify_specific_type(self) -> PkgRefType:
+    def identify(self) -> PkgRefType:
         pkg_check_results = self._check_all_types()
         matching_items = [
             item[0] for item in pkg_check_results.items() if item[1] is True

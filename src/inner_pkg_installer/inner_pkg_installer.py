@@ -4,11 +4,7 @@ import subprocess
 import sys
 from packaging import version
 from types import SimpleNamespace
-from typing import NamedTuple
 from pathlib import Path
-from setuptools.command.install import install
-from setuptools.command.develop import develop
-from setuptools.command.egg_info import egg_info
 
 
 class CustomVenvBuilder(venv.EnvBuilder):
@@ -147,15 +143,19 @@ class InnerPkgCfgReader:
         return self._inner_pkg_cfg.get("metadata", "srepkg_name")
 
     @property
+    def dist_dir(self):
+        return self._inner_pkg_cfg.get("metadata", "dist_dir")
+
+    @property
     def sdist_src(self):
         return self._inner_pkg_cfg.get("metadata", "sdist_src")
 
 
 class InnerPkgInstaller:
     def __init__(
-            self, venv_path: Path, inner_pkg_install_ref: Path):
+            self, venv_path: Path, orig_pkg_dist: Path):
         self._venv_path = venv_path
-        self._inner_pkg_install_ref = inner_pkg_install_ref
+        self._orig_pkg_dist = orig_pkg_dist
 
     def build_venv(self):
         env_builder = CustomVenvBuilder()
@@ -163,59 +163,12 @@ class InnerPkgInstaller:
 
         return env_builder.context
 
-    def install_inner_pkg(self):
+    def iso_install_inner_pkg(self):
         venv_context = self.build_venv()
         venv_manager = VenvManager(
             env_dir=Path(venv_context.env_dir),
             env_exe=Path(venv_context.env_exe),
             cfg_path=Path(venv_context.cfg_path))
         venv_manager.pip_install(
-            self._inner_pkg_install_ref, "--quiet"
+            self._orig_pkg_dist, "--quiet"
         ).rewire_shebangs()
-
-
-def custom_command():
-
-    inner_pkg_cfg_reader = InnerPkgCfgReader(Path(__file__).parent /
-                                             'inner_pkg_install.cfg')
-    srepkg_name = inner_pkg_cfg_reader.srepkg_name
-    sdist_src = inner_pkg_cfg_reader.sdist_src
-
-    inner_pkg_installer = InnerPkgInstaller(
-        venv_path=Path(__file__).parent.absolute()
-        / srepkg_name
-        / "srepkg_venv",
-        inner_pkg_install_ref=Path(__file__).parent.absolute() / srepkg_name / sdist_src,
-    )
-
-    inner_pkg_installer.build_venv()
-    inner_pkg_installer.install_inner_pkg()
-
-    return inner_pkg_installer
-
-
-class CustomInstallCommand(install):
-    def run(self):
-        # super(install, self).run()
-
-        install.run(self)
-        custom_command()
-
-        # super(install, self).run()
-        # custom_command()
-
-
-class CustomDevelopCommand(develop):
-    def run(self):
-        develop.run(self)
-        custom_command()
-
-
-class CustomEggInfoCommand(egg_info):
-    def run(self):
-        egg_info.run(self)
-        custom_command()
-
-
-if __name__ == "__main__":
-    custom_command()

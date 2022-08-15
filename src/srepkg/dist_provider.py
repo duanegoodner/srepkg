@@ -42,7 +42,7 @@ class DistProviderFromSrc(ConstructedDistProvider):
         # build wheel first
         wheel_path_str = dist_builder.build(
             distribution='wheel',
-            output_directory=str(self._pkg_receiver.orig_pkg_dest))
+            output_directory=str(self._pkg_receiver.orig_pkg_dists))
 
         wheel_path = Path(wheel_path_str)
 
@@ -50,10 +50,10 @@ class DistProviderFromSrc(ConstructedDistProvider):
         if 'any' not in parse_wheel_filename(wheel_path.name).platform_tags:
             dist_builder.build(
                 distribution='sdist',
-                output_directory=str(self._pkg_receiver.orig_pkg_dest))
+                output_directory=str(self._pkg_receiver.orig_pkg_dists))
 
 
 class DistCopyProvider(ConstructedDistProvider):
 
     def provide(self):
-        shutil.copy2(self._orig_pkg_path, self._pkg_receiver.orig_pkg_dest)
+        shutil.copy2(self._orig_pkg_path, self._pkg_receiver.orig_pkg_dists)

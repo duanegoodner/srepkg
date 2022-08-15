@@ -1,4 +1,4 @@
-import srepkg.repackager_new_interfaces as re_int
+import srepkg.repackager_interfaces as re_int
 import srepkg.orig_src_preparer_interfaces as osp_int
 
 

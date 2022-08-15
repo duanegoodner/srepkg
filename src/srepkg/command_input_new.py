@@ -1,5 +1,5 @@
 import argparse
-import srepkg.repackager_new_interfaces as rep_int
+import srepkg.repackager_interfaces as rep_int
 import srepkg.shared_data_structures.new_data_structures as nds
 
 

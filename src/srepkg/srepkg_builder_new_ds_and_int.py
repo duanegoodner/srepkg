@@ -1,9 +1,42 @@
 import abc
+import configparser
+
 import pkginfo
-from dataclasses import dataclass
+import shutil
+import string
+from dataclasses import dataclass, field
+from enum import Enum, auto
 from pathlib import Path
-from typing import Any, List
+from typing import Any, List, Union, NamedTuple
 from wheel_filename import parse_wheel_filename
+
+
+# class SrcID(Enum):
+#     SREPKG_ROOT = auto()
+#     SREPKG_INNER = auto()
+#     MANIFEST_TEMPLATE = auto()
+#     SREPKG_SETUP_CFG_STARTER = auto()
+#     SREPKG_BASE_SETUP_CFG = auto()
+#     SETUP_PY = auto()
+#     ENTRY_PT_TEMPLATE = auto()
+#     INNER_PKG_INSTALLER = auto()
+#     CMD_CLASS_CFG = auto()
+#     CMD_CLASSES = auto()
+#
+#
+# class DestID(Enum):
+#     CMD_CLASSES = auto()
+#     SREPKG_ROOT = auto()
+#     INNER_PKG_INSTALLER = auto()
+#     INNER_PKG_INSTALL_CFG = auto()
+#     MANIFEST = auto()
+#     SREPKG_BASE_SETUP_CFG = auto()
+#     SREPKG_SETUP_CFG = auto()
+#     SETUP_PY = auto()
+#     SREPKG_INNER = auto()
+#     SREPKG_INIT = auto()
+#     SREPKG_ENTRY_PTS_DIR = auto()
+#     SREPKG_ENTRY_POINTS_INIT = auto()
 
 
 @dataclass
@@ -54,8 +87,8 @@ class DistInfo:
 class OrigPkgSrcSummary:
     pkg_name: str
     pkg_version: str
-    dists: List[DistInfo]
-    entry_pts: PkgCSEntryPoints = None
+    dists: List[DistInfo] = field(default_factory=lambda: [])
+    entry_pts: PkgCSEntryPoints = PkgCSEntryPoints(cs_entry_pts=[])
 
     @property
     def has_wheel(self):
@@ -69,12 +102,10 @@ class OrigPkgSrcSummary:
                     pkginfo.Wheel][0]
 
     @property
-    def has_platform_independent_wheel(self):
+    def has_platform_indep_wheel(self):
         return self.has_wheel and\
                ('any' in parse_wheel_filename(self.wheel_path.name)
                 .platform_tags)
-
-
 
     @property
     def has_sdist(self):
@@ -85,7 +116,21 @@ class OrigPkgSrcSummary:
     def sdist_path(self):
         if self.has_sdist:
             return [dist.path for dist in self.dists if type(dist.dist_obj) ==
-                    pkginfo.SDist]
+                    pkginfo.SDist][0]
+
+    @property
+    def src_for_srepkg_wheel(self) -> Union[Path, None]:
+        if self.has_wheel:
+            return self.wheel_path
+        if self.has_sdist:
+            return self.sdist_path
+
+    @property
+    def src_for_srepkg_sdist(self) -> Union[Path, None]:
+        if self.has_platform_indep_wheel:
+            return self.wheel_path
+        if self.has_sdist:
+            return self.sdist_path
 
 
 class SrepkgComponentReceiver(abc.ABC):
@@ -108,4 +153,15 @@ class SrepkgComponentReceiver(abc.ABC):
     @property
     @abc.abstractmethod
     def orig_pkg_src_summary(self) -> OrigPkgSrcSummary:
+        pass
+
+
+class SrepkgCompleterInterface(abc.ABC):
+
+    @abc.abstractmethod
+    def adjust_base_pkg(self):
+        pass
+
+    @abc.abstractmethod
+    def build_srepkg_dist(self):
         pass
