@@ -24,7 +24,7 @@ class TestConstructionDir:
 
     def test_init_custom(self, tmp_path):
         construction_dir = cdn.CustomConstructionDir(
-            construction_dir_arg=tmp_path)
+            construction_dir_command=tmp_path)
         self.standard_init_tests(construction_dir)
         assert construction_dir._root == tmp_path
 
