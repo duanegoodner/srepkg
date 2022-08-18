@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, List
 
-# import srepkg.repackaging_components_new.partially_built.generic_entry as ge
+# import srepkg.repackaging_components.partially_built.generic_entry as ge
 
 import srepkg.srepkg_builder_new_ds_and_int as sb_new_int
 

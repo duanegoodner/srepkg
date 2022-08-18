@@ -131,16 +131,21 @@ class SrepkgCompleter(sb_new_int.SrepkgCompleterInterface):
         pass
 
     def _restore_construction_dir_to(self, initial_contents: list[Path]):
-        cur_contents = list(self._construction_dir.srepkg_root.rglob('*'))
-        cur_files = [item for item in cur_contents if not item.is_dir()]
-        cur_dirs = [item for item in cur_contents if item.is_dir()]
+        cur_dirs = [item for item in
+                    list(self._construction_dir.srepkg_root.rglob('*')) if
+                    item.is_dir()]
+
+        for item in cur_dirs:
+            if item not in initial_contents:
+                shutil.rmtree(item, ignore_errors=True)
+
+        cur_files = [item for item in
+                     list(self._construction_dir.srepkg_root.rglob('*')) if
+                     not item.is_dir()]
 
         for item in cur_files:
             if item not in initial_contents:
                 item.unlink()
-        for item in cur_dirs:
-            if item not in initial_contents:
-                item.rmdir()
 
     def build_and_cleanup(self):
         initial_contents = list(self._construction_dir.srepkg_root.rglob('*'))
@@ -154,7 +159,7 @@ class SrepkgSdistCompleter(SrepkgCompleter):
     @property
     def _gen_component_src_dir(self) -> Path:
         return Path(__file__).parent.absolute() / \
-               'repackaging_components_new' / 'sdist_completer_components'
+               'repackaging_components' / 'sdist_completer_components'
 
     @property
     def _orig_src_dist(self) -> Union[Path, None]:
@@ -254,7 +259,7 @@ class SrepkgWheelCompleter(SrepkgCompleter):
     @property
     def _gen_component_src_dir(self) -> Path:
         return Path(__file__).parent.absolute() / \
-               'repackaging_components_new' / 'wheel_completer_components'
+               'repackaging_components' / 'wheel_completer_components'
 
     @property
     def _orig_src_dist(self) -> Union[Path, None]:
@@ -291,17 +296,17 @@ class SrepkgWheelCompleter(SrepkgCompleter):
         ipi.InnerPkgInstaller(
             venv_path=self._all_dests[DestID.SREPKG_VENV],
             orig_pkg_dist=self._construction_dir.orig_pkg_src_summary
-            .src_for_srepkg_wheel
+                .src_for_srepkg_wheel
         ).iso_install_inner_pkg()
 
-    def _build_srepkg_wheel(self):
+    def _build_srepkg_dist(self):
         dist_builder = build.ProjectBuilder(
             srcdir=self._construction_dir.srepkg_root,
             python_executable=sys.executable)
 
         new_wheel = dist_builder.build(
             distribution='wheel',
-            output_directory=Path('/Users/duane/srepkg_pkgs/myzip.zip')
+            output_directory=Path('/Users/duane/srepkg_pkgs')
         )
 
     def _adjust_base_pkg(self):
@@ -309,9 +314,6 @@ class SrepkgWheelCompleter(SrepkgCompleter):
         self._build_manifest()
         self._build_srepkg_cfg()
         self._install_inner_pkg()
-
-    def _build_srepkg_dist(self):
-        pass
 
 
 class SrepkgBuilder(re_int.SrepkgBuilderInterface):
@@ -333,10 +335,10 @@ class SrepkgBuilder(re_int.SrepkgBuilderInterface):
     def _sources(self):
         return {
             SrcID.SREPKG_SETUP_CFG_STARTER:
-                Path(__file__).parent / 'repackaging_components_new' /
+                Path(__file__).parent / 'repackaging_components' /
                 'base_components' / 'starter_setup.cfg',
             SrcID.ENTRY_PT_TEMPLATE:
-                Path(__file__).parent / 'repackaging_components_new' /
+                Path(__file__).parent / 'repackaging_components' /
                 'base_components' / 'generic_entry.py'
         }
 
@@ -360,7 +362,7 @@ class SrepkgBuilder(re_int.SrepkgBuilderInterface):
     def _build_entry_points(self):
         cse.EntryPointsBuilder(
             orig_pkg_entry_pts=self._construction_dir
-            .orig_pkg_src_summary.entry_pts,
+                .orig_pkg_src_summary.entry_pts,
             entry_pt_template=self._sources[
                 SrcID.ENTRY_PT_TEMPLATE],
             srepkg_entry_pt_dir=self._destinations[

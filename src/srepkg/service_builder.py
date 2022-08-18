@@ -1,5 +1,5 @@
 import abc
-from functools import singledispatchmethod
+from functools import singledispatch
 from pathlib import Path
 from typing import Callable, Type, Union
 
@@ -16,28 +16,31 @@ import srepkg.shared_data_structures.new_data_structures as nds
 from srepkg.utils.pkg_type_identifier import PkgRefType, PkgRefIdentifier
 
 
-class ConstructionDirDispatch:
+@singledispatch
+def create_construction_dir(
+        construction_dir_command,
+        srepkg_name_command: str = None) -> cdn.ConstructionDir:
+    raise NotImplementedError
 
-    @singledispatchmethod
-    def create(self, construction_dir_command,
-               srepkg_name_command: str = None) -> cdn.ConstructionDir:
-        raise NotImplementedError
 
-    @create.register(type(None))
-    def _(self, construction_dir_command, srepkg_name_command: str = None):
-        return cdn.TempConstructionDir(srepkg_name_command=srepkg_name_command)
+@create_construction_dir.register(type(None))
+def _(construction_dir_command,  srepkg_name_command: str = None):
+    return cdn.TempConstructionDir(srepkg_name_command=srepkg_name_command)
 
-    @create.register(str)
-    def _(self, construction_dir_command, srepkg_name_command: str = None):
-        return cdn.CustomConstructionDir(
-            construction_dir_command=Path(construction_dir_command),
-            srepkg_name_command=srepkg_name_command)
 
-    @create.register(Path)
-    def _(self, construction_dir_command, srepkg_name_command: str = None):
-        return cdn.CustomConstructionDir(
-            construction_dir_command=construction_dir_command,
-            srepkg_name_command=srepkg_name_command)
+@create_construction_dir.register(str)
+def _(construction_dir_command, srepkg_name_command: str = None):
+    return cdn.CustomConstructionDir(
+        construction_dir_command=Path(construction_dir_command),
+        srepkg_name_command=srepkg_name_command)
+
+
+@create_construction_dir.register(Path)
+def _(construction_dir_command, srepkg_name_command: str = None):
+    return cdn.CustomConstructionDir(
+        construction_dir_command=construction_dir_command,
+        srepkg_name_command=srepkg_name_command)
+
 
 
 class PkgRefDispatchWithConstructionDir(abc.ABC):
@@ -93,7 +96,8 @@ class OrigSrcPreparerBuilder:
         self._orig_pkg_ref_command = orig_pkg_ref_command
         self._srepkg_name_command = srepkg_name_command
         self._service_registry = service_registry
-        self._construction_dir_dispatch = ConstructionDirDispatch()
+        self._construction_dir_dispatch = create_construction_dir
+        # self._construction_dir_dispatch = ConstructionDirDispatch()
         self._retriever_dispatch = PkgRetrieverDispatch(
             pkg_ref_command=orig_pkg_ref_command)
         self._provider_dispatch = DistProviderDispatch(
@@ -101,7 +105,7 @@ class OrigSrcPreparerBuilder:
 
     def create(self):
         # ConstructionDirDispatch (w/ @singledispatchmethod) can't take kwargs
-        construction_dir = self._construction_dir_dispatch.create(
+        construction_dir = self._construction_dir_dispatch(
             self._construction_dir_command, self._srepkg_name_command)
         pkg_retriever = self._retriever_dispatch.create(
             construction_dir=construction_dir)

@@ -21,4 +21,11 @@ def test_build_from_src():
 
     # srepkg_builder._srepkg_completers[0]._adjust_base_pkg()
     # srepkg_builder._srepkg_completers[0]._build_srepkg_dist()
-    srepkg_builder._srepkg_completers[0].build_and_cleanup()
+    # srepkg_builder._srepkg_completers[0].build_and_cleanup()
+
+    srepkg_builder._srepkg_completers[1]._adjust_base_pkg()
+    # srepkg_builder._srepkg_completers[1].build_and_cleanup()
+
+
+if __name__ =='__main__':
+    test_build_from_src()
