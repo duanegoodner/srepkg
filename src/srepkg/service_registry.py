@@ -11,7 +11,7 @@ class ServiceObjectID(Enum):
     BUILDER = auto()
 
 
-class _ServiceRegistry:
+class ServiceRegistry:
 
     def __init__(self):
         self._registry = {}
@@ -54,6 +54,3 @@ class UnregisteredServiceObjectID(Exception):
 
     def __str__(self):
         return f"{str(self._service_object_id)} -> {self._msg}"
-
-
-SERVICE_REGISTRY = _ServiceRegistry()

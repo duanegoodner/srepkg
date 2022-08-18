@@ -95,6 +95,19 @@ class SrepkgCompleter(sb_new_int.SrepkgCompleterInterface):
                 src=self._all_sources[pair.src],
                 dst=self._all_dests[pair.dst])
 
+    @property
+    @abc.abstractmethod
+    def _srepkg_cfg_components(self) -> list[SrcID]:
+        pass
+
+    def _build_srepkg_cfg(self):
+        config = configparser.ConfigParser()
+        config.read([self._all_sources[src_id] for src_id in
+                     self._srepkg_cfg_components])
+        with self._all_dests[DestID.SREPKG_SETUP_CFG] \
+                .open(mode="w") as cfg_file:
+            config.write(cfg_file)
+
     def _build_manifest(self):
         with self._gen_sources[SrcID.MANIFEST_TEMPLATE].open(mode="r") as tf:
             template_text = tf.read()
@@ -160,23 +173,24 @@ class SrepkgSdistCompleter(SrepkgCompleter):
                 dst=DestID.CMD_CLASSES)
         ]
 
-    def _build_srepkg_cfg(self):
-        config = configparser.ConfigParser()
-        config.read([
-            self._all_sources[SrcID.CMD_CLASS_CFG],
-            self._all_sources[SrcID.SREPKG_BASE_SETUP_CFG]
-        ])
-        with self._all_dests[DestID.SREPKG_SETUP_CFG] \
-                .open(mode="w") as cfg_file:
-            config.write(cfg_file)
+    @property
+    def _srepkg_cfg_components(self) -> list[SrcID]:
+        return [SrcID.CMD_CLASS_CFG, SrcID.SREPKG_BASE_SETUP_CFG]
 
     def _build_inner_pkg_install_cfg(self):
+
+        metadata = {
+            "srepkg_name": self._construction_dir.srepkg_name,
+            "dist_dir": "orig_dist",
+            "sdist_src": self._orig_src_dist.name
+        }
+
         ipi_config = configparser.ConfigParser()
         ipi_config.add_section("metadata")
-        ipi_config.set("metadata", "srepkg_name",
-                       self._construction_dir.srepkg_name)
-        ipi_config.set("metadata", "dist_dir", "orig_dist")
-        ipi_config.set("metadata", "sdist_src", self._orig_src_dist.name)
+
+        for (key, value) in metadata.items():
+            ipi_config.set("metadata", key, value)
+
         with self._all_dests[DestID.INNER_PKG_INSTALL_CFG] \
                 .open(mode="w") as ipi_cfg_file:
             ipi_config.write(ipi_cfg_file)
@@ -193,8 +207,8 @@ class SrepkgSdistCompleter(SrepkgCompleter):
             (self._construction_dir.srepkg_root / 'orig_dist').iterdir())
         exclude_paths.remove(self._orig_src_dist)
 
-        self.zip_dir('/Users/duane/srepkg_pkgs/myzip.zip',
-                     self._construction_dir.srepkg_root,
+        self.zip_dir(zip_name='/Users/duane/srepkg_pkgs/myzip.zip',
+                     src_path=self._construction_dir.srepkg_root,
                      exclude_paths=exclude_paths)
 
     def adjust_base_pkg(self):
@@ -213,23 +227,20 @@ class SrepkgWheelCompleter(SrepkgCompleter):
     def _gen_component_src_dir(self) -> Path:
         return Path(__file__).parent.absolute() / \
                'repackaging_components_new' / 'wheel_completer_components'
-    
+
     @property
     def _orig_src_dist(self) -> Union[Path, None]:
         return self._construction_dir.orig_pkg_src_summary.src_for_srepkg_wheel
 
-    def _all_dests(self):
-        return self._gen_dests
-
+    @property
     def _all_sources(self):
         return self._gen_sources
 
-    def adjust_base_pkg(self):
-        pass
+    @property
+    def _all_dests(self):
+        return self._gen_dests
 
-    def build_srepkg_dist(self):
-        pass
-
+    @property
     def _simple_copy_pairs(self):
         return [
             SimpleCopyPair(
@@ -237,25 +248,14 @@ class SrepkgWheelCompleter(SrepkgCompleter):
                 dst=DestID.SETUP_PY),
         ]
 
+    @property
+    def _srepkg_cfg_components(self) -> list[SrcID]:
+        return [SrcID.SREPKG_BASE_SETUP_CFG]
 
-class SrepkgNullCompleter(SrepkgCompleter):
-
-    def _gen_component_src_dir(self):
-        pass
-    
     def adjust_base_pkg(self):
         pass
 
     def build_srepkg_dist(self):
-        pass
-    
-    def _all_dests(self):
-        pass
-
-    def _all_sources(self):
-        pass
-    
-    def _simple_copy_pairs(self):
         pass
 
 
@@ -318,10 +318,13 @@ class SrepkgBuilder(re_int.SrepkgBuilderInterface):
         return self
 
     def _write_srepkg_cfg_non_entry_data(self):
-        self._base_setup_cfg.set(
-            "metadata", "name", self._construction_dir.srepkg_name)
-        self._base_setup_cfg.set("metadata", "version", self._construction_dir
-                                 .orig_pkg_src_summary.pkg_version)
+        metadata = {
+            "name": self._construction_dir.srepkg_name,
+            "version": self._construction_dir.orig_pkg_src_summary.pkg_version
+        }
+
+        for (key, value) in metadata.items():
+            self._base_setup_cfg.set("metadata", key, value)
 
         return self
 
