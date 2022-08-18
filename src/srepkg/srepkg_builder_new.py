@@ -1,4 +1,7 @@
 import abc
+import sys
+
+import build
 import configparser
 import shutil
 import string
@@ -6,6 +9,7 @@ from enum import Enum, auto
 from pathlib import Path
 from typing import NamedTuple, Union
 from zipfile import ZIP_DEFLATED, ZipFile
+import inner_pkg_installer.inner_pkg_installer as ipi
 import srepkg.cs_entry_pts as cse
 import srepkg.repackager_interfaces as re_int
 import srepkg.srepkg_builder_new_ds_and_int as sb_new_int
@@ -32,6 +36,7 @@ class DestID(Enum):
     SETUP_PY = auto()
     SREPKG_INIT = auto()
     SREPKG_ENTRY_PTS_DIR = auto()
+    SREPKG_VENV = auto()
 
 
 class SimpleCopyPair(NamedTuple):
@@ -117,6 +122,32 @@ class SrepkgCompleter(sb_new_int.SrepkgCompleterInterface):
         with self._gen_dests[DestID.MANIFEST].open(mode="w") as manifest_file:
             manifest_file.write(result)
 
+    @abc.abstractmethod
+    def _adjust_base_pkg(self):
+        pass
+
+    @abc.abstractmethod
+    def _build_srepkg_dist(self):
+        pass
+
+    def _restore_construction_dir_to(self, initial_contents: list[Path]):
+        cur_contents = list(self._construction_dir.srepkg_root.rglob('*'))
+        cur_files = [item for item in cur_contents if not item.is_dir()]
+        cur_dirs = [item for item in cur_contents if item.is_dir()]
+
+        for item in cur_files:
+            if item not in initial_contents:
+                item.unlink()
+        for item in cur_dirs:
+            if item not in initial_contents:
+                item.rmdir()
+
+    def build_and_cleanup(self):
+        initial_contents = list(self._construction_dir.srepkg_root.rglob('*'))
+        self._adjust_base_pkg()
+        self._build_srepkg_dist()
+        self._restore_construction_dir_to(initial_contents)
+
 
 class SrepkgSdistCompleter(SrepkgCompleter):
 
@@ -195,6 +226,12 @@ class SrepkgSdistCompleter(SrepkgCompleter):
                 .open(mode="w") as ipi_cfg_file:
             ipi_config.write(ipi_cfg_file)
 
+    def _adjust_base_pkg(self):
+        self._simple_copy_ops()
+        self._build_manifest()
+        self._build_srepkg_cfg()
+        self._build_inner_pkg_install_cfg()
+
     @staticmethod
     def zip_dir(zip_name: str, src_path: Path, exclude_paths: list[Path]):
         with ZipFile(zip_name, 'w', ZIP_DEFLATED) as zf:
@@ -202,7 +239,7 @@ class SrepkgSdistCompleter(SrepkgCompleter):
                 if file not in exclude_paths:
                     zf.write(file, file.relative_to(src_path.parent))
 
-    def _build_dist(self):
+    def _build_srepkg_dist(self):
         exclude_paths = list(
             (self._construction_dir.srepkg_root / 'orig_dist').iterdir())
         exclude_paths.remove(self._orig_src_dist)
@@ -210,15 +247,6 @@ class SrepkgSdistCompleter(SrepkgCompleter):
         self.zip_dir(zip_name='/Users/duane/srepkg_pkgs/myzip.zip',
                      src_path=self._construction_dir.srepkg_root,
                      exclude_paths=exclude_paths)
-
-    def adjust_base_pkg(self):
-        self._simple_copy_ops()
-        self._build_manifest()
-        self._build_srepkg_cfg()
-        self._build_inner_pkg_install_cfg()
-
-    def build_srepkg_dist(self):
-        pass
 
 
 class SrepkgWheelCompleter(SrepkgCompleter):
@@ -237,8 +265,15 @@ class SrepkgWheelCompleter(SrepkgCompleter):
         return self._gen_sources
 
     @property
+    def _ipi_paths(self):
+        return {
+            DestID.SREPKG_VENV: self._construction_dir.srepkg_inner /
+                                'srepkg_venv'
+        }
+
+    @property
     def _all_dests(self):
-        return self._gen_dests
+        return {**self._gen_dests, **self._ipi_paths}
 
     @property
     def _simple_copy_pairs(self):
@@ -252,10 +287,30 @@ class SrepkgWheelCompleter(SrepkgCompleter):
     def _srepkg_cfg_components(self) -> list[SrcID]:
         return [SrcID.SREPKG_BASE_SETUP_CFG]
 
-    def adjust_base_pkg(self):
-        pass
+    def _install_inner_pkg(self):
+        ipi.InnerPkgInstaller(
+            venv_path=self._all_dests[DestID.SREPKG_VENV],
+            orig_pkg_dist=self._construction_dir.orig_pkg_src_summary
+            .src_for_srepkg_wheel
+        ).iso_install_inner_pkg()
 
-    def build_srepkg_dist(self):
+    def _build_srepkg_wheel(self):
+        dist_builder = build.ProjectBuilder(
+            srcdir=self._construction_dir.srepkg_root,
+            python_executable=sys.executable)
+
+        new_wheel = dist_builder.build(
+            distribution='wheel',
+            output_directory=Path('/Users/duane/srepkg_pkgs/myzip.zip')
+        )
+
+    def _adjust_base_pkg(self):
+        self._simple_copy_ops()
+        self._build_manifest()
+        self._build_srepkg_cfg()
+        self._install_inner_pkg()
+
+    def _build_srepkg_dist(self):
         pass
 
 

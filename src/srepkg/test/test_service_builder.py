@@ -19,5 +19,6 @@ def test_build_from_src():
     srepkg_builder = service_builder.create_srepkg_builder()
     srepkg_builder.build()
 
-    srepkg_builder._srepkg_completers[0].adjust_base_pkg()
-    srepkg_builder._srepkg_completers[0]._build_dist()
+    # srepkg_builder._srepkg_completers[0]._adjust_base_pkg()
+    # srepkg_builder._srepkg_completers[0]._build_srepkg_dist()
+    srepkg_builder._srepkg_completers[0].build_and_cleanup()

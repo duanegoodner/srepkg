@@ -11,7 +11,6 @@ import srepkg.service_registry as sr
 import srepkg.srepkg_builder_new as sbn
 
 import srepkg.repackager_interfaces as re_new_int
-import srepkg.srepkg_builder_new_ds_and_int as sb_new_int
 
 import srepkg.shared_data_structures.new_data_structures as nds
 from srepkg.utils.pkg_type_identifier import PkgRefType, PkgRefIdentifier

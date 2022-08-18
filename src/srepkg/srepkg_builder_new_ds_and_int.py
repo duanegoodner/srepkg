@@ -1,42 +1,9 @@
 import abc
-import configparser
-
 import pkginfo
-import shutil
-import string
 from dataclasses import dataclass, field
-from enum import Enum, auto
 from pathlib import Path
-from typing import Any, List, Union, NamedTuple
+from typing import Any, List, Union
 from wheel_filename import parse_wheel_filename
-
-
-# class SrcID(Enum):
-#     SREPKG_ROOT = auto()
-#     SREPKG_INNER = auto()
-#     MANIFEST_TEMPLATE = auto()
-#     SREPKG_SETUP_CFG_STARTER = auto()
-#     SREPKG_BASE_SETUP_CFG = auto()
-#     SETUP_PY = auto()
-#     ENTRY_PT_TEMPLATE = auto()
-#     INNER_PKG_INSTALLER = auto()
-#     CMD_CLASS_CFG = auto()
-#     CMD_CLASSES = auto()
-#
-#
-# class DestID(Enum):
-#     CMD_CLASSES = auto()
-#     SREPKG_ROOT = auto()
-#     INNER_PKG_INSTALLER = auto()
-#     INNER_PKG_INSTALL_CFG = auto()
-#     MANIFEST = auto()
-#     SREPKG_BASE_SETUP_CFG = auto()
-#     SREPKG_SETUP_CFG = auto()
-#     SETUP_PY = auto()
-#     SREPKG_INNER = auto()
-#     SREPKG_INIT = auto()
-#     SREPKG_ENTRY_PTS_DIR = auto()
-#     SREPKG_ENTRY_POINTS_INIT = auto()
 
 
 @dataclass
@@ -159,9 +126,5 @@ class SrepkgComponentReceiver(abc.ABC):
 class SrepkgCompleterInterface(abc.ABC):
 
     @abc.abstractmethod
-    def adjust_base_pkg(self):
-        pass
-
-    @abc.abstractmethod
-    def build_srepkg_dist(self):
+    def build_and_cleanup(self):
         pass
