@@ -1,25 +1,24 @@
 import abc
 from functools import singledispatch
 from pathlib import Path
-from typing import Callable, Type, Union
+from typing import Callable, Dict, Type, Union
 
-import srepkg.construction_dir_new as cdn
+import srepkg.construction_dir as cdn
 import srepkg.dist_provider as opr
 import srepkg.orig_src_preparer as osp
 import srepkg.remote_pkg_retriever as rpr
 import srepkg.service_registry as sr
-import srepkg.srepkg_builder_new as sbn
+import srepkg.srepkg_builder as sbn
 
-import srepkg.repackager_interfaces as re_new_int
+import srepkg.repackager_interfaces as rep_int
 
-import srepkg.shared_data_structures.new_data_structures as nds
 from srepkg.utils.pkg_type_identifier import PkgRefType, PkgRefIdentifier
 
 
 @singledispatch
 def create_construction_dir(
-        construction_dir_command,
-        srepkg_name_command: str = None) -> cdn.ConstructionDir:
+        construction_dir_command, srepkg_name_command: str = None)\
+        -> cdn.ConstructionDir:
     raise NotImplementedError
 
 
@@ -42,7 +41,6 @@ def _(construction_dir_command, srepkg_name_command: str = None):
         srepkg_name_command=srepkg_name_command)
 
 
-
 class PkgRefDispatchWithConstructionDir(abc.ABC):
 
     def __init__(self, pkg_ref_command: str):
@@ -50,7 +48,7 @@ class PkgRefDispatchWithConstructionDir(abc.ABC):
 
     @property
     @abc.abstractmethod
-    def _dispatch_table(self) -> dict[PkgRefType, Callable]:
+    def _dispatch_table(self) -> Dict[PkgRefType, Callable]:
         pass
 
     def create(self, construction_dir: cdn.ConstructionDir):
@@ -62,7 +60,7 @@ class PkgRefDispatchWithConstructionDir(abc.ABC):
 class PkgRetrieverDispatch(PkgRefDispatchWithConstructionDir):
 
     @property
-    def _dispatch_table(self) -> dict[PkgRefType, Callable]:
+    def _dispatch_table(self) -> Dict[PkgRefType, Callable]:
         return {
             PkgRefType.LOCAL_SRC: rpr.NullPkgRetriever,
             PkgRefType.LOCAL_SDIST: rpr.NullPkgRetriever,
@@ -75,7 +73,7 @@ class PkgRetrieverDispatch(PkgRefDispatchWithConstructionDir):
 class DistProviderDispatch(PkgRefDispatchWithConstructionDir):
 
     @property
-    def _dispatch_table(self) -> dict[PkgRefType, Callable]:
+    def _dispatch_table(self) -> Dict[PkgRefType, Callable]:
         return {
             PkgRefType.LOCAL_SRC: opr.DistProviderFromSrc,
             PkgRefType.LOCAL_SDIST: opr.DistCopyProvider,
@@ -97,7 +95,6 @@ class OrigSrcPreparerBuilder:
         self._srepkg_name_command = srepkg_name_command
         self._service_registry = service_registry
         self._construction_dir_dispatch = create_construction_dir
-        # self._construction_dir_dispatch = ConstructionDirDispatch()
         self._retriever_dispatch = PkgRetrieverDispatch(
             pkg_ref_command=orig_pkg_ref_command)
         self._provider_dispatch = DistProviderDispatch(
@@ -171,10 +168,14 @@ class SdistCompleterDispatch(CompleterDispatch):
 
 class SrepkgBuilderBuilder:
 
-    def __init__(self, service_registry: sr.ServiceRegistry):
+    def __init__(
+            self,
+            service_registry: sr.ServiceRegistry,
+            output_dir_command: Union[str, None]):
         self._service_registry = service_registry
         self._construction_dir = service_registry.get_service(
             sr.ServiceObjectID.CONSTRUCTION_DIR)
+        self._output_dir = output_dir_command
 
     def create(self):
 
@@ -193,7 +194,10 @@ class SrepkgBuilderBuilder:
         srepkg_builder = sbn.SrepkgBuilder(
             construction_dir=self._construction_dir,
             srepkg_completers=[value for (key, value) in
-                               non_null_completers.items()])
+                               non_null_completers.items()],
+            output_dir=Path(self._output_dir)
+            if self._output_dir else Path.cwd()
+        )
 
         self._service_registry.register(
             {
@@ -204,13 +208,13 @@ class SrepkgBuilderBuilder:
         return srepkg_builder
 
 
-class ServiceBuilder(re_new_int.ServiceBuilderInterface):
+class ServiceBuilder(rep_int.ServiceBuilderInterface):
 
-    def __init__(self, srepkg_command: nds.SrepkgCommand):
+    def __init__(self, srepkg_command: rep_int.SrepkgCommand):
         self._srepkg_command = srepkg_command
         self._service_registry = sr.ServiceRegistry()
 
-    def create_orig_src_preparer(self) -> re_new_int.OrigSrcPreparerInterface:
+    def create_orig_src_preparer(self) -> rep_int.OrigSrcPreparerInterface:
         osb_builder = OrigSrcPreparerBuilder(
             construction_dir_command=self._srepkg_command.construction_dir,
             orig_pkg_ref_command=self._srepkg_command.orig_pkg_ref,
@@ -218,6 +222,8 @@ class ServiceBuilder(re_new_int.ServiceBuilderInterface):
             service_registry=self._service_registry)
         return osb_builder.create()
 
-    def create_srepkg_builder(self) -> re_new_int.SrepkgBuilderInterface:
-        srepkg_builder_builder = SrepkgBuilderBuilder(self._service_registry)
+    def create_srepkg_builder(self) -> rep_int.SrepkgBuilderInterface:
+        srepkg_builder_builder = SrepkgBuilderBuilder(
+            service_registry=self._service_registry,
+            output_dir_command=self._srepkg_command.dist_out_dir)
         return srepkg_builder_builder.create()

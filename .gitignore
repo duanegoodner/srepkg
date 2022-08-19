@@ -13,3 +13,5 @@ build/lib/
 logo_concept.svg
 
 dual_build_notes.txt
+
+*.whl

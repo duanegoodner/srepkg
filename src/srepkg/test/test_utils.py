@@ -43,11 +43,6 @@ class TestArchiveIdentifier:
             file_name='testproj-0.0.0-not-a-distribution.py',
             file_type=daft.ArchiveFileType.UNKNOWN,
             dist_type=daft.ArchiveDistType.UNKNOWN
-        ),
-        ExpectedFileDistType(
-            file_name='numpy-1.23.1.tar.gz',
-            file_type=daft.ArchiveFileType.TAR_GZ,
-            dist_type=daft.ArchiveDistType.SDIST
         )
     ]
 

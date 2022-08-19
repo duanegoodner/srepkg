@@ -3,7 +3,6 @@ import build
 import shutil
 import sys
 
-import wheel_inspect
 from pathlib import Path
 from wheel_filename import parse_wheel_filename
 

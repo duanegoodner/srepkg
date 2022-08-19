@@ -1,0 +1,70 @@
+import srepkg.command_input as ci
+import pytest
+
+
+class TestCommandInput:
+
+    local_src_pkg_ref = "./local_pkg_ref"
+    user_srepkg_name = "user_srepkg_name"
+    user_construction_dir = "user_construction_dir"
+    user_dist_out_dir = "user_dist_out_dir"
+    extra_arg = "extra_arg"
+
+    def test_zero_args(self, capsys):
+        with pytest.raises(SystemExit):
+            srepkg_args = ci.SrepkgCommandLine().get_args([])
+
+        stderr = capsys.readouterr().err
+        expected_msg_components = [
+            "usage",
+            "[-h] [-n [SREPKG_NAME]]",
+            "[-c [CONSTRUCTION_DIR]]",
+            "[-d [DIST_OUT_DIR]]",
+            "error: the following arguments are required: " "orig_pkg_ref",
+        ]
+        assert all([component in stderr for component in
+                    expected_msg_components])
+
+    def test_one_arg(self):
+        args = ci.SrepkgCommandLine().get_args([self.local_src_pkg_ref])
+        assert args.orig_pkg_ref == self.local_src_pkg_ref
+        assert args.srepkg_name is None
+
+    def test_valid_custom_name(self):
+        args = ci.SrepkgCommandLine().get_args([
+            self.local_src_pkg_ref, "-n", self.user_srepkg_name])
+        assert args.orig_pkg_ref == self.local_src_pkg_ref
+        assert args.srepkg_name == self.user_srepkg_name
+
+    def test_custom_construction_dir(self):
+        args = ci.SrepkgCommandLine().get_args([
+            self.local_src_pkg_ref,
+            "-c",
+            self.user_construction_dir
+        ])
+        assert args.orig_pkg_ref == self.local_src_pkg_ref
+        assert args.construction_dir == self.user_construction_dir
+    
+    def test_custom_dist_out_dir(self):
+        args = ci.SrepkgCommandLine().get_args([
+            self.local_src_pkg_ref,
+            "-d",
+            self.user_dist_out_dir
+        ])
+        assert args.orig_pkg_ref == self.local_src_pkg_ref
+        assert args.dist_out_dir == self.user_dist_out_dir
+        
+    def test_too_many_args(self, capsys):
+        with pytest.raises(SystemExit):
+            ci.SrepkgCommandLine().get_args(
+                [self.local_src_pkg_ref, "-n",
+                 self.user_srepkg_name, self.extra_arg])
+        stderr = capsys.readouterr().err
+        expected_msg_components = [
+            "usage",
+            "[-h] [-n [SREPKG_NAME]]",
+            "[-c [CONSTRUCTION_DIR]]",
+            "error: unrecognized arguments:",
+            self.extra_arg,
+        ]
+        assert all([component in stderr for component in expected_msg_components])

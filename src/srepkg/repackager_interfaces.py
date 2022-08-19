@@ -1,21 +1,28 @@
 import abc
-from pathlib import Path
-import srepkg.shared_data_structures.named_tuples as nt
-import srepkg.shared_data_structures.new_data_structures as nds
+from dataclasses import dataclass
+from typing import Union
+
+
+@dataclass
+class SrepkgCommand:
+    orig_pkg_ref: str
+    srepkg_name: Union[str, None] = None
+    construction_dir: Union[str, None] = None
+    dist_out_dir: Union[str, None] = None
 
 
 class SrepkgCommandInterface(abc.ABC):
 
     @abc.abstractmethod
-    def get_args(self) -> nds.SrepkgCommand:
+    def get_args(self) -> SrepkgCommand:
         pass
 
 
-class SettleableSrepkgDirInterface(abc.ABC):
-
-    @abc.abstractmethod
-    def settle(self):
-        pass
+# class SettleableSrepkgDirInterface(abc.ABC):
+#
+#     @abc.abstractmethod
+#     def settle(self):
+#         pass
 
 
 class PkgDistProviderInterface(abc.ABC):
@@ -31,23 +38,11 @@ class OrigSrcPreparerInterface(abc.ABC):
     def prepare(self):
         pass
 
-    # @property
-    # @abc.abstractmethod
-    # def receiver(self) -> SettleableSrepkgDirInterface:
-    #     pass
-
 
 class SrepkgBuilderInterface(abc.ABC):
 
     @abc.abstractmethod
     def build(self):
-        pass
-
-
-class PathCalculatorInterface(abc.ABC):
-
-    @abc.abstractmethod
-    def calc_builder_paths(self) -> tuple[nt.BuilderSrcPaths, nt.BuilderDestPaths]:
         pass
 
 

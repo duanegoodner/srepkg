@@ -1,4 +1,5 @@
 from enum import Enum, auto
+from typing import Dict
 
 
 class ServiceObjectID(Enum):
@@ -16,7 +17,7 @@ class ServiceRegistry:
     def __init__(self):
         self._registry = {}
 
-    def register(self, new_items: dict[ServiceObjectID, object]):
+    def register(self, new_items: Dict[ServiceObjectID, object]):
         for item in new_items:
             if item in self._registry:
                 raise DuplicateServiceObjectID(item)

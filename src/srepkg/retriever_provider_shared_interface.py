@@ -8,6 +8,3 @@ class OrigPkgReceiver(abc.ABC):
     @abc.abstractmethod
     def orig_pkg_dists(self) -> Path:
         pass
-
-
-

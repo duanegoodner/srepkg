@@ -9,7 +9,7 @@ from pathlib import Path
 
 class CustomVenvBuilder(venv.EnvBuilder):
     def __init__(self):
-        super().__init__(with_pip=True, upgrade_deps=True)
+        super().__init__(with_pip=True)
         self._context = SimpleNamespace()
         self._version_info = sys.version_info
 
@@ -22,7 +22,12 @@ class CustomVenvBuilder(venv.EnvBuilder):
         return self._version_info
 
     def post_setup(self, context) -> None:
-        subprocess.call([context.env_exe, "-m", "pip", "install", "wheel"])
+        subprocess.call([
+            context.env_exe, "-m", "pip", "install", "--upgrade", "pip"])
+        subprocess.call([
+            context.env_exe, "-m", "pip", "install", "--upgrade", "setuptools"])
+        subprocess.call([context.env_exe, "-m", "pip", "install", "--upgrade", "wheel"])
+
         self._context = context
 
 

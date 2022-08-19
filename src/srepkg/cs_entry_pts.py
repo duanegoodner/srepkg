@@ -1,62 +1,7 @@
 import configparser
 import shutil
-
-from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, List
-
-# import srepkg.repackaging_components.partially_built.generic_entry as ge
-
-import srepkg.srepkg_builder_new_ds_and_int as sb_new_int
-
-
-# @dataclass
-# class CSEntryPoint:
-#     command: str
-#     module: str
-#     attr: str
-#     extras: List[str]
-#
-#     @property
-#     def as_string(self):
-#         return f"{self.command} = {self.module}:{self.attr}"
-
-
-# @dataclass
-# class PkgCSEntryPoints:
-#     cs_entry_pts: List[CSEntryPoint]
-#
-#     @classmethod
-#     def from_wheel_inspect_data(cls, wi_data: dict[str, Any]):
-#         cs_entry_pts = []
-#         wheel_inspect_epcs =\
-#             wi_data['dist_info']['entry_points']['console_scripts']
-#         for key, value in wheel_inspect_epcs.items():
-#             cs_entry_pts.append(
-#                 CSEntryPoint(
-#                     command=key,
-#                     module=value['module'],
-#                     attr=value['attr'],
-#                     extras=value['extras']
-#                 )
-#             )
-#         return cls(cs_entry_pts)
-#
-#     @property
-#     def as_cfg_string(self):
-#         as_string_list = [cse.as_string for cse in self.cs_entry_pts]
-#         return "\n" + "\n".join(as_string_list)
-#
-#
-# class CSEntryPointUtil:
-#
-#     @staticmethod
-#     def read(wheel_inspect_epcs: dict):
-#         return PkgCSEntryPoints.from_wheel_inspect_data(wheel_inspect_epcs)
-#
-#     @staticmethod
-#     def write(pkg_cs_entry_pts: PkgCSEntryPoints):
-#         return pkg_cs_entry_pts.as_cfg_string
+import srepkg.srepkg_builder_ds_and_int as sb_new_int
 
 
 class EntryPointsBuilder:
@@ -87,7 +32,7 @@ class EntryPointsBuilder:
                     orig_pkg_cse.command,
                  ]),
             attr=self._generic_entry_funct_name,
-            extras=orig_pkg_cse.extras
+            # extras=orig_pkg_cse.extras
         )
             for orig_pkg_cse in self._orig_pkg_entry_pts.cs_entry_pts
         ]

@@ -1,9 +1,7 @@
 from pathlib import Path
+import srepkg.repackager_interfaces as rep_int
 import srepkg.service_builder as sb
-import srepkg.shared_data_structures.new_data_structures as nds
 import srepkg.utils.dist_archive_file_tools as daft
-
-from srepkg.service_registry import SERVICE_REGISTRY
 
 
 class OrigSrcPreparerComponentTest:
@@ -19,19 +17,15 @@ class OrigSrcPreparerComponentTest:
     }
 
     @staticmethod
-    def create_src_preparer(command: nds.SrepkgCommand):
+    def create_src_preparer(command: rep_int.SrepkgCommand):
         return sb.ServiceBuilder(command).create_orig_src_preparer()
-
-    @classmethod
-    def teardown_class(cls):
-        SERVICE_REGISTRY.reset()
 
 
 class TestRemotePkgRetriever(OrigSrcPreparerComponentTest):
 
     def test_src_preparer_retrieve(self):
         for path in self.local_pkg_paths:
-            cur_command = nds.SrepkgCommand(
+            cur_command = rep_int.SrepkgCommand(
                 orig_pkg_ref=str(self.local_pkg_paths[path]))
             src_preparer = self.create_src_preparer(cur_command)
             src_preparer._retriever.retrieve()
@@ -46,7 +40,7 @@ class TestDistProvider(OrigSrcPreparerComponentTest):
         'zip': {daft.ArchiveDistType.SDIST}
     }
 
-    def run_provide(self, command: nds.SrepkgCommand):
+    def run_provide(self, command: rep_int.SrepkgCommand):
         src_preparer = self.create_src_preparer(command)
         src_preparer._retriever.retrieve()
         src_preparer._provider.provide()
@@ -55,16 +49,17 @@ class TestDistProvider(OrigSrcPreparerComponentTest):
 
     def test_src_preparer_provide(self):
         for path in self.local_pkg_paths:
-            cur_command = nds.SrepkgCommand(
+            cur_command = rep_int.SrepkgCommand(
                 orig_pkg_ref=str(self.local_pkg_paths[path]))
             receiver = self.run_provide(cur_command)
 
             provided_dist_types = {
                 daft.ArchiveIdentifier().id_dist_type(item) for item in
-                receiver.srepkg_inner_contents
+                receiver.orig_pkg_dists_contents
             }
 
-            assert self.expected_types_provided_from[path] == provided_dist_types
+            assert self.expected_types_provided_from[path] ==\
+                   provided_dist_types
 
 
 class TestReceiver(OrigSrcPreparerComponentTest):
@@ -76,7 +71,7 @@ class TestReceiver(OrigSrcPreparerComponentTest):
         'zip': {daft.ArchiveDistType.SDIST, daft.ArchiveDistType.WHEEL}
     }
 
-    def run_finalize_orig_dists(self, command: nds.SrepkgCommand):
+    def run_finalize_orig_dists(self, command: rep_int.SrepkgCommand):
         src_preparer = self.create_src_preparer(command)
         src_preparer._retriever.retrieve()
         src_preparer._provider.provide()
@@ -86,15 +81,14 @@ class TestReceiver(OrigSrcPreparerComponentTest):
 
     def test_src_preparer_finalize_orig_dists(self):
         for path in self.local_pkg_paths:
-            cur_command = nds.SrepkgCommand(
+            cur_command = rep_int.SrepkgCommand(
                 orig_pkg_ref=str(self.local_pkg_paths[path]),
-                # construction_dir=str(Path(__file__).parent / 'custom_construction_dir')
             )
             receiver = self.run_finalize_orig_dists(cur_command)
 
             final_dist_types = {
                 daft.ArchiveIdentifier().id_dist_type(item) for item in
-                receiver.srepkg_inner_contents
+                receiver.orig_pkg_dists_contents
             }
 
             assert self.expected_dist_types_finally_present[
@@ -111,16 +105,14 @@ class TestOrigSrcPreparer(OrigSrcPreparerComponentTest):
 
     def test_orig_src_preparer_prepare(self):
         for path in self.local_pkg_paths:
-            cur_command = nds.SrepkgCommand(
+            cur_command = rep_int.SrepkgCommand(
                 orig_pkg_ref=str(self.local_pkg_paths[path]))
             src_preparer = self.create_src_preparer(cur_command)
             src_preparer.prepare()
 
             final_dist_types = {
                 daft.ArchiveIdentifier().id_dist_type(item) for item in
-                src_preparer._receiver.srepkg_inner_contents
+                src_preparer._receiver.orig_pkg_dists_contents
             }
             assert self.expected_dist_types_finally_present[
                        path] == final_dist_types
-
-
