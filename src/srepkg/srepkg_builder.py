@@ -7,7 +7,7 @@ import shutil
 import string
 from enum import Enum, auto
 from pathlib import Path
-from typing import Dict, List, NamedTuple, Union
+from typing import Dict, List, NamedTuple
 from zipfile import ZIP_DEFLATED, ZipFile
 import inner_pkg_installer.inner_pkg_installer as ipi
 import srepkg.cs_entry_pts as cse
@@ -53,10 +53,10 @@ class SrepkgCompleter(sb_new_int.SrepkgCompleterInterface):
     def _gen_component_src_dir(self) -> Path:
         pass
 
-    @property
-    @abc.abstractmethod
-    def _orig_src_dist(self) -> Union[Path, None]:
-        return
+    # @property
+    # @abc.abstractmethod
+    # def _orig_src_dist(self) -> Union[Path, None]:
+    #     return
 
     @property
     def _gen_sources(self) -> Dict[SrcID, Path]:
@@ -167,9 +167,9 @@ class SrepkgSdistCompleter(SrepkgCompleter):
         return Path(__file__).parent.absolute() / \
                'repackaging_components' / 'sdist_completer_components'
 
-    @property
-    def _orig_src_dist(self) -> Union[Path, None]:
-        return self._construction_dir.orig_pkg_src_summary.src_for_srepkg_sdist
+    # @property
+    # def _orig_src_dist(self) -> Union[Path, None]:
+    #     return self._construction_dir.orig_pkg_src_summary.src_for_srepkg_sdist
 
     @property
     def _extra_sources(self) -> Dict[SrcID, Path]:
@@ -216,7 +216,8 @@ class SrepkgSdistCompleter(SrepkgCompleter):
         metadata = {
             "srepkg_name": self._construction_dir.srepkg_name,
             "dist_dir": "orig_dist",
-            "sdist_src": self._orig_src_dist.name
+            "sdist_src": self._construction_dir.orig_pkg_src_summary
+            .src_for_srepkg_sdist.name
         }
 
         ipi_config = configparser.ConfigParser()
@@ -245,7 +246,8 @@ class SrepkgSdistCompleter(SrepkgCompleter):
     def _build_srepkg_dist(self, output_dir: Path):
         exclude_paths = list(
             (self._construction_dir.srepkg_root / 'orig_dist').iterdir())
-        exclude_paths.remove(self._orig_src_dist)
+        exclude_paths.remove(self._construction_dir.orig_pkg_src_summary
+                             .src_for_srepkg_sdist)
 
         output_filename = \
             f"{self._construction_dir.srepkg_name}-" \
@@ -263,9 +265,9 @@ class SrepkgWheelCompleter(SrepkgCompleter):
         return Path(__file__).parent.absolute() / \
                'repackaging_components' / 'wheel_completer_components'
 
-    @property
-    def _orig_src_dist(self) -> Union[Path, None]:
-        return self._construction_dir.orig_pkg_src_summary.src_for_srepkg_wheel
+    # @property
+    # def _orig_src_dist(self) -> Union[Path, None]:
+    #     return self._construction_dir.orig_pkg_src_summary.src_for_srepkg_wheel
 
     @property
     def _extra_sources(self):

@@ -55,7 +55,7 @@ class TestDistProvider(OrigSrcPreparerComponentTest):
 
             provided_dist_types = {
                 daft.ArchiveIdentifier().id_dist_type(item) for item in
-                receiver.orig_pkg_dists_contents
+                receiver._orig_pkg_dists_contents
             }
 
             assert self.expected_types_provided_from[path] ==\
@@ -88,7 +88,7 @@ class TestReceiver(OrigSrcPreparerComponentTest):
 
             final_dist_types = {
                 daft.ArchiveIdentifier().id_dist_type(item) for item in
-                receiver.orig_pkg_dists_contents
+                receiver._orig_pkg_dists_contents
             }
 
             assert self.expected_dist_types_finally_present[
@@ -112,7 +112,7 @@ class TestOrigSrcPreparer(OrigSrcPreparerComponentTest):
 
             final_dist_types = {
                 daft.ArchiveIdentifier().id_dist_type(item) for item in
-                src_preparer._receiver.orig_pkg_dists_contents
+                src_preparer._receiver._orig_pkg_dists_contents
             }
             assert self.expected_dist_types_finally_present[
                        path] == final_dist_types

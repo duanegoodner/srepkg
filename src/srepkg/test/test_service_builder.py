@@ -1,3 +1,4 @@
+import pytest
 import srepkg.service_builder as sb
 from pathlib import Path
 from typing import NamedTuple
@@ -18,6 +19,11 @@ class TestConstructionDirDispatch:
     def test_path_create_arg(self, tmp_path):
         construction_dir = sb.create_construction_dir(tmp_path)
         assert type(construction_dir).__name__ == 'CustomConstructionDir'
+
+    def test_invalid_construction_dir_arg(self):
+        with pytest.raises(NotImplementedError):
+            construction_dir = sb.create_construction_dir(1)
+
 
 
 class RetrieverProviderTestCondition(NamedTuple):

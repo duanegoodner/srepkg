@@ -19,8 +19,8 @@ class PkgRefIdentifier:
     def __init__(self, orig_pkg_ref: str):
         self._orig_pkg_ref = orig_pkg_ref
 
-    def is_local(self):
-        return Path(self._orig_pkg_ref).exists()
+    # def is_local(self):
+    #     return Path(self._orig_pkg_ref).exists()
 
     def is_local_src(self):
         return Path(self._orig_pkg_ref).is_dir()
@@ -71,5 +71,4 @@ class PkgRefIdentifier:
         if num_matches > 1:
             sys.exit(em.PkgIdentifierError.MultiplePotentialPackages.msg)
 
-        if num_matches == 1:
-            return matching_items[0]
+        return matching_items[0]

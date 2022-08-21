@@ -1,5 +1,10 @@
+import pytest
+import shutil
 from pathlib import Path
+from typing import NamedTuple
+
 import srepkg.construction_dir as cdn
+import srepkg.error_handling.custom_exceptions as ce
 import srepkg.repackager_interfaces as rep_int
 import srepkg.service_builder as sb
 
@@ -13,13 +18,15 @@ class TestConstructionDirInit:
         assert construction_dir.srepkg_root.parent == construction_dir._root
         assert construction_dir.srepkg_inner.exists()
         assert len(construction_dir.srepkg_inner.name) == 32
-        assert construction_dir.srepkg_inner.parent == construction_dir\
+        assert construction_dir.srepkg_inner.parent == construction_dir \
             .srepkg_root
         assert construction_dir.supported_dist_types == cdn.DEFAULT_DIST_CLASSES
         assert construction_dir._root_contents == [construction_dir.srepkg_root]
         assert set(construction_dir._srepkg_root_contents) == \
                {construction_dir.srepkg_inner, construction_dir.orig_pkg_dists}
         assert construction_dir.srepkg_inner_contents == []
+        assert construction_dir.orig_pkg_version is None
+        assert construction_dir.wheel_path is None
 
     def test_init_custom_construction_dir(self, tmp_path):
         construction_dir = cdn.CustomConstructionDir(
@@ -41,7 +48,7 @@ class TestConstructionDirInit:
         assert construction_dir.srepkg_inner.exists()
         assert construction_dir.srepkg_root.name == "hello"
         assert construction_dir.srepkg_inner.name == "friend"
-    
+
     def test_update_srepkg_and_dir_names_default_srepkg_name(self):
         construction_dir = cdn.TempConstructionDir()
         discovered_pkg_name = "orig_pkg_name"
@@ -53,92 +60,79 @@ class TestConstructionDirInit:
         discovered_pkg_name = "orig_pkg_name"
         construction_dir._update_srepkg_and_dir_names(discovered_pkg_name)
 
-        
-        
+
+class ConstructionDirTestCondition(NamedTuple):
+    srepkg_command: rep_int.SrepkgCommand
+    expected_orig_pkg_name: str
+    expected_num_dists: int
 
 
 class TestConstructionDirFinalize:
     local_test_pkgs_path = Path(__file__).parent.absolute() / \
                            "package_test_cases"
 
-    test_commands = [
-        rep_int.SrepkgCommand(
-            orig_pkg_ref=str(local_test_pkgs_path / "testproj")),
-        rep_int.SrepkgCommand(
-            orig_pkg_ref=str(local_test_pkgs_path / "testproj"),
-            srepkg_name="custom_name"),
-        rep_int.SrepkgCommand(
-            orig_pkg_ref=str(local_test_pkgs_path / "testproj-0.0.0.tar.gz")
-        )
+    good_test_conditions = [
+        ConstructionDirTestCondition(
+            srepkg_command=rep_int.SrepkgCommand(
+                orig_pkg_ref=str(local_test_pkgs_path / "testproj")
+            ),
+            expected_orig_pkg_name="testproj",
+            expected_num_dists=1),
+        ConstructionDirTestCondition(
+            srepkg_command=rep_int.SrepkgCommand(
+                orig_pkg_ref=str(local_test_pkgs_path / "testproj"),
+                srepkg_name="custom_name"),
+            expected_orig_pkg_name="testproj",
+            expected_num_dists=1),
+        ConstructionDirTestCondition(
+            srepkg_command=rep_int.SrepkgCommand(
+                orig_pkg_ref=str(
+                    local_test_pkgs_path / "testproj-0.0.0.tar.gz")),
+            expected_orig_pkg_name="testproj",
+            expected_num_dists=2)
     ]
 
-    def test_all_commands(self):
-        for command in self.test_commands:
-            service_builder = sb.ServiceBuilder(command)
+    def test_all_good_conditions(self):
+        for condition in self.good_test_conditions:
+            service_builder = sb.ServiceBuilder(condition.srepkg_command)
             osp = service_builder.create_orig_src_preparer()
-            osp.prepare()
+            construction_dir = osp.prepare()
+            assert construction_dir.orig_pkg_src_summary.pkg_name == \
+                   condition.expected_orig_pkg_name
+            assert len(construction_dir.orig_pkg_src_summary.dists) == \
+                   condition.expected_num_dists
 
+    def test_get_dist_info_no_supported_dist_types(self):
+        construction_dir = cdn.TempConstructionDir()
+        construction_dir._supported_dist_types = []
+        result = construction_dir._get_dist_info(
+            self.local_test_pkgs_path / "testproj")
+        assert result is None
 
-# class TestConstructionDirReviewer2:
-#     local_test_pkgs_path = Path(__file__).parent.absolute() / \
-#                            "package_test_cases"
-#
-#     def test_
+    def test_multiple_packages(self):
+        service_builder = sb.ServiceBuilder(
+            rep_int.SrepkgCommand(
+                orig_pkg_ref=str(self.local_test_pkgs_path / "testproj")))
+        osp = service_builder.create_orig_src_preparer()
+        construction_dir = osp.prepare()
+        shutil.copy2(
+            src=self.local_test_pkgs_path /
+            "wheel_inspect-1.7.1-py3-none-any.whl",
+            dst=construction_dir.orig_pkg_dists)
 
+        with pytest.raises(ce.MultiplePackagesPresent):
+            construction_dir.finalize()
 
+    def test_finalized_with_no_orig_pkg(self):
+        construction_dir = cdn.TempConstructionDir()
+        with pytest.raises(ce.MissingOrigPkgContent):
+            construction_dir.finalize()
 
-class TestConstructionDirReviewer:
-    local_test_pkgs_path = Path(__file__).parent.absolute() / \
-                           "package_test_cases"
-
-    local_src_path = local_test_pkgs_path / "testproj"
-    local_wheel_path = local_test_pkgs_path / "testproj-0.0.0-py3-none-any.whl"
-    local_targz_path = local_wheel_path / "testproj-0.0.0.tar.gz"
-    local_zip_path = local_test_pkgs_path / "testproj-0.0.0.zip"
-
-    local_src_command = rep_int.SrepkgCommand(
-        orig_pkg_ref=str(local_src_path),
-        srepkg_name=None,
-        construction_dir=None,
-        dist_out_dir=None
-    )
-
-    @staticmethod
-    def build_command(orig_pkg_path):
-        return rep_int.SrepkgCommand(
-            orig_pkg_ref=str(orig_pkg_path),
-            srepkg_name=None,
-            construction_dir=None,
-            dist_out_dir=None
-        )
-
-    def build_and_copy_to_construction_dir_from(self, orig_pkg_src: Path):
-        command = self.build_command(orig_pkg_src)
-
-        src_preparer = sb.ServiceBuilder(command).create_orig_src_preparer()
-        src_preparer._retriever.retrieve()
-        src_preparer._provider.provide()
-
-        return src_preparer
-
-    def test_local_src_init(self):
-
-        src_preparer = self.build_and_copy_to_construction_dir_from(
-            self.local_src_path)
-        assert len(src_preparer._receiver.orig_pkg_dists_contents) == 1
-        orig_pkg_dists_contents_filenames = [
-            item.name for item in src_preparer._receiver.orig_pkg_dists_contents]
-        assert set(orig_pkg_dists_contents_filenames) ==\
-               {"testproj-0.0.0-py3-none-any.whl"}
-
-    def test_local_whl_init(self):
-        src_preparer = self.build_and_copy_to_construction_dir_from(
-            self.local_wheel_path)
-        assert len(src_preparer._receiver.orig_pkg_dists_contents) == 1
-        assert src_preparer._receiver.orig_pkg_dists_contents[0].name == \
-               "testproj-0.0.0-py3-none-any.whl"
-
-
+    def test_sdist_to_wheel_converter_with_no_sdist(self):
+        construction_dir = cdn.TempConstructionDir()
+        converter = cdn.SdistToWheelConverter(construction_dir)
+        with pytest.raises(ce.NoSDistForWheelConstruction):
+            converter.build_wheel()
 
 # This test has long runtime but may be good edge-case check
 # def test_numpy_sdist_to_wheel():

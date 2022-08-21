@@ -1,14 +1,14 @@
 import configparser
 import shutil
 from pathlib import Path
-import srepkg.srepkg_builder_ds_and_int as sb_new_int
+import srepkg.srepkg_builder_data_structs as sb_ds
 
 
 class EntryPointsBuilder:
 
     def __init__(
             self,
-            orig_pkg_entry_pts: sb_new_int.PkgCSEntryPoints,
+            orig_pkg_entry_pts: sb_ds.PkgCSEntryPoints,
             entry_pt_template: Path,
             srepkg_entry_pt_dir: Path,
             srepkg_name: str,
@@ -22,8 +22,8 @@ class EntryPointsBuilder:
         self._generic_entry_funct_name = generic_entry_funct_name
 
     @property
-    def _srepkg_entry_pts(self) -> sb_new_int.PkgCSEntryPoints:
-        srepkg_cse_list = [sb_new_int.CSEntryPoint(
+    def _srepkg_entry_pts(self) -> sb_ds.PkgCSEntryPoints:
+        srepkg_cse_list = [sb_ds.CSEntryPoint(
             command=orig_pkg_cse.command,
             module=".".join(
                 [
@@ -36,7 +36,7 @@ class EntryPointsBuilder:
         )
             for orig_pkg_cse in self._orig_pkg_entry_pts.cs_entry_pts
         ]
-        return sb_new_int.PkgCSEntryPoints(srepkg_cse_list)
+        return sb_ds.PkgCSEntryPoints(srepkg_cse_list)
 
     def _write_entry_point_files(self):
         for cse in self._srepkg_entry_pts.cs_entry_pts:

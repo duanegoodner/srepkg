@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import NamedTuple
 import srepkg.utils.dist_archive_file_tools as daft
 import srepkg.utils.cd_context_manager as cdcm
+import srepkg.utils.pkg_type_identifier as pti
 import srepkg.error_handling.custom_exceptions as ce
 
 
@@ -48,7 +49,7 @@ class TestArchiveIdentifier:
 
     identifier = daft.ArchiveIdentifier()
     test_cases_path = Path(__file__).parent.absolute() / \
-        'package_test_cases'
+                      'package_test_cases'
 
     def run_file_and_dist_id_test(self, info: ExpectedFileDistType):
         assert self.identifier.id_file_type(
@@ -62,7 +63,6 @@ class TestArchiveIdentifier:
 
 
 class TestCompressedFileExtractor:
-
     test_cases_path = Path(__file__).parent.absolute() / \
                       'package_test_cases'
 
@@ -87,4 +87,32 @@ class TestCompressedFileExtractor:
             self.extractor.extract(
                 self.test_cases_path / 'testproj-0.0.0-not-a-distribution.py',
                 tmp_path)
+
+
+class BrokenPkgRefIdentifier(pti.PkgRefIdentifier):
+    def _check_all_types(self):
+        return {
+            pti.PkgRefType.LOCAL_SRC: True,
+            pti.PkgRefType.LOCAL_SDIST: True,
+            pti.PkgRefType.LOCAL_WHEEL: True,
+            pti.PkgRefType.PYPI_PKG: True,
+            pti.PkgRefType.GITHUB_REPO: True
+        }
+
+
+class TestPkgRefIdentifier:
+
+    local_test_pkgs_path = Path(__file__).parent.absolute() / \
+                           "package_test_cases"
+
+    def test_bad_pkg_ref(self):
+        pkg_ref_identifier = pti.PkgRefIdentifier("bad_ref")
+        with pytest.raises(SystemExit):
+            pkg_ref_identifier.identify()
+
+    def test_multiple_possible_types(self):
+        pkg_ref_identifier = BrokenPkgRefIdentifier(
+            orig_pkg_ref=str(self.local_test_pkgs_path / "testproj"))
+        with pytest.raises(SystemExit):
+            pkg_ref_identifier.identify()
 

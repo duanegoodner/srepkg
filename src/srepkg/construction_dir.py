@@ -9,7 +9,8 @@ from typing import List
 
 import wheel_inspect
 
-import srepkg.srepkg_builder_ds_and_int as sb_new_int
+import srepkg.srepkg_builder_ds_and_int as sb_int
+import srepkg.srepkg_builder_data_structs as sb_ds
 import srepkg.error_handling.custom_exceptions as ce
 import srepkg.utils.dist_archive_file_tools as cft
 import srepkg.orig_src_preparer_interfaces as osp_int
@@ -20,8 +21,8 @@ DEFAULT_SREPKG_SUFFIX = "srepkg"
 
 
 class ConstructionDir(
-        rp_shared_int.OrigPkgReceiver, osp_int.ManageableConstructionDir,
-        sb_new_int.SrepkgComponentReceiver):
+    rp_shared_int.OrigPkgReceiver, osp_int.ManageableConstructionDir,
+    sb_int.SrepkgComponentReceiver):
     def __init__(self,
                  construction_dir_command: Path,
                  srepkg_name_command: str = None):
@@ -53,8 +54,85 @@ class ConstructionDir(
         return self._srepkg_root / 'orig_dist'
 
     @property
-    def orig_pkg_dists_contents(self) -> List[Path]:
+    def _orig_pkg_dists_contents(self) -> List[Path]:
         return list(self.orig_pkg_dists.iterdir())
+
+    def _get_dist_info(self, dist_path: Path):
+        for dist_class in self.supported_dist_types:
+            try:
+                dist_obj = dist_class(dist_path)
+                return sb_ds.DistInfo(path=dist_path, dist_obj=dist_obj)
+            except ValueError:
+                pass
+
+    @property
+    def dists(self):
+        return [self._get_dist_info(entry) for entry in
+                self._orig_pkg_dists_contents]
+
+    @property
+    def _unique_orig_pkgs(self):
+        unique_pkgs = {
+            sb_ds.UniquePkg(
+                # DistInfo changes any "_" to "-" in pkg name. Undo that.
+                name=dist.dist_obj.name.replace("-", "_"),
+                version=dist.dist_obj.version)
+            for dist in self.dists}
+        if len(unique_pkgs) > 1:
+            raise ce.MultiplePackagesPresent(self.dists)
+        return unique_pkgs
+
+    @property
+    def orig_pkg_name(self):
+        if self._unique_orig_pkgs:
+            return list(self._unique_orig_pkgs)[0].name  # .replace("-", "_")
+
+    @property
+    def orig_pkg_version(self):
+        if self._unique_orig_pkgs:
+            return list(self._unique_orig_pkgs)[0].version
+
+    @property
+    def has_wheel(self):
+        return any([type(dist.dist_obj) == pkginfo.Wheel for dist in
+                    self.dists])
+
+    @property
+    def wheel_path(self):
+        if self.has_wheel:
+            return [dist.path for dist in self.dists if type(dist.dist_obj) ==
+                    pkginfo.Wheel][0]
+
+    # @property
+    # def has_platform_indep_wheel(self):
+    #     return self.has_wheel and \
+    #            ('any' in parse_wheel_filename(self.wheel_path.name)
+    #             .platform_tags)
+
+    @property
+    def has_sdist(self):
+        return any([type(dist.dist_obj) == pkginfo.SDist for dist in
+                    self.dists])
+
+    # @property
+    # def sdist_path(self):
+    #     if self.has_sdist:
+    #         return [dist.path for dist in self.dists if type(dist.dist_obj) ==
+    #                 pkginfo.SDist][0]
+
+    # @property
+    # def src_for_srepkg_wheel(self) -> Union[Path, None]:
+    #     if self.has_wheel:
+    #         return self.wheel_path
+    #     if self.has_sdist:
+    #         return self.sdist_path
+
+    # @property
+    # def src_for_srepkg_sdist(self) -> Union[Path, None]:
+    #     if self.has_platform_indep_wheel:
+    #         return self.wheel_path
+    #     if self.has_sdist:
+    #         return self.sdist_path
 
     @property
     def srepkg_name(self) -> str:
@@ -83,8 +161,8 @@ class ConstructionDir(
         self._srepkg_root.replace(
             self._srepkg_root.parent.absolute() / srepkg_root_new)
 
-        self._srepkg_root = self._srepkg_root.parent.absolute() /\
-            srepkg_root_new
+        self._srepkg_root = self._srepkg_root.parent.absolute() / \
+                            srepkg_root_new
         self._srepkg_inner = self._srepkg_root / srepkg_inner_new
 
     def _update_srepkg_and_dir_names(self, discovered_pkg_name: str):
@@ -101,38 +179,35 @@ class ConstructionDir(
 
     def _extract_cs_entry_pts_from_wheel(self):
         wheel_data = wheel_inspect.inspect_wheel(
-            self._orig_pkg_src_summary.wheel_path)
+            self.wheel_path)
 
         cs_entry_pts = []
         wheel_inspect_epcs = \
             wheel_data['dist_info']['entry_points']['console_scripts']
         for key, value in wheel_inspect_epcs.items():
             cs_entry_pts.append(
-                sb_new_int.CSEntryPoint(
+                sb_ds.CSEntryPoint(
                     command=key,
                     module=value['module'],
                     attr=value['attr'],
                 )
             )
-        return sb_new_int.PkgCSEntryPoints(cs_entry_pts=cs_entry_pts)
+        return sb_ds.PkgCSEntryPoints(cs_entry_pts=cs_entry_pts)
 
     def finalize(self):
-        prelim_orig_pkg_src_summary = ConstructionDirReviewer(self) \
-            .get_existing_dists_summary()
-
-        if (not prelim_orig_pkg_src_summary.has_wheel) and \
-                prelim_orig_pkg_src_summary.has_sdist:
-            SdistToWheelConverter(
-                self, prelim_orig_pkg_src_summary).build_wheel()
-
+        if not self.has_sdist and not self.has_wheel:
+            raise ce.MissingOrigPkgContent(str(self.orig_pkg_dists))
+        if not self.has_wheel and self.has_sdist:
+            SdistToWheelConverter(self).build_wheel()
         self._update_srepkg_and_dir_names(
-            discovered_pkg_name=prelim_orig_pkg_src_summary.pkg_name)
+            discovered_pkg_name=self.orig_pkg_name)
 
-        self._orig_pkg_src_summary = ConstructionDirReviewer(self) \
-            .get_existing_dists_summary()
-
-        self._orig_pkg_src_summary.entry_pts =\
-            self._extract_cs_entry_pts_from_wheel()
+        self._orig_pkg_src_summary = sb_ds.OrigPkgSrcSummary(
+            pkg_name=self.orig_pkg_name,
+            pkg_version=self.orig_pkg_version,
+            dists=self.dists,
+            entry_pts=self._extract_cs_entry_pts_from_wheel()
+        )
 
     @abc.abstractmethod
     def settle(self):
@@ -165,22 +240,20 @@ class TempConstructionDir(ConstructionDir):
 class SdistToWheelConverter:
     def __init__(
             self,
-            construction_dir: ConstructionDir,
-            construction_dir_summary: sb_new_int.OrigPkgSrcSummary):
+            construction_dir: ConstructionDir):
         self._construction_dir = construction_dir
-        self._construction_dir_summary = construction_dir_summary
         self._compressed_file_extractor = cft.CompressedFileExtractor()
 
     @property
     def _unpacked_src_dir_name(self):
-        pkg_name = self._construction_dir_summary.pkg_name
-        pkg_version = self._construction_dir_summary.pkg_version
+        pkg_name = self._construction_dir.orig_pkg_name
+        pkg_version = self._construction_dir.orig_pkg_version
         return f"{pkg_name}-{pkg_version}"
 
     def _get_build_from_dist(self):
         try:
             build_from_dist = next(
-                dist for dist in self._construction_dir_summary.dists if
+                dist for dist in self._construction_dir.dists if
                 isinstance(dist.dist_obj, pkginfo.sdist.SDist))
         except StopIteration:
             raise ce.NoSDistForWheelConstruction(
@@ -207,56 +280,3 @@ class SdistToWheelConverter:
         )
 
         temp_unpack_dir_obj.cleanup()
-
-
-class ConstructionDirReviewer:
-
-    def __init__(
-            self,
-            construction_dir: ConstructionDir):
-        self._construction_dir = construction_dir
-
-    def _get_dist_info(self, dist_path: Path):
-        for dist_class in self._construction_dir.supported_dist_types:
-            try:
-                dist_obj = dist_class(dist_path)
-                return sb_new_int.DistInfo(path=dist_path, dist_obj=dist_obj)
-            except ValueError:
-                pass
-
-    def _get_existing_dists(self) -> List[sb_new_int.DistInfo]:
-        existing_dists = []
-
-        for item in self._construction_dir.orig_pkg_dists_contents:
-            item_info = self._get_dist_info(item)
-            if item_info:
-                existing_dists.append(item_info)
-
-        return existing_dists
-
-    def _validate_existing_dists(
-            self,
-            existing_dists: List[sb_new_int.DistInfo]):
-        if not existing_dists:
-            raise ce.MissingOrigPkgContent(str(
-                self._construction_dir.srepkg_inner))
-
-        unique_pkgs = [(dist.dist_obj.name, dist.dist_obj.version) for dist in
-                       existing_dists]
-        if len(set(unique_pkgs)) > 1:
-            raise ce.MultiplePackagesPresent
-
-        unique_pkg = unique_pkgs[0]
-
-        # DistInfo changes any "_" to "-" in pkg name. Undo that.
-        pkg_name = unique_pkg[0].replace("-", "_")
-
-        return sb_new_int.OrigPkgSrcSummary(
-            pkg_name=pkg_name,
-            pkg_version=unique_pkg[1],
-            dists=existing_dists)
-
-    def get_existing_dists_summary(self) -> sb_new_int.OrigPkgSrcSummary:
-
-        existing_dists = self._get_existing_dists()
-        return self._validate_existing_dists(existing_dists)

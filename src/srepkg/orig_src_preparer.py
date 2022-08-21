@@ -16,3 +16,5 @@ class OrigSrcPreparer(re_int.OrigSrcPreparerInterface):
         self._retriever.retrieve()
         self._provider.provide()
         self._receiver.finalize()
+
+        return self._receiver

@@ -8,10 +8,6 @@ class Repackager:
         self._srepkg_command = srepkg_command
         self._service_class_builder = service_class_builder
 
-    def _prepare_orig_src(self):
-        source_preparer = self._service_class_builder.create_orig_src_preparer()
-        source_preparer.prepare()
-
     def repackage(self):
         source_preparer = self._service_class_builder.create_orig_src_preparer()
         source_preparer.prepare()
