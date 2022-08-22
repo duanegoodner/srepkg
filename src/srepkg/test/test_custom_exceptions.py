@@ -1,30 +1,27 @@
 import pkginfo
+import pytest
 from pathlib import Path
 import srepkg.error_handling.custom_exceptions as ce
 
 
 class TestCustomExceptions:
 
-    def test_missing_orig_pkg_content(self):
-        missing_orig_pkg_content = ce.MissingOrigPkgContent("dummy_path")
-        print(missing_orig_pkg_content)
+    @pytest.mark.parametrize("exception_name, exception_arg", [
+        (ce.MissingOrigPkgContent, "dummy_path"),
+        (ce.UnsupportedCompressionType, "dummy_file"),
+        (ce.MultiplePackagesPresent, []),
+        (ce.TargetDistTypeNotSupported, pkginfo.Develop),
+        (ce.NoSDistForWheelConstruction, Path("dummy_path")),
+        (ce.NoEntryPtsTxtFile, Path("dummy_path")),
+        (ce.MultipleEntryPtsTxtFiles, Path("dummy_path")),
+        (ce.NoConsoleScriptEntryPoints, Path("dummy_path"))
+    ])
+    def test_exception_init_and_print(self, exception_name, exception_arg,
+                                      capsys):
+        cur_exception = exception_name(exception_arg)
+        print(cur_exception)
+        stdout = capsys.readouterr().out
+        assert stdout.strip() == cur_exception.__str__().strip()
 
-    def test_unsupported_compression_type(self):
-        unsupported_compression_type = ce.UnsupportedCompressionType(
-            "dummy_file")
-        print(unsupported_compression_type)
 
-    def test_multiple_packages_present(self):
-        multiple_packages_present = ce.MultiplePackagesPresent(
-            dists_info=[])
-        print(multiple_packages_present)
 
-    def test_target_dist_type_not_supported(self):
-        target_dist_type_not_supported = ce.TargetDistTypeNotSupported(
-            unsupported_dist_type=pkginfo.Develop)
-        print(target_dist_type_not_supported)
-
-    def test_no_dist_for_wheel_construction(self):
-        no_dist_for_wheel_construction = ce.NoSDistForWheelConstruction(
-            construction_dir=Path("dummy_path"))
-        print(no_dist_for_wheel_construction)

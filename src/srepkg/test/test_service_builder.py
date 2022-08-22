@@ -33,6 +33,7 @@ class RetrieverProviderTestCondition(NamedTuple):
 
 
 class OSPRetrieverProviderTester:
+
     construction_dir = sb.create_construction_dir(None)
     package_test_cases = Path(__file__).parent.absolute() / 'package_test_cases'
 

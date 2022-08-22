@@ -7,14 +7,13 @@ import uuid
 from pathlib import Path
 from typing import List
 
-import wheel_inspect
-
 import srepkg.srepkg_builder_ds_and_int as sb_int
 import srepkg.srepkg_builder_data_structs as sb_ds
 import srepkg.error_handling.custom_exceptions as ce
 import srepkg.utils.dist_archive_file_tools as cft
 import srepkg.orig_src_preparer_interfaces as osp_int
 import srepkg.retriever_provider_shared_interface as rp_shared_int
+import srepkg.utils.wheel_entry_point_extractor as we_pe
 
 DEFAULT_DIST_CLASSES = (pkginfo.SDist, pkginfo.Wheel)
 DEFAULT_SREPKG_SUFFIX = "srepkg"
@@ -85,7 +84,7 @@ class ConstructionDir(
     @property
     def orig_pkg_name(self):
         if self._unique_orig_pkgs:
-            return list(self._unique_orig_pkgs)[0].name  # .replace("-", "_")
+            return list(self._unique_orig_pkgs)[0].name
 
     @property
     def orig_pkg_version(self):
@@ -103,36 +102,10 @@ class ConstructionDir(
             return [dist.path for dist in self.dists if type(dist.dist_obj) ==
                     pkginfo.Wheel][0]
 
-    # @property
-    # def has_platform_indep_wheel(self):
-    #     return self.has_wheel and \
-    #            ('any' in parse_wheel_filename(self.wheel_path.name)
-    #             .platform_tags)
-
     @property
     def has_sdist(self):
         return any([type(dist.dist_obj) == pkginfo.SDist for dist in
                     self.dists])
-
-    # @property
-    # def sdist_path(self):
-    #     if self.has_sdist:
-    #         return [dist.path for dist in self.dists if type(dist.dist_obj) ==
-    #                 pkginfo.SDist][0]
-
-    # @property
-    # def src_for_srepkg_wheel(self) -> Union[Path, None]:
-    #     if self.has_wheel:
-    #         return self.wheel_path
-    #     if self.has_sdist:
-    #         return self.sdist_path
-
-    # @property
-    # def src_for_srepkg_sdist(self) -> Union[Path, None]:
-    #     if self.has_platform_indep_wheel:
-    #         return self.wheel_path
-    #     if self.has_sdist:
-    #         return self.sdist_path
 
     @property
     def srepkg_name(self) -> str:
@@ -178,21 +151,8 @@ class ConstructionDir(
         self._srepkg_name = srepkg_name
 
     def _extract_cs_entry_pts_from_wheel(self):
-        wheel_data = wheel_inspect.inspect_wheel(
-            self.wheel_path)
-
-        cs_entry_pts = []
-        wheel_inspect_epcs = \
-            wheel_data['dist_info']['entry_points']['console_scripts']
-        for key, value in wheel_inspect_epcs.items():
-            cs_entry_pts.append(
-                sb_ds.CSEntryPoint(
-                    command=key,
-                    module=value['module'],
-                    attr=value['attr'],
-                )
-            )
-        return sb_ds.PkgCSEntryPoints(cs_entry_pts=cs_entry_pts)
+        return we_pe.WheelEntryPointExtractor(self.wheel_path) \
+            .get_entry_points()
 
     def finalize(self):
         if not self.has_sdist and not self.has_wheel:

@@ -49,7 +49,7 @@ class UnsupportedCompressionType(Exception):
     def __init__(
             self,
             unsupported_file: str,
-            msg=ArchiveFileError.UnsupportedFileType.msg ):
+            msg=ArchiveFileError.UnsupportedFileType.msg):
         self._unsupported_file = unsupported_file
         self._msg = msg
 
@@ -93,3 +93,37 @@ class NoSDistForWheelConstruction(Exception):
         return f"{str(self._construction_dir)} -> {self._msg}"
 
 
+class NoEntryPtsTxtFile(Exception):
+    def __init__(
+            self,
+            whl_path: Path,
+            msg="No entry_points.txt file found in wheel."):
+        self._whl_path = whl_path
+        self._msg = msg
+
+    def __str__(self):
+        return f"{str(self._whl_path)} -> {self._msg}"
+
+
+class MultipleEntryPtsTxtFiles(Exception):
+    def __init__(
+            self,
+            whl_path: Path,
+            msg="Multiple entry_points.txt files found in wheel"):
+        self._whl_path = whl_path
+        self._msg = msg
+
+    def __str__(self):
+        return f"{str(self._whl_path)} -> {self._msg}"
+
+
+class NoConsoleScriptEntryPoints(Exception):
+    def __init__(
+            self,
+            whl_path: Path,
+            msg="No console script entry points found in wheel"):
+        self._whl_path = whl_path
+        self._msg = msg
+
+    def __str__(self):
+        return f"{str(self._whl_path)} -> {self._msg}"

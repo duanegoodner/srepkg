@@ -79,6 +79,10 @@ class ConstructionDirError(ErrorMsg, Enum):
     )
 
 
+class EntryPontExtractorError(ErrorMsg, Enum):
+    NoEntryPointsFile = ErrorMsg(
+        msg="No entry_points.txt file found in wheel."
+    )
 
 class ArchiveFileError(ErrorMsg, Enum):
     UnsupportedFileType = ErrorMsg(

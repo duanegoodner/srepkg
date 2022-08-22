@@ -1,4 +1,3 @@
-import shutil
 from pathlib import Path
 from typing import NamedTuple
 import srepkg.construction_dir as cdn

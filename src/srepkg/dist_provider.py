@@ -2,9 +2,10 @@ import abc
 import build
 import shutil
 import sys
-
+from packaging.tags import Tag
+from packaging.utils import parse_wheel_filename
 from pathlib import Path
-from wheel_filename import parse_wheel_filename
+# from wheel_filename import parse_wheel_filename
 
 import srepkg.orig_src_preparer_interfaces as osp_int
 import srepkg.retriever_provider_shared_interface as rpsi
@@ -43,10 +44,12 @@ class DistProviderFromSrc(ConstructedDistProvider):
             distribution='wheel',
             output_directory=str(self._pkg_receiver.orig_pkg_dists))
 
-        wheel_path = Path(wheel_path_str)
+        wheel_filename = Path(wheel_path_str).name
 
         # only build sdist if wheel is NOT platform-independent
-        if 'any' not in parse_wheel_filename(wheel_path.name).platform_tags:
+        name, version, bld, tags = parse_wheel_filename(wheel_filename)
+
+        if Tag("py3", "none", "any") not in tags:
             dist_builder.build(
                 distribution='sdist',
                 output_directory=str(self._pkg_receiver.orig_pkg_dists))

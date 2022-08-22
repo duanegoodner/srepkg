@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import NamedTuple
 import srepkg.utils.dist_archive_file_tools as daft
 import srepkg.utils.cd_context_manager as cdcm
+import srepkg.utils.wheel_entry_point_extractor as we_pe
 import srepkg.utils.pkg_type_identifier as pti
 import srepkg.error_handling.custom_exceptions as ce
 
@@ -115,4 +116,13 @@ class TestPkgRefIdentifier:
             orig_pkg_ref=str(self.local_test_pkgs_path / "testproj"))
         with pytest.raises(SystemExit):
             pkg_ref_identifier.identify()
+
+
+class TestWheelEntryPointExtractor:
+
+    local_test_pkgs_path = Path(__file__).parent.absolute() / \
+                           "package_test_cases"
+
+
+
 
