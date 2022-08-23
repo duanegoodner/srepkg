@@ -1,42 +1,22 @@
-from pathlib import Path
-
-import srepkg.construction_dir as cdn
+import pytest
 import srepkg.dist_provider as d_prov
+from pathlib import Path
+from srepkg.test.shared_fixtures import sample_pkgs, tmp_construction_dir
 
 
 class TestDistProvider:
 
-    local_test_pkgs_path = Path(__file__).parent.absolute() / \
-                           "package_test_cases"
-
-    def setup_method(self):
-        self.construction_dir = cdn.TempConstructionDir()
-
-    def test_null_dist_provider(self):
-        dist_provider = d_prov.NullDistProvider(
-            orig_pkg_path=str(self.local_test_pkgs_path / "testproj"),
-            pkg_receiver=self.construction_dir)
+    @pytest.mark.parametrize("provider_constructor, src_path, num_orig_pkgs", [
+        (d_prov.NullDistProvider, "testproj", 0),
+        (d_prov.DistProviderFromSrc, "testproj", 1),
+        (d_prov.DistProviderFromSrc, "tproj_non_pure_py", 2),
+        (d_prov.DistCopyProvider, "testproj_targz", 1)
+    ])
+    def test_provider_sources(self, provider_constructor, src_path,
+                              tmp_construction_dir, sample_pkgs, num_orig_pkgs):
+        dist_provider = provider_constructor(
+            src_path=Path(getattr(sample_pkgs, src_path)),
+            dest_path=tmp_construction_dir.orig_pkg_dists)
         dist_provider.provide()
-
-    def test_dist_provider_from_src(self):
-        dist_provider = d_prov.DistProviderFromSrc(
-            orig_pkg_path=str(self.local_test_pkgs_path / "testproj"),
-            pkg_receiver=self.construction_dir)
-        dist_provider.provide()
-
-    def test_dist_provider_from_non_pure_python_src(self):
-        dist_provider = d_prov.DistProviderFromSrc(
-            orig_pkg_path=str(
-                self.local_test_pkgs_path / "mock_non_pure_python_pkg"),
-            pkg_receiver=self.construction_dir)
-        dist_provider.provide()
-
-
-    def test_dist_copy_provider(self):
-        dist_provider = d_prov.DistCopyProvider(
-            orig_pkg_path=str(
-                self.local_test_pkgs_path / "testproj-0.0.0.tar.gz"),
-            pkg_receiver=self.construction_dir)
-        dist_provider.provide()
-
-
+        assert len(list(
+            tmp_construction_dir.orig_pkg_dists.iterdir())) == num_orig_pkgs

@@ -3,7 +3,8 @@ import srepkg.service_builder as sb
 from pathlib import Path
 from typing import NamedTuple
 import srepkg.repackager_interfaces as rep_int
-from srepkg.service_registry import ServiceRegistry
+import srepkg.service_registry as sr
+from srepkg.test.shared_fixtures import tmp_construction_dir, service_registry
 
 
 class TestConstructionDirDispatch:
@@ -23,7 +24,6 @@ class TestConstructionDirDispatch:
     def test_invalid_construction_dir_arg(self):
         with pytest.raises(NotImplementedError):
             construction_dir = sb.create_construction_dir(1)
-
 
 
 class RetrieverProviderTestCondition(NamedTuple):
@@ -73,20 +73,34 @@ class OSPRetrieverProviderTester:
 
 class TestRetrieverProviderDispatch(OSPRetrieverProviderTester):
 
+    @staticmethod
     def run_test_condition(
-            self,
-            test_condition: RetrieverProviderTestCondition):
+            test_condition: RetrieverProviderTestCondition,
+            service_registry: sr.ServiceRegistry
+    ):
         pkg_retriever = sb.PkgRetrieverDispatch(
-            test_condition.pkg_ref_command).create(self.construction_dir)
+            pkg_ref_command=test_condition.pkg_ref_command,
+            service_registry=service_registry
+        ).create()
+        service_registry.register({sr.ServiceObjectID.RETRIEVER: pkg_retriever})
         dist_provider = sb.DistProviderDispatch(
-            test_condition.pkg_ref_command).create(self.construction_dir)
+            pkg_ref_command=test_condition.pkg_ref_command,
+            service_registry=service_registry
+        ).create()
 
         assert type(pkg_retriever).__name__ == test_condition.retriever_type
         assert type(dist_provider).__name__ == test_condition.provider_type
+        service_registry.reset()
 
-    def test_retriever_provider_conditions(self):
+    def test_retriever_provider_conditions(
+            self,
+            tmp_construction_dir, service_registry):
         for condition in self.test_conditions:
-            self.run_test_condition(self.test_conditions[condition])
+            service_registry.register({sr.ServiceObjectID.CONSTRUCTION_DIR:
+                                       tmp_construction_dir})
+            self.run_test_condition(
+                self.test_conditions[condition], service_registry
+                )
 
 
 class OrigSrcPreparerTestCondition(NamedTuple):
@@ -96,7 +110,7 @@ class OrigSrcPreparerTestCondition(NamedTuple):
 
 
 class TestOSPBuilder(OSPRetrieverProviderTester):
-    service_registry = ServiceRegistry()
+    service_registry = sr.ServiceRegistry()
 
     def build_osp(self,
                   condition_id: int,
@@ -161,13 +175,13 @@ class TestSrepkgBuilderDispatch:
             pkg_ref=str(local_test_pkgs_path / 'testproj'),
             sdist_completer_exists=True,
             wheel_completer_exists=True),
-        # BuilderDispatchCondition(
-        #     pkg_ref=str(
-        #         local_test_pkgs_path /
-        #         'numpy-1.23.2-cp39-cp39-macosx_10_9_x86_64.whl'),
-        #     sdist_completer_exists=False,
-        #     wheel_completer_exists=True
-        # ),
+        BuilderDispatchCondition(
+            pkg_ref=str(
+                local_test_pkgs_path /
+                'numpy-1.23.2-cp39-cp39-macosx_10_9_x86_64.whl'),
+            sdist_completer_exists=False,
+            wheel_completer_exists=True
+        ),
         BuilderDispatchCondition(
             pkg_ref=str(local_test_pkgs_path /
                         'testproj-0.0.0-py3-none-any.whl'),

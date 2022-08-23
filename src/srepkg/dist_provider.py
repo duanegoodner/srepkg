@@ -5,57 +5,55 @@ import sys
 from packaging.tags import Tag
 from packaging.utils import parse_wheel_filename
 from pathlib import Path
-# from wheel_filename import parse_wheel_filename
 
 import srepkg.orig_src_preparer_interfaces as osp_int
-import srepkg.retriever_provider_shared_interface as rpsi
 
 
-class ConstructedDistProvider(osp_int.DistProviderInterface):
+class NullDistProvider(osp_int.DistProviderInterface):
 
-    def __init__(self, orig_pkg_path: str,
-                 pkg_receiver: rpsi.OrigPkgReceiver):
-        self._orig_pkg_path = orig_pkg_path
-        self._pkg_receiver = pkg_receiver
-
-    @abc.abstractmethod
-    def provide(self):
-        pass
-
-
-class NullDistProvider(ConstructedDistProvider):
+    def __init__(self, *args, **kwargs):
+        self._src_path = None
+        self._dest_path = None
 
     def provide(self):
         pass
 
 
-class DistProviderFromSrc(ConstructedDistProvider):
+class DistProviderFromSrc(osp_int.DistProviderInterface):
 
     # Using build.ProjectBuilder is 10x faster than subprocess
     # Could get another ~40% reduction with threading or multiprocess
     # but at least for small packages, provide() takes less than 1 sed as is
+
+    def __init__(self, src_path: Path, dest_path: Path):
+        self._src_path = src_path
+        self._dest_path = dest_path
+
     def provide(self):
         dist_builder = build.ProjectBuilder(
-            srcdir=self._orig_pkg_path,
+            srcdir=str(self._src_path),
             python_executable=sys.executable)
 
         # build wheel first
         wheel_path_str = dist_builder.build(
             distribution='wheel',
-            output_directory=str(self._pkg_receiver.orig_pkg_dists))
+            output_directory=str(self._dest_path))
 
         wheel_filename = Path(wheel_path_str).name
-
-        # only build sdist if wheel is NOT platform-independent
         name, version, bld, tags = parse_wheel_filename(wheel_filename)
 
+        # only build sdist if wheel is NOT platform-independent
         if Tag("py3", "none", "any") not in tags:
             dist_builder.build(
                 distribution='sdist',
-                output_directory=str(self._pkg_receiver.orig_pkg_dists))
+                output_directory=str(self._dest_path))
 
 
-class DistCopyProvider(ConstructedDistProvider):
+class DistCopyProvider(osp_int.DistProviderInterface):
+
+    def __init__(self, src_path: Path, dest_path: Path):
+        self._src_path = src_path
+        self._dest_path = dest_path
 
     def provide(self):
-        shutil.copy2(self._orig_pkg_path, self._pkg_receiver.orig_pkg_dists)
+        shutil.copy2(self._src_path, self._dest_path)

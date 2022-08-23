@@ -11,6 +11,7 @@ class PkgRefType(Enum):
     LOCAL_SRC = auto()
     LOCAL_WHEEL = auto()
     LOCAL_SDIST = auto()
+    LOCAL_DIST = auto()
     PYPI_PKG = auto()
     GITHUB_REPO = auto()
 
@@ -18,9 +19,6 @@ class PkgRefType(Enum):
 class PkgRefIdentifier:
     def __init__(self, orig_pkg_ref: str):
         self._orig_pkg_ref = orig_pkg_ref
-
-    # def is_local(self):
-    #     return Path(self._orig_pkg_ref).exists()
 
     def is_local_src(self):
         return Path(self._orig_pkg_ref).is_dir()
@@ -72,3 +70,11 @@ class PkgRefIdentifier:
             sys.exit(em.PkgIdentifierError.MultiplePotentialPackages.msg)
 
         return matching_items[0]
+
+    def identify_for_osp_dispatch(self):
+        gen_pkg_ref_id = self.identify()
+        if (gen_pkg_ref_id == PkgRefType.LOCAL_SDIST) or (
+                gen_pkg_ref_id == PkgRefType.LOCAL_WHEEL):
+            return PkgRefType.LOCAL_DIST
+        return gen_pkg_ref_id
+

@@ -14,17 +14,6 @@ class TestCommandInput:
         with pytest.raises(SystemExit):
             srepkg_args = ci.SrepkgCommandLine().get_args([])
 
-        stderr = capsys.readouterr().err
-        expected_msg_components = [
-            "usage",
-            "[-h] [-n [SREPKG_NAME]]",
-            "[-c [CONSTRUCTION_DIR]]",
-            "[-d [DIST_OUT_DIR]]",
-            "error: the following arguments are required: " "orig_pkg_ref",
-        ]
-        assert all([component in stderr for component in
-                    expected_msg_components])
-
     def test_one_arg(self):
         args = ci.SrepkgCommandLine().get_args([self.local_src_pkg_ref])
         assert args.orig_pkg_ref == self.local_src_pkg_ref
@@ -59,12 +48,3 @@ class TestCommandInput:
             ci.SrepkgCommandLine().get_args(
                 [self.local_src_pkg_ref, "-n",
                  self.user_srepkg_name, self.extra_arg])
-        stderr = capsys.readouterr().err
-        expected_msg_components = [
-            "usage",
-            "[-h] [-n [SREPKG_NAME]]",
-            "[-c [CONSTRUCTION_DIR]]",
-            "error: unrecognized arguments:",
-            self.extra_arg,
-        ]
-        assert all([component in stderr for component in expected_msg_components])

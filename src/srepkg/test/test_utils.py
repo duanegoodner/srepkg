@@ -116,13 +116,3 @@ class TestPkgRefIdentifier:
             orig_pkg_ref=str(self.local_test_pkgs_path / "testproj"))
         with pytest.raises(SystemExit):
             pkg_ref_identifier.identify()
-
-
-class TestWheelEntryPointExtractor:
-
-    local_test_pkgs_path = Path(__file__).parent.absolute() / \
-                           "package_test_cases"
-
-
-
-
