@@ -94,6 +94,18 @@ class TestConstructionDirFinalize:
         with pytest.raises(ce.NoSDistForWheelConstruction):
             converter.build_wheel()
 
+
+class TestConstructionDirSettle:
+
+    def test_temp_cd_settle(self, tmp_construction_dir):
+        tmp_construction_dir.settle()
+
+    def test_custom_cd_settle(self, tmp_path):
+        custom_construction_dir = cdn.CustomConstructionDir(tmp_path)
+        custom_construction_dir.settle()
+
+
+
 # This test has long runtime but may be good edge-case check
 # def test_numpy_sdist_to_wheel():
 #     numpy_sdist_path = Path(

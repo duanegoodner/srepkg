@@ -21,13 +21,13 @@ class TestSrepkgBuilder:
             pkg_ref=str(local_test_pkgs_path / 'testproj'),
             srepkg_zip_exists=True,
             srepkg_whl_exists=True),
-        BuilderTestCondition(
-            pkg_ref=str(
-                local_test_pkgs_path /
-                'numpy-1.23.2-cp39-cp39-macosx_10_9_x86_64.whl'),
-            srepkg_zip_exists=False,
-            srepkg_whl_exists=True
-        )
+        # BuilderTestCondition(
+        #     pkg_ref=str(
+        #         local_test_pkgs_path /
+        #         'numpy-1.23.2-cp39-cp39-macosx_10_9_x86_64.whl'),
+        #     srepkg_zip_exists=False,
+        #     srepkg_whl_exists=True
+        # )
     ]
 
     @staticmethod
@@ -71,32 +71,3 @@ class TestSrepkgBuilder:
         s_bldr.SrepkgSdistCompleter.zip_dir(
             zip_name=zip_name, src_path=src_path,
             exclude_paths=[src_path / "file_to_exclude.txt"])
-
-    # def test_wheel_completer_orig_src_dist(self):
-    #     srepkg_command = rep_int.SrepkgCommand(
-    #         orig_pkg_ref=str(self.local_test_pkgs_path /
-    #                          "testproj-0.0.0-py3-none-any.whl"))
-    #     construction_dir = cdn.TempConstructionDir()
-    #     shutil.copy2(
-    #         src=self.local_test_pkgs_path / "testproj-0.0.0-py3-none-any.whl")
-
-# def test_quickly(tmp_path):
-#
-#     output_dir = tmp_path
-#
-#     local_test_pkgs_path = Path(__file__).parent.absolute() / \
-#         'package_test_cases'
-#
-#     src_code = local_test_pkgs_path / 'testproj-0.0.0.tar.gz'
-#
-#     cur_command = rep_int.SrepkgCommand(
-#         orig_pkg_ref=str(src_code),
-#         construction_dir=str(output_dir)
-#     )
-#
-#     service_builder = sb.ServiceBuilder(cur_command)
-#     src_preparer = service_builder.create_orig_src_preparer()
-#     src_preparer.prepare()
-#
-#     srepkg_builder = service_builder.create_srepkg_builder()
-#     srepkg_builder.build()

@@ -1,12 +1,11 @@
 import abc
 from functools import singledispatch
 from pathlib import Path
-from typing import Callable, Dict, Type, Union, NamedTuple, List
+from typing import Callable, Dict, Type, Union, NamedTuple
 
 import srepkg.construction_dir as cdn
 import srepkg.dist_provider as opr
 import srepkg.orig_src_preparer as osp
-import srepkg.orig_src_preparer_interfaces as osp_int
 import srepkg.remote_pkg_retriever as rpr
 import srepkg.service_registry as sr
 import srepkg.srepkg_builder as sbn

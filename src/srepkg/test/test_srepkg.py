@@ -1,11 +1,10 @@
 from pathlib import Path
+import srepkg.repackager as rep
 from srepkg.srepkg import main
+from srepkg.test.shared_fixtures import sample_pkgs
 
 
-def test_srepkg(tmp_path):
-    main([
-        str(Path(__file__).parent / "package_test_cases" /
-            "wheel_inspect-1.7.1-py3-none-any.whl"),
-        # "--dist_out_dir", "/Users/duane/srepkg_pkgs",
-        # "--construction_dir", "/Users/duane/srepkg_pkgs"
-    ])
+def test_srepkg(mocker, sample_pkgs):
+    mocker.patch.object(rep.Repackager, "repackage", return_value=None)
+
+    main([sample_pkgs.wheel_inspect_whl])
