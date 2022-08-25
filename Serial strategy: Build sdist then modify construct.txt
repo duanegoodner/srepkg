@@ -1,6 +1,0 @@
-Serial strategy: Build sdist then modify construction_dir contents as needed to build wheel
-
-
-Concurrent strategy:
-- Build duplicate construction_dirs up to point where they need to diverge for sdist vs. wheel
-- Define separate functions for remaining work for each type of distribution build, and then run these via threads or multiprocess
