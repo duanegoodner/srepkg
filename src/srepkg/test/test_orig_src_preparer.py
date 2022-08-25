@@ -5,7 +5,7 @@ from srepkg.test.shared_fixtures import sample_pkgs
 import srepkg.utils.dist_archive_file_tools as daft
 
 
-class TestOrigSrcPreparer2:
+class TestOrigSrcPreparer:
 
     @pytest.mark.parametrize("pkg_ref, expected_archive_types", [
         ("testproj", {daft.ArchiveDistType.WHEEL}),
