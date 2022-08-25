@@ -12,7 +12,7 @@ from zipfile import ZIP_DEFLATED, ZipFile
 import inner_pkg_installer.inner_pkg_installer as ipi
 import srepkg.cs_entry_pts as cse
 import srepkg.repackager_interfaces as re_int
-import srepkg.srepkg_builder_ds_and_int as sb_new_int
+import srepkg.srepkg_builder_int as sb_new_int
 
 
 class SrcID(Enum):

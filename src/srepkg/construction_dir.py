@@ -7,7 +7,7 @@ import uuid
 from pathlib import Path
 from typing import List
 
-import srepkg.srepkg_builder_ds_and_int as sb_int
+import srepkg.srepkg_builder_int as sb_int
 import srepkg.srepkg_builder_data_structs as sb_ds
 import srepkg.error_handling.custom_exceptions as ce
 import srepkg.utils.dist_archive_file_tools as cft

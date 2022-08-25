@@ -1,8 +1,8 @@
 import pkginfo
 from dataclasses import dataclass, field
+from packaging.utils import parse_wheel_filename
 from pathlib import Path
 from typing import List, NamedTuple, Union
-from wheel_filename import parse_wheel_filename
 
 
 @dataclass
@@ -59,9 +59,10 @@ class OrigPkgSrcSummary:
 
     @property
     def has_platform_indep_wheel(self):
-        return self.has_wheel and\
-               ('any' in parse_wheel_filename(self.wheel_path.name)
-                .platform_tags)
+        if not self.has_wheel:
+            return False
+        name, version, bld, tag = parse_wheel_filename(self.wheel_path.name)
+        return list(tag)[0].platform == "any"
 
     @property
     def has_sdist(self):
