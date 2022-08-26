@@ -27,13 +27,13 @@ class TestSrepkgBuilderDataStructs:
         for getter in property_getters:
             getattr(obj, getter)
 
-    def test_orig_pkg_src_summary_init_with_dists(self):
+    def test_construction_dir_summary_init_with_dists(self):
         dist_info = self.mock_dist_info(
             dist_path=self.local_test_pkgs_path /
             "testproj-0.0.0-py3-none-any.whl",
             dist_type=pkginfo.Wheel)
 
-        return re_ds.OrigPkgSrcSummary(
+        return re_ds.ConstructionDirSummary(
             pkg_name="testproj",
             pkg_version="1.0.0",
             srepkg_name="dummy",
@@ -43,7 +43,7 @@ class TestSrepkgBuilderDataStructs:
             dists=[dist_info],
         )
 
-    def test_orig_pkg_src_summary_init_with_dists_and_entry_pts(self):
+    def test_construction_dir_summary_init_with_dists_and_entry_pts(self):
         dist_info = self.mock_dist_info(
             dist_path=self.local_test_pkgs_path /
             "testproj-0.0.0-py3-none-any.whl",
@@ -52,7 +52,7 @@ class TestSrepkgBuilderDataStructs:
         entry_pt = re_ds.CSEntryPoint(
             command="test", module="test", attr="test")
 
-        return re_ds.OrigPkgSrcSummary(
+        return re_ds.ConstructionDirSummary(
             pkg_name="testproj",
             pkg_version="1.0.0",
             srepkg_name="dummy",
@@ -63,7 +63,7 @@ class TestSrepkgBuilderDataStructs:
             entry_pts=re_ds.PkgCSEntryPoints([entry_pt]))
 
     def test_wheel_path_getter_without_wheel(self):
-        orig_pkg_src_summary = re_ds.OrigPkgSrcSummary(
+        construction_dir_summary = re_ds.ConstructionDirSummary(
             pkg_name="test_proj",
             pkg_version="1.0.0",
             srepkg_name="dummy",
@@ -71,14 +71,14 @@ class TestSrepkgBuilderDataStructs:
             orig_pkg_dists=Path("dummy"),
             srepkg_inner=Path("dummy"),
         )
-        self.run_all_property_getters(orig_pkg_src_summary)
-        # return orig_pkg_src_summary.wheel_path
+        self.run_all_property_getters(construction_dir_summary)
+        # return construction_dir_summary.wheel_path
 
     def test_sdist_path_getter_with_sdist(self):
         dist_info = self.mock_dist_info(
             dist_path=self.local_test_pkgs_path / "testproj-0.0.0.tar.gz",
             dist_type=pkginfo.SDist)
-        orig_pkg_src_summary = re_ds.OrigPkgSrcSummary(
+        construction_dir_summary = re_ds.ConstructionDirSummary(
             pkg_name="testproj",
             pkg_version="1.0.0",
             srepkg_name="dummy",
@@ -86,4 +86,4 @@ class TestSrepkgBuilderDataStructs:
             orig_pkg_dists=Path("dummy"),
             srepkg_inner=Path("dummy"),
             dists=[dist_info])
-        self.run_all_property_getters(orig_pkg_src_summary)
+        self.run_all_property_getters(construction_dir_summary)

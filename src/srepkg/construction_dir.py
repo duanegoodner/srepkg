@@ -7,20 +7,17 @@ import uuid
 from pathlib import Path
 from typing import List
 
-import srepkg.srepkg_builder_int as sb_int
 import srepkg.error_handling.custom_exceptions as ce
 import srepkg.utils.dist_archive_file_tools as cft
 import srepkg.orig_src_preparer_interfaces as osp_int
 import srepkg.repackager_data_structs as rp_ds
-import srepkg.retriever_provider_shared_interface as rp_shared_int
 import srepkg.utils.wheel_entry_point_extractor as we_pe
 
 DEFAULT_DIST_CLASSES = (pkginfo.SDist, pkginfo.Wheel)
 DEFAULT_SREPKG_SUFFIX = "srepkg"
 
 
-class ConstructionDir(rp_shared_int.OrigPkgReceiver,
-                      osp_int.ManageableConstructionDir):
+class ConstructionDir(osp_int.ManageableConstructionDir):
 
     def __init__(self,
                  construction_dir_command: Path,
@@ -34,7 +31,7 @@ class ConstructionDir(rp_shared_int.OrigPkgReceiver,
         self._custom_srepkg_name = srepkg_name_command
         self._supported_dist_types = DEFAULT_DIST_CLASSES
         self._srepkg_name = None
-        self._orig_pkg_src_summary = None
+        self._summary = None
 
     @property
     def _root_contents(self):
@@ -150,7 +147,7 @@ class ConstructionDir(rp_shared_int.OrigPkgReceiver,
         return we_pe.WheelEntryPointExtractor(self.wheel_path) \
             .get_entry_points()
 
-    def _set_orig_pkg_src_summary(self):
+    def _set_summary(self):
         if not self.has_sdist and not self.has_wheel:
             raise ce.MissingOrigPkgContent(str(self.orig_pkg_dists))
         if not self.has_wheel and self.has_sdist:
@@ -158,7 +155,7 @@ class ConstructionDir(rp_shared_int.OrigPkgReceiver,
         self._update_srepkg_and_dir_names(
             discovered_pkg_name=self.orig_pkg_name)
 
-        self._orig_pkg_src_summary = rp_ds.OrigPkgSrcSummary(
+        self._summary = rp_ds.ConstructionDirSummary(
             pkg_name=self.orig_pkg_name,
             pkg_version=self.orig_pkg_version,
             srepkg_name=self._srepkg_name,
@@ -169,8 +166,8 @@ class ConstructionDir(rp_shared_int.OrigPkgReceiver,
             entry_pts=self._extract_cs_entry_pts_from_wheel())
 
     def finalize(self):
-        self._set_orig_pkg_src_summary()
-        return self._orig_pkg_src_summary
+        self._set_summary()
+        return self._summary
 
     @abc.abstractmethod
     def settle(self):
@@ -196,9 +193,9 @@ class TempConstructionDir(ConstructionDir):
             construction_dir_command=Path(self._temp_dir_obj.name),
             srepkg_name_command=srepkg_name_command)
 
-    def _set_orig_pkg_src_summary(self):
-        super()._set_orig_pkg_src_summary()
-        self._orig_pkg_src_summary._temp_dir_obj = self._temp_dir_obj
+    def _set_summary(self):
+        super()._set_summary()
+        self._summary._temp_dir_obj = self._temp_dir_obj
 
     def settle(self):
         self._temp_dir_obj.cleanup()

@@ -20,13 +20,6 @@ class SrepkgCommandInterface(abc.ABC):
         pass
 
 
-# class SettleableSrepkgDirInterface(abc.ABC):
-#
-#     @abc.abstractmethod
-#     def settle(self):
-#         pass
-
-
 class PkgDistProviderInterface(abc.ABC):
 
     @abc.abstractmethod
@@ -57,6 +50,6 @@ class ServiceBuilderInterface(abc.ABC):
     @abc.abstractmethod
     def create_srepkg_builder(
             self,
-            orig_pkg_src_summary: rep_ds.OrigPkgSrcSummary)\
+            construction_dir_summary: rep_ds.ConstructionDirSummary)\
             -> SrepkgBuilderInterface:
         pass

@@ -13,11 +13,10 @@ class OrigSrcPreparer(re_int.OrigSrcPreparerInterface):
         self._provider = provider
         self._receiver = receiver
 
-    def prepare(self) -> re_ds.OrigPkgSrcSummary:
+    def prepare(self) -> re_ds.ConstructionDirSummary:
         self._retriever.retrieve()
         self._provider.provide()
         orig_pkg_summary = self._receiver.finalize()
         # self._receiver.settle()
 
-        # return self._receiver
         return orig_pkg_summary

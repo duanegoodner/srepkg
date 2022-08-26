@@ -1,7 +1,6 @@
 import pytest
 from dataclasses import dataclass
 from pathlib import Path
-import srepkg.service_registry as sr
 from srepkg.construction_dir import TempConstructionDir
 
 
@@ -29,10 +28,5 @@ def sample_pkgs():
 @pytest.fixture
 def tmp_construction_dir():
     return TempConstructionDir()
-
-
-@pytest.fixture
-def service_registry(tmp_construction_dir):
-    return sr.ServiceRegistry()
 
 

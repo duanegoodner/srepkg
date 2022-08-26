@@ -12,7 +12,6 @@ class CSEntryPoint:
     command: str
     module: str
     attr: str
-    # extras: List[str]
 
     @property
     def as_string(self):
@@ -41,7 +40,7 @@ class UniquePkg(NamedTuple):
 
 
 @dataclass
-class OrigPkgSrcSummary:
+class ConstructionDirSummary:
     pkg_name: str
     pkg_version: str
     srepkg_name: str

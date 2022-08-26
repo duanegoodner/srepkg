@@ -61,9 +61,9 @@ class TestConstructionDirFinalize:
             srepkg_name=srepkg_name)
         service_builder = sb.ServiceBuilder(srepkg_command)
         osp = service_builder.create_orig_src_preparer()
-        orig_pkg_src_summary = osp.prepare()
-        assert orig_pkg_src_summary.pkg_name == orig_pkg_name
-        assert len(orig_pkg_src_summary.dists) == num_dists
+        construction_dir_summary = osp.prepare()
+        assert construction_dir_summary.pkg_name == orig_pkg_name
+        assert len(construction_dir_summary.dists) == num_dists
 
     def test_get_dist_info_no_supported_dist_types(self):
         construction_dir = cdn.TempConstructionDir()
@@ -76,10 +76,10 @@ class TestConstructionDirFinalize:
             rep_int.SrepkgCommand(
                 orig_pkg_ref=self._pkg_refs.testproj))
         osp = service_builder.create_orig_src_preparer()
-        orig_pkg_src_summary = osp.prepare()
+        construction_dir_summary = osp.prepare()
         shutil.copy2(
             src=sample_pkgs.wheel_inspect_whl,
-            dst=orig_pkg_src_summary.orig_pkg_dists)
+            dst=construction_dir_summary.orig_pkg_dists)
 
         with pytest.raises(ce.MultiplePackagesPresent):
             osp._receiver.finalize()

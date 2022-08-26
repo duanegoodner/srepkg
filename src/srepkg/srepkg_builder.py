@@ -47,7 +47,7 @@ class SimpleCopyPair(NamedTuple):
 
 class SrepkgCompleter(sb_new_int.SrepkgCompleterInterface):
     def __init__(self,
-                 orig_pkg_summary: re_ds.OrigPkgSrcSummary):
+                 orig_pkg_summary: re_ds.ConstructionDirSummary):
         self._orig_pkg_summary = orig_pkg_summary
 
     @property
@@ -171,7 +171,7 @@ class SrepkgSdistCompleter(SrepkgCompleter):
 
     # @property
     # def _orig_src_dist(self) -> Union[Path, None]:
-    #     return self._construction_dir.orig_pkg_src_summary.src_for_srepkg_sdist
+    #     return self._construction_dir.construction_dir_summary.src_for_srepkg_sdist
 
     @property
     def _extra_sources(self) -> Dict[SrcID, Path]:
@@ -267,7 +267,7 @@ class SrepkgWheelCompleter(SrepkgCompleter):
 
     # @property
     # def _orig_src_dist(self) -> Union[Path, None]:
-    #     return self._construction_dir.orig_pkg_src_summary.src_for_srepkg_wheel
+    #     return self._construction_dir.construction_dir_summary.src_for_srepkg_wheel
 
     @property
     def _extra_sources(self):
@@ -327,7 +327,7 @@ class SrepkgBuilder(re_int.SrepkgBuilderInterface):
 
     def __init__(
             self,
-            orig_pkg_src_summary: re_ds.OrigPkgSrcSummary,
+            construction_dir_summary: re_ds.ConstructionDirSummary,
             output_dir: Path,
             srepkg_completers: List[SrepkgCompleter] = None
     ):
@@ -335,7 +335,7 @@ class SrepkgBuilder(re_int.SrepkgBuilderInterface):
             srepkg_completers = []
         self._srepkg_completers = srepkg_completers
         # self._construction_dir = construction_dir
-        self._orig_pkg_src_summary = orig_pkg_src_summary
+        self._construction_dir_summary = construction_dir_summary
         self._output_dir = output_dir
         self._base_setup_cfg = configparser.ConfigParser()
         self._base_setup_cfg.read(
@@ -356,11 +356,11 @@ class SrepkgBuilder(re_int.SrepkgBuilderInterface):
     def _destinations(self):
         return {
             DestID.SREPKG_BASE_SETUP_CFG:
-                self._orig_pkg_src_summary.srepkg_root / 'base_setup.cfg',
+                self._construction_dir_summary.srepkg_root / 'base_setup.cfg',
             DestID.SREPKG_INIT:
-                self._orig_pkg_src_summary.srepkg_inner / '__init__.py',
+                self._construction_dir_summary.srepkg_inner / '__init__.py',
             DestID.SREPKG_ENTRY_PTS_DIR:
-                self._orig_pkg_src_summary.srepkg_inner / 'srepkg_entry_points',
+                self._construction_dir_summary.srepkg_inner / 'srepkg_entry_points',
         }
 
     def _simple_construction_tasks(self):
@@ -371,12 +371,12 @@ class SrepkgBuilder(re_int.SrepkgBuilderInterface):
 
     def _build_entry_points(self):
         cse.EntryPointsBuilder(
-            orig_pkg_entry_pts=self._orig_pkg_src_summary.entry_pts,
+            orig_pkg_entry_pts=self._construction_dir_summary.entry_pts,
             entry_pt_template=self._sources[
                 SrcID.ENTRY_PT_TEMPLATE],
             srepkg_entry_pt_dir=self._destinations[
                 DestID.SREPKG_ENTRY_PTS_DIR],
-            srepkg_name=self._orig_pkg_src_summary.srepkg_inner.name,
+            srepkg_name=self._construction_dir_summary.srepkg_inner.name,
             srepkg_config=self._base_setup_cfg,
             generic_entry_funct_name='entry_funct'
         ).build_entry_pts()
@@ -385,8 +385,8 @@ class SrepkgBuilder(re_int.SrepkgBuilderInterface):
 
     def _write_srepkg_cfg_non_entry_data(self):
         metadata = {
-            "name": self._orig_pkg_src_summary.srepkg_name,
-            "version": self._orig_pkg_src_summary.pkg_version
+            "name": self._construction_dir_summary.srepkg_name,
+            "version": self._construction_dir_summary.pkg_version
         }
 
         for (key, value) in metadata.items():

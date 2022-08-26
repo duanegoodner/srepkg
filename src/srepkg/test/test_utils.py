@@ -3,7 +3,6 @@ from pathlib import Path
 from typing import NamedTuple
 import srepkg.utils.dist_archive_file_tools as daft
 import srepkg.utils.cd_context_manager as cdcm
-import srepkg.utils.wheel_entry_point_extractor as we_pe
 import srepkg.utils.pkg_type_identifier as pti
 import srepkg.error_handling.custom_exceptions as ce
 
@@ -50,7 +49,7 @@ class TestArchiveIdentifier:
 
     identifier = daft.ArchiveIdentifier()
     test_cases_path = Path(__file__).parent.absolute() / \
-                      'package_test_cases'
+        'package_test_cases'
 
     def run_file_and_dist_id_test(self, info: ExpectedFileDistType):
         assert self.identifier.id_file_type(
@@ -102,7 +101,6 @@ class BrokenPkgRefIdentifier(pti.PkgRefIdentifier):
 
 
 class TestPkgRefIdentifier:
-
     local_test_pkgs_path = Path(__file__).parent.absolute() / \
                            "package_test_cases"
 

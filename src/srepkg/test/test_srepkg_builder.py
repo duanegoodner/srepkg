@@ -38,9 +38,9 @@ class TestSrepkgBuilder:
             dist_out_dir=str(dist_out_dir))
         service_builder = sb.ServiceBuilder(srepkg_command=srepkg_command)
         osp = service_builder.create_orig_src_preparer()
-        orig_pkg_src_summary = osp.prepare()
+        construction_dir_summary = osp.prepare()
         srepkg_builder = service_builder.create_srepkg_builder(
-            orig_pkg_src_summary=orig_pkg_src_summary
+            construction_dir_summary=construction_dir_summary
         )
         srepkg_builder.build()
 
@@ -60,27 +60,9 @@ class TestSrepkgBuilder:
     def mock_build_wheel(self):
         pass
 
-    # @mock.patch("srepkg.construction_dir.ConstructionDir.has_sdist", new_callable=mock.PropertyMock)
-    # @mock.patch("srepkg.construction_dir.SdistToWheelConverter.build_wheel", new=mock_build_wheel)
-    # def test_init_builder_without_completers(self, mock_has_sdist):
-    #     mock_has_sdist.return_value = True
-    #
-    #     # with mock.patch.object(
-    #     #         cdn.ConstructionDir, "has_sdist",
-    #     #         new_callable=mock.PropertyMock) as mock_has_sdist:
-    #     #     mock_has_sdist.return_value = True
-    #
-    #     construction_dir = srepkg.construction_dir.TempConstructionDir()
-    #     orig_pkg_src_summary = construction_dir.finalize()
-    #     output_dir = Path.cwd()
-    #     return s_bldr.SrepkgBuilder(
-    #         construction_dir=construction_dir,
-    #         orig_pkg_src_summary=orig_pkg_src_summary,
-    #         output_dir=output_dir)
-
     def test_init_builder_without_completers(self):
         srepkg_builder = s_bldr.SrepkgBuilder(
-            orig_pkg_src_summary=rep_ds.OrigPkgSrcSummary(
+            construction_dir_summary=rep_ds.ConstructionDirSummary(
                 pkg_name="dummy", pkg_version="dummy", srepkg_name="dummy",
                 srepkg_root=Path("dummy"), orig_pkg_dists=Path("dummy"),
                 srepkg_inner=Path("dummy")),

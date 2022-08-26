@@ -32,7 +32,6 @@ class EntryPointsBuilder:
                     orig_pkg_cse.command,
                  ]),
             attr=self._generic_entry_funct_name,
-            # extras=orig_pkg_cse.extras
         )
             for orig_pkg_cse in self._orig_pkg_entry_pts.cs_entry_pts
         ]

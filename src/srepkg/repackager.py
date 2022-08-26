@@ -9,9 +9,9 @@ class Repackager:
         self._service_class_builder = service_class_builder
 
     def repackage(self):
-        orig_pkg_src_summary = self._service_class_builder\
+        construction_dir_summary = self._service_class_builder\
             .create_orig_src_preparer().prepare()
 
         srepkg_builder = self._service_class_builder.create_srepkg_builder(
-            orig_pkg_src_summary=orig_pkg_src_summary)
+            construction_dir_summary=construction_dir_summary)
         srepkg_builder.build()
