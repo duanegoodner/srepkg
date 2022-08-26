@@ -1,10 +1,8 @@
 import pytest
 import srepkg.service_builder as sb
-from pathlib import Path
 from typing import NamedTuple
-import srepkg.construction_dir as cdn
 import srepkg.repackager_interfaces as rep_int
-from srepkg.test.shared_fixtures import tmp_construction_dir
+from srepkg.test.shared_fixtures import tmp_construction_dir, sample_pkgs
 
 
 class TestConstructionDirDispatch:
@@ -26,182 +24,90 @@ class TestConstructionDirDispatch:
             construction_dir = sb.create_construction_dir(1)
 
 
-class RetrieverProviderTestCondition(NamedTuple):
-    pkg_ref_command: str
-    retriever_type: str
-    provider_type: str
+osp_conditions = [
+    ("testproj", "NullPkgRetriever", "DistProviderFromSrc"),
+    ("testproj_targz", "NullPkgRetriever", "DistCopyProvider"),
+    ("testproj_zip", "NullPkgRetriever", "DistCopyProvider"),
+    ("black_py_pi", "PyPIPkgRetriever", "NullDistProvider"),
+    ("black_github", "GithubPkgRetriever", "DistProviderFromSrc")
+]
 
 
-class OSPRetrieverProviderTester:
+class TestRetrieverProviderDispatch:
 
-    construction_dir = sb.create_construction_dir(None)
-    package_test_cases = Path(__file__).parent.absolute() / 'package_test_cases'
-
-    @property
-    def test_conditions(self):
-        return {
-            1: RetrieverProviderTestCondition(
-                pkg_ref_command=str(self.package_test_cases / 'testproj'),
-                retriever_type='NullPkgRetriever',
-                provider_type='DistProviderFromSrc'
-            ),
-            2: RetrieverProviderTestCondition(
-                pkg_ref_command=str(
-                    self.package_test_cases / 'testproj-0.0.0.tar.gz'),
-                retriever_type='NullPkgRetriever',
-                provider_type='DistCopyProvider'),
-            3: RetrieverProviderTestCondition(
-                pkg_ref_command=str(
-                    self.package_test_cases / 'testproj-0.0.0.zip'),
-                retriever_type='NullPkgRetriever',
-                provider_type='DistCopyProvider'),
-            4: RetrieverProviderTestCondition(
-                pkg_ref_command=str(
-                    self.package_test_cases / 'testproj-0.0.0-py3-none-any.whl'),
-                retriever_type='NullPkgRetriever',
-                provider_type='DistCopyProvider'),
-            5: RetrieverProviderTestCondition(
-                pkg_ref_command='black',
-                retriever_type='PyPIPkgRetriever',
-                provider_type='NullDistProvider'),
-            6: RetrieverProviderTestCondition(
-                pkg_ref_command='https://github.com/psf/black',
-                retriever_type='GithubPkgRetriever',
-                provider_type='DistProviderFromSrc')
-        }
-
-
-class TestRetrieverProviderDispatch(OSPRetrieverProviderTester):
-
-    @staticmethod
-    def run_test_condition(
-            test_condition: RetrieverProviderTestCondition,
-            construction_dir: cdn.ConstructionDir
-    ):
+    @pytest.mark.parametrize("pkg_ref_attr, retriever_type, provider_type",
+                             osp_conditions)
+    def test_conditions(self, pkg_ref_attr, retriever_type, provider_type,
+                        tmp_construction_dir, sample_pkgs):
+        pkg_ref_command = getattr(sample_pkgs, pkg_ref_attr)
         pkg_retriever = sb.PkgRetrieverDispatch(
-            pkg_ref_command=test_condition.pkg_ref_command,
-            construction_dir=construction_dir
-        ).create()
+            pkg_ref_command=pkg_ref_command,
+            construction_dir=tmp_construction_dir).create()
         dist_provider = sb.DistProviderDispatch(
-            pkg_ref_command=test_condition.pkg_ref_command,
-            construction_dir=construction_dir,
-            retriever=pkg_retriever
-        ).create()
+            pkg_ref_command=pkg_ref_command,
+            construction_dir=tmp_construction_dir,
+            retriever=pkg_retriever).create()
 
-        assert type(pkg_retriever).__name__ == test_condition.retriever_type
-        assert type(dist_provider).__name__ == test_condition.provider_type
-
-    def test_retriever_provider_conditions(
-            self,
-            tmp_construction_dir):
-        for condition in self.test_conditions:
-            self.run_test_condition(
-                self.test_conditions[condition], tmp_construction_dir
-                )
+        assert type(pkg_retriever).__name__ == retriever_type
+        assert type(dist_provider).__name__ == provider_type
 
 
-class OrigSrcPreparerTestCondition(NamedTuple):
-    pkg_ref_command: str
-    retriever_type: str
-    provider_type: str
+class TestOSPBuilder:
+
+    @pytest.mark.parametrize("pkg_ref_attr, retriever_type, provider_type",
+                             osp_conditions)
+    def test_osp_condition(self, pkg_ref_attr, retriever_type, provider_type,
+                           sample_pkgs):
+        orig_pkg_ref_command = getattr(sample_pkgs, pkg_ref_attr)
+        osp_builder = sb.OrigSrcPreparerBuilder(
+            orig_pkg_ref_command=orig_pkg_ref_command,
+            construction_dir_command=None)
+        osp = osp_builder.create()
+        assert type(osp._retriever).__name__ == retriever_type
+        assert type(osp._provider).__name__ == provider_type
+        assert type(osp._receiver).__name__ == "TempConstructionDir"
 
 
-class TestOSPBuilder(OSPRetrieverProviderTester):
+class TestServiceBuilderCreateOSP:
 
-    def build_osp(self,
-                  condition_id: int,
-                  construction_dir_command: str = None):
-        test_condition = self.test_conditions[condition_id]
-        orig_src_preparer_builder = sb.OrigSrcPreparerBuilder(
-            construction_dir_command=construction_dir_command,
-            orig_pkg_ref_command=test_condition.pkg_ref_command,
-        )
-        return orig_src_preparer_builder.create()
-
-    def run_osp_test(self, condition_id: int):
-        test_condition = self.test_conditions[condition_id]
-
-        temp_dir_osp = self.build_osp(condition_id=condition_id)
-        assert type(temp_dir_osp._retriever).__name__ == \
-               test_condition.retriever_type
-        assert type(temp_dir_osp._provider).__name__ == \
-               test_condition.provider_type
-        assert type(temp_dir_osp._receiver).__name__ == \
-               'TempConstructionDir'
-
-    def test_osp_conditions(self):
-        for condition_id in self.test_conditions:
-            self.run_osp_test(condition_id=condition_id)
-
-
-class TestServiceBuilderCreateOSP(OSPRetrieverProviderTester):
-
-    def run_create_osp_test(self, condition_id: int):
-        test_condition = self.test_conditions[condition_id]
+    @pytest.mark.parametrize("pkg_ref_attr, retriever_type, provider_type",
+                             osp_conditions)
+    def test_create_osp(self, pkg_ref_attr, retriever_type, provider_type,
+                        sample_pkgs):
         srepkg_command = rep_int.SrepkgCommand(
-            orig_pkg_ref=test_condition.pkg_ref_command)
-
+            orig_pkg_ref=getattr(sample_pkgs, pkg_ref_attr))
         service_builder = sb.ServiceBuilder(srepkg_command=srepkg_command)
         osp = service_builder.create_orig_src_preparer()
-        assert type(osp._retriever).__name__ == \
-               test_condition.retriever_type
-        assert type(osp._provider).__name__ == \
-               test_condition.provider_type
-        assert type(osp._receiver).__name__ == \
-               'TempConstructionDir'
-
-    def test_osp_creation_conditions(self):
-        for condition_id in self.test_conditions:
-            self.run_create_osp_test(condition_id=condition_id)
+        assert type(osp._retriever).__name__ == retriever_type
+        assert type(osp._provider).__name__ == provider_type
+        assert type(osp._receiver).__name__ == "TempConstructionDir"
 
 
-class BuilderDispatchCondition(NamedTuple):
-    pkg_ref: str
-    sdist_completer_exists: bool
-    wheel_completer_exists: bool
+bldr_dispatch_conditions = [
+    ("testproj", True, True),
+    ("numpy_whl", False, True),
+    ("testproj_whl", True, True)
+]
 
 
-class TestSrepkgBuilderDispatch:
-    local_test_pkgs_path = Path(__file__).parent.absolute() / \
-                           'package_test_cases'
+class TestBuilderDispatch:
 
-    test_conditions = [
-        BuilderDispatchCondition(
-            pkg_ref=str(local_test_pkgs_path / 'testproj'),
-            sdist_completer_exists=True,
-            wheel_completer_exists=True),
-        BuilderDispatchCondition(
-            pkg_ref=str(
-                local_test_pkgs_path /
-                'numpy-1.23.2-cp39-cp39-macosx_10_9_x86_64.whl'),
-            sdist_completer_exists=False,
-            wheel_completer_exists=True
-        ),
-        BuilderDispatchCondition(
-            pkg_ref=str(local_test_pkgs_path /
-                        'testproj-0.0.0-py3-none-any.whl'),
-            sdist_completer_exists=True,
-            wheel_completer_exists=True
-        )
-    ]
-
-    @staticmethod
-    def run_test_condition(condition: BuilderDispatchCondition):
-        srepkg_command = rep_int.SrepkgCommand(orig_pkg_ref=condition.pkg_ref)
-        service_builder = sb.ServiceBuilder(srepkg_command=srepkg_command)
+    @pytest.mark.parametrize(
+        "pkg_ref_attr, sdist_completer_exists, wheel_completer_exists",
+        bldr_dispatch_conditions)
+    def test_bldr_dispatch_conditions(self, pkg_ref_attr, sdist_completer_exists,
+                                      wheel_completer_exists, sample_pkgs):
+        srepkg_command = rep_int.SrepkgCommand(
+            orig_pkg_ref=getattr(sample_pkgs, pkg_ref_attr))
+        service_builder = sb.ServiceBuilder(srepkg_command)
         osp = service_builder.create_orig_src_preparer()
         orig_src_summary = osp.prepare()
         srepkg_builder = service_builder.create_srepkg_builder(
-            construction_dir_summary=orig_src_summary
-        )
-        return srepkg_builder
+            construction_dir_summary=orig_src_summary)
+        completer_types = [type(item).__name__ for item in
+                           srepkg_builder._srepkg_completers]
 
-    def test_dispatch_conditions(self):
-        for condition in self.test_conditions:
-            srepkg_builder = self.run_test_condition(condition)
-            completer_types = [type(item).__name__ for item in
-                               srepkg_builder._srepkg_completers]
-            assert ('SrepkgSdistCompleter' in completer_types) ==\
-                   condition.sdist_completer_exists
-            assert ('SrepkgWheelCompleter' in completer_types) ==\
-                   condition.wheel_completer_exists
+        assert ('SrepkgSdistCompleter' in completer_types) == \
+               sdist_completer_exists
+        assert ('SrepkgWheelCompleter' in completer_types) == \
+               wheel_completer_exists
