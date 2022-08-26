@@ -8,10 +8,10 @@ from pathlib import Path
 from typing import List
 
 import srepkg.srepkg_builder_int as sb_int
-import srepkg.srepkg_builder_data_structs as sb_ds
 import srepkg.error_handling.custom_exceptions as ce
 import srepkg.utils.dist_archive_file_tools as cft
 import srepkg.orig_src_preparer_interfaces as osp_int
+import srepkg.repackager_data_structs as rp_ds
 import srepkg.retriever_provider_shared_interface as rp_shared_int
 import srepkg.utils.wheel_entry_point_extractor as we_pe
 
@@ -19,9 +19,9 @@ DEFAULT_DIST_CLASSES = (pkginfo.SDist, pkginfo.Wheel)
 DEFAULT_SREPKG_SUFFIX = "srepkg"
 
 
-class ConstructionDir(
-    rp_shared_int.OrigPkgReceiver, osp_int.ManageableConstructionDir,
-    sb_int.SrepkgComponentReceiver):
+class ConstructionDir(rp_shared_int.OrigPkgReceiver,
+                      osp_int.ManageableConstructionDir):
+
     def __init__(self,
                  construction_dir_command: Path,
                  srepkg_name_command: str = None):
@@ -60,7 +60,7 @@ class ConstructionDir(
         for dist_class in self.supported_dist_types:
             try:
                 dist_obj = dist_class(dist_path)
-                return sb_ds.DistInfo(path=dist_path, dist_obj=dist_obj)
+                return rp_ds.DistInfo(path=dist_path, dist_obj=dist_obj)
             except ValueError:
                 pass
 
@@ -72,7 +72,7 @@ class ConstructionDir(
     @property
     def _unique_orig_pkgs(self):
         unique_pkgs = {
-            sb_ds.UniquePkg(
+            rp_ds.UniquePkg(
                 # DistInfo changes any "_" to "-" in pkg name. Undo that.
                 name=dist.dist_obj.name.replace("-", "_"),
                 version=dist.dist_obj.version)
@@ -107,9 +107,9 @@ class ConstructionDir(
         return any([type(dist.dist_obj) == pkginfo.SDist for dist in
                     self.dists])
 
-    @property
-    def srepkg_name(self) -> str:
-        return self._srepkg_name
+    # @property
+    # def srepkg_name(self) -> str:
+    #     return self._srepkg_name
 
     @property
     def srepkg_inner(self):
@@ -123,10 +123,6 @@ class ConstructionDir(
     def supported_dist_types(self):
         return self._supported_dist_types
 
-    @property
-    def orig_pkg_src_summary(self):
-        return self._orig_pkg_src_summary
-
     def _rename_sub_dirs(self, srepkg_root_new: str, srepkg_inner_new: str):
 
         self._srepkg_inner.replace(
@@ -135,7 +131,7 @@ class ConstructionDir(
             self._srepkg_root.parent.absolute() / srepkg_root_new)
 
         self._srepkg_root = self._srepkg_root.parent.absolute() / \
-                            srepkg_root_new
+            srepkg_root_new
         self._srepkg_inner = self._srepkg_root / srepkg_inner_new
 
     def _update_srepkg_and_dir_names(self, discovered_pkg_name: str):
@@ -154,7 +150,7 @@ class ConstructionDir(
         return we_pe.WheelEntryPointExtractor(self.wheel_path) \
             .get_entry_points()
 
-    def finalize(self):
+    def _set_orig_pkg_src_summary(self):
         if not self.has_sdist and not self.has_wheel:
             raise ce.MissingOrigPkgContent(str(self.orig_pkg_dists))
         if not self.has_wheel and self.has_sdist:
@@ -162,12 +158,19 @@ class ConstructionDir(
         self._update_srepkg_and_dir_names(
             discovered_pkg_name=self.orig_pkg_name)
 
-        self._orig_pkg_src_summary = sb_ds.OrigPkgSrcSummary(
+        self._orig_pkg_src_summary = rp_ds.OrigPkgSrcSummary(
             pkg_name=self.orig_pkg_name,
             pkg_version=self.orig_pkg_version,
+            srepkg_name=self._srepkg_name,
+            srepkg_root=self._srepkg_root,
+            orig_pkg_dists=self.orig_pkg_dists,
+            srepkg_inner=self._srepkg_inner,
             dists=self.dists,
-            entry_pts=self._extract_cs_entry_pts_from_wheel()
-        )
+            entry_pts=self._extract_cs_entry_pts_from_wheel())
+
+    def finalize(self):
+        self._set_orig_pkg_src_summary()
+        return self._orig_pkg_src_summary
 
     @abc.abstractmethod
     def settle(self):
@@ -192,6 +195,10 @@ class TempConstructionDir(ConstructionDir):
         super().__init__(
             construction_dir_command=Path(self._temp_dir_obj.name),
             srepkg_name_command=srepkg_name_command)
+
+    def _set_orig_pkg_src_summary(self):
+        super()._set_orig_pkg_src_summary()
+        self._orig_pkg_src_summary._temp_dir_obj = self._temp_dir_obj
 
     def settle(self):
         self._temp_dir_obj.cleanup()

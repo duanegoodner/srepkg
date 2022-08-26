@@ -10,6 +10,7 @@ import srepkg.remote_pkg_retriever as rpr
 import srepkg.service_registry as sr
 import srepkg.srepkg_builder as sbn
 
+import srepkg.repackager_data_structs as rep_ds
 import srepkg.repackager_interfaces as rep_int
 
 from srepkg.utils.pkg_type_identifier import PkgRefType, PkgRefIdentifier
@@ -58,7 +59,7 @@ class PkgRefDispatchWithConstructionDir(abc.ABC):
         pass
 
     def create(self):
-        pkg_type = PkgRefIdentifier(self._pkg_ref_command)\
+        pkg_type = PkgRefIdentifier(self._pkg_ref_command) \
             .identify_for_osp_dispatch()
         dispatch_entry = self._dispatch_table[pkg_type]
         return dispatch_entry.constructor(**dispatch_entry.kwargs)
@@ -218,9 +219,11 @@ class OrigSrcPreparerBuilder:
 class CompleterDispatch:
     def __init__(
             self,
-            construction_dir: cdn.ConstructionDir,
+            # construction_dir: cdn.ConstructionDir,
+            orig_pkg_src_summary: rep_ds.OrigPkgSrcSummary,
             completer_class: Type[sbn.SrepkgCompleter]):
-        self._construction_dir = construction_dir
+        # self._construction_dir = construction_dir
+        self._orig_pkg_src_summary = orig_pkg_src_summary
         self._completer_class = completer_class
 
     @property
@@ -231,27 +234,38 @@ class CompleterDispatch:
     def create(self):
         if self._requirement_to_create:
             return self._completer_class(
-                construction_dir=self._construction_dir)
+                # construction_dir=self._construction_dir,
+                orig_pkg_summary=self._orig_pkg_src_summary)
 
 
 class WheelCompleterDispatch(CompleterDispatch):
-    def __init__(self, construction_dir: cdn.ConstructionDir):
-        super().__init__(construction_dir=construction_dir,
-                         completer_class=sbn.SrepkgWheelCompleter)
+    def __init__(
+            self,
+            # construction_dir: cdn.ConstructionDir,
+            orig_pkg_src_summary: rep_ds.OrigPkgSrcSummary):
+        super().__init__(
+            # construction_dir=construction_dir,
+            orig_pkg_src_summary=orig_pkg_src_summary,
+            completer_class=sbn.SrepkgWheelCompleter)
 
     @property
     def _requirement_to_create(self) -> Union[Path, None]:
-        return self._construction_dir.orig_pkg_src_summary.src_for_srepkg_wheel
+        return self._orig_pkg_src_summary.src_for_srepkg_wheel
 
 
 class SdistCompleterDispatch(CompleterDispatch):
-    def __init__(self, construction_dir: cdn.ConstructionDir):
-        super().__init__(construction_dir=construction_dir,
-                         completer_class=sbn.SrepkgSdistCompleter)
+    def __init__(
+            self,
+            construction_dir: cdn.ConstructionDir,
+            orig_pkg_src_summary: rep_ds.OrigPkgSrcSummary):
+        super().__init__(
+            # construction_dir=construction_dir,
+            orig_pkg_src_summary=orig_pkg_src_summary,
+            completer_class=sbn.SrepkgSdistCompleter)
 
     @property
     def _requirement_to_create(self) -> Union[Path, None]:
-        return self._construction_dir.orig_pkg_src_summary.src_for_srepkg_sdist
+        return self._orig_pkg_src_summary.src_for_srepkg_sdist
 
 
 class SrepkgBuilderBuilder:
@@ -259,27 +273,34 @@ class SrepkgBuilderBuilder:
     def __init__(
             self,
             service_registry: sr.ServiceRegistry,
-            output_dir_command: Union[str, None]):
+            output_dir_command: Union[str, None],
+            orig_pkg_src_summary: rep_ds.OrigPkgSrcSummary):
         self._service_registry = service_registry
         self._construction_dir = service_registry.get_service(
             sr.ServiceObjectID.CONSTRUCTION_DIR)
+        self._orig_pkg_src_summary = orig_pkg_src_summary
         self._output_dir = output_dir_command
 
     def create(self):
         completers = {
             sr.ServiceObjectID.SDIST_COMPLETER:
-                SdistCompleterDispatch(construction_dir=self._construction_dir)
-                    .create(),
+                SdistCompleterDispatch(
+                    construction_dir=self._construction_dir,
+                    orig_pkg_src_summary=self._orig_pkg_src_summary
+                ).create(),
             sr.ServiceObjectID.WHEEL_COMPLETER:
-                WheelCompleterDispatch(construction_dir=self._construction_dir)
-                    .create()
+                WheelCompleterDispatch(
+                    # construction_dir=self._construction_dir,
+                    orig_pkg_src_summary=self._orig_pkg_src_summary
+                ).create()
         }
 
         non_null_completers = {key: value for (key, value) in
                                completers.items() if value is not None}
 
         srepkg_builder = sbn.SrepkgBuilder(
-            construction_dir=self._construction_dir,
+            # construction_dir=self._construction_dir,
+            orig_pkg_src_summary=self._orig_pkg_src_summary,
             srepkg_completers=[value for (key, value) in
                                non_null_completers.items()],
             output_dir=Path(self._output_dir)
@@ -309,8 +330,13 @@ class ServiceBuilder(rep_int.ServiceBuilderInterface):
             service_registry=self._service_registry)
         return osb_builder.create()
 
-    def create_srepkg_builder(self) -> rep_int.SrepkgBuilderInterface:
+    def create_srepkg_builder(
+            self,
+            orig_pkg_src_summary: rep_ds.OrigPkgSrcSummary) \
+            -> rep_int.SrepkgBuilderInterface:
         srepkg_builder_builder = SrepkgBuilderBuilder(
             service_registry=self._service_registry,
-            output_dir_command=self._srepkg_command.dist_out_dir)
+            output_dir_command=self._srepkg_command.dist_out_dir,
+            orig_pkg_src_summary=orig_pkg_src_summary
+        )
         return srepkg_builder_builder.create()

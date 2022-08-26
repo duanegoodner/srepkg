@@ -3,7 +3,7 @@ import tempfile
 from pathlib import Path
 from zipfile import ZipFile
 
-import srepkg.srepkg_builder_data_structs as sb_ds
+import srepkg.repackager_data_structs as re_ds
 import srepkg.error_handling.custom_exceptions as ce
 
 
@@ -30,7 +30,7 @@ class WheelEntryPointExtractor:
     @staticmethod
     def _convert_to_srepkg_builder_format(
             entry_point: entry_points_txt.EntryPoint):
-        return sb_ds.CSEntryPoint(
+        return re_ds.CSEntryPoint(
             command=entry_point.name,
             module=entry_point.module,
             attr=entry_point.object
@@ -51,14 +51,4 @@ class WheelEntryPointExtractor:
         entry_pts_list = [self._convert_to_srepkg_builder_format(entry) for
                           entry in entry_pts_set["console_scripts"].values()]
 
-        return sb_ds.PkgCSEntryPoints(cs_entry_pts=entry_pts_list)
-
-
-entry_pt_extractor = WheelEntryPointExtractor(
-    Path("/Users/duane/dproj/srepkg/src/srepkg/test/package_test_cases/"
-         "testproj-0.0.0-py3-none-any.whl"))
-
-entry_pts = entry_pt_extractor.get_entry_points()
-print(entry_pts)
-
-
+        return re_ds.PkgCSEntryPoints(cs_entry_pts=entry_pts_list)

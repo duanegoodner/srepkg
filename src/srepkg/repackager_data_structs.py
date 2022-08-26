@@ -1,3 +1,5 @@
+import tempfile
+
 import pkginfo
 from dataclasses import dataclass, field
 from packaging.utils import parse_wheel_filename
@@ -44,11 +46,12 @@ class OrigPkgSrcSummary:
     pkg_version: str
     srepkg_name: str
     srepkg_root: Path
+    orig_pkg_dists: Path
     srepkg_inner: Path
-
     dists: List[DistInfo] = field(default_factory=lambda: [])
     entry_pts: PkgCSEntryPoints = field(
         default_factory=lambda: PkgCSEntryPoints(cs_entry_pts=[]))
+    temp_dir_obj: tempfile.TemporaryDirectory = None
 
     @property
     def has_wheel(self):

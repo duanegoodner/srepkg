@@ -195,8 +195,10 @@ class TestSrepkgBuilderDispatch:
         srepkg_command = rep_int.SrepkgCommand(orig_pkg_ref=condition.pkg_ref)
         service_builder = sb.ServiceBuilder(srepkg_command=srepkg_command)
         osp = service_builder.create_orig_src_preparer()
-        osp.prepare()
-        srepkg_builder = service_builder.create_srepkg_builder()
+        orig_src_summary = osp.prepare()
+        srepkg_builder = service_builder.create_srepkg_builder(
+            orig_pkg_src_summary=orig_src_summary
+        )
         return srepkg_builder
 
     def test_dispatch_conditions(self):

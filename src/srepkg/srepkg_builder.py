@@ -12,6 +12,7 @@ from zipfile import ZIP_DEFLATED, ZipFile
 import inner_pkg_installer.inner_pkg_installer as ipi
 import srepkg.cs_entry_pts as cse
 import srepkg.repackager_interfaces as re_int
+import srepkg.repackager_data_structs as re_ds
 import srepkg.srepkg_builder_int as sb_new_int
 
 
@@ -45,8 +46,9 @@ class SimpleCopyPair(NamedTuple):
 
 
 class SrepkgCompleter(sb_new_int.SrepkgCompleterInterface):
-    def __init__(self, construction_dir: sb_new_int.SrepkgComponentReceiver):
-        self._construction_dir = construction_dir
+    def __init__(self,
+                 orig_pkg_summary: re_ds.OrigPkgSrcSummary):
+        self._orig_pkg_summary = orig_pkg_summary
 
     @property
     @abc.abstractmethod
@@ -65,7 +67,7 @@ class SrepkgCompleter(sb_new_int.SrepkgCompleterInterface):
                 self._gen_component_src_dir / 'MANIFEST.in.template',
             SrcID.SETUP_PY: self._gen_component_src_dir / 'setup.py',
             SrcID.SREPKG_BASE_SETUP_CFG:
-                self._construction_dir.srepkg_root / 'base_setup.cfg'
+                self._orig_pkg_summary.srepkg_root / 'base_setup.cfg'
         }
 
     @property
@@ -79,7 +81,7 @@ class SrepkgCompleter(sb_new_int.SrepkgCompleterInterface):
 
     @property
     def _gen_dests(self):
-        srepkg_root = self._construction_dir.srepkg_root
+        srepkg_root = self._orig_pkg_summary.srepkg_root
         return {
             DestID.SREPKG_SETUP_CFG: srepkg_root / 'setup.cfg',
             DestID.SETUP_PY: srepkg_root / 'setup.py',
@@ -124,7 +126,7 @@ class SrepkgCompleter(sb_new_int.SrepkgCompleterInterface):
             template_text = tf.read()
         template = string.Template(template_text)
         result = template.substitute(
-            {"srepkg_name": self._construction_dir.srepkg_name})
+            {"srepkg_name": self._orig_pkg_summary.srepkg_name})
         with self._gen_dests[DestID.MANIFEST].open(mode="w") as manifest_file:
             manifest_file.write(result)
 
@@ -138,7 +140,7 @@ class SrepkgCompleter(sb_new_int.SrepkgCompleterInterface):
 
     def _restore_construction_dir_to(self, initial_contents: List[Path]):
         cur_dirs = [item for item in
-                    list(self._construction_dir.srepkg_root.rglob('*')) if
+                    list(self._orig_pkg_summary.srepkg_root.rglob('*')) if
                     item.is_dir()]
 
         for item in cur_dirs:
@@ -146,7 +148,7 @@ class SrepkgCompleter(sb_new_int.SrepkgCompleterInterface):
                 shutil.rmtree(item, ignore_errors=True)
 
         cur_files = [item for item in
-                     list(self._construction_dir.srepkg_root.rglob('*')) if
+                     list(self._orig_pkg_summary.srepkg_root.rglob('*')) if
                      not item.is_dir()]
 
         for item in cur_files:
@@ -154,7 +156,7 @@ class SrepkgCompleter(sb_new_int.SrepkgCompleterInterface):
                 item.unlink()
 
     def build_and_cleanup(self, output_dir: Path):
-        initial_contents = list(self._construction_dir.srepkg_root.rglob('*'))
+        initial_contents = list(self._orig_pkg_summary.srepkg_root.rglob('*'))
         self._adjust_base_pkg()
         self._build_srepkg_dist(output_dir=output_dir)
         self._restore_construction_dir_to(initial_contents)
@@ -184,7 +186,7 @@ class SrepkgSdistCompleter(SrepkgCompleter):
 
     @property
     def _extra_dests(self) -> Dict[DestID, Path]:
-        srepkg_root = self._construction_dir.srepkg_root
+        srepkg_root = self._orig_pkg_summary.srepkg_root
         return {
             DestID.INNER_PKG_INSTALLER:
                 srepkg_root / 'inner_pkg_installer.py',
@@ -214,10 +216,9 @@ class SrepkgSdistCompleter(SrepkgCompleter):
     def _build_inner_pkg_install_cfg(self):
 
         metadata = {
-            "srepkg_name": self._construction_dir.srepkg_name,
+            "srepkg_name": self._orig_pkg_summary.srepkg_name,
             "dist_dir": "orig_dist",
-            "sdist_src": self._construction_dir.orig_pkg_src_summary
-            .src_for_srepkg_sdist.name
+            "sdist_src": self._orig_pkg_summary.src_for_srepkg_sdist.name
         }
 
         ipi_config = configparser.ConfigParser()
@@ -245,16 +246,15 @@ class SrepkgSdistCompleter(SrepkgCompleter):
 
     def _build_srepkg_dist(self, output_dir: Path):
         exclude_paths = list(
-            (self._construction_dir.srepkg_root / 'orig_dist').iterdir())
-        exclude_paths.remove(self._construction_dir.orig_pkg_src_summary
-                             .src_for_srepkg_sdist)
+            (self._orig_pkg_summary.srepkg_root / 'orig_dist').iterdir())
+        exclude_paths.remove(self._orig_pkg_summary.src_for_srepkg_sdist)
 
         output_filename = \
-            f"{self._construction_dir.srepkg_name}-" \
-            f"{self._construction_dir.orig_pkg_src_summary.pkg_version}.zip"
+            f"{self._orig_pkg_summary.srepkg_name}-" \
+            f"{self._orig_pkg_summary.pkg_version}.zip"
 
         self.zip_dir(zip_name=str(output_dir / output_filename),
-                     src_path=self._construction_dir.srepkg_root,
+                     src_path=self._orig_pkg_summary.srepkg_root,
                      exclude_paths=exclude_paths)
 
 
@@ -279,9 +279,9 @@ class SrepkgWheelCompleter(SrepkgCompleter):
     @property
     def _extra_dests(self) -> Dict[DestID, Path]:
         return {
-            DestID.SREPKG_VENV: self._construction_dir.srepkg_inner /
+            DestID.SREPKG_VENV: self._orig_pkg_summary.srepkg_inner /
             'srepkg_venv',
-            DestID.CMD_CLASSES: self._construction_dir.srepkg_root /
+            DestID.CMD_CLASSES: self._orig_pkg_summary.srepkg_root /
             'cmd_classes.py'
         }
 
@@ -303,13 +303,12 @@ class SrepkgWheelCompleter(SrepkgCompleter):
     def _install_inner_pkg(self):
         ipi.InnerPkgInstaller(
             venv_path=self._all_dests[DestID.SREPKG_VENV],
-            orig_pkg_dist=self._construction_dir.orig_pkg_src_summary
-            .src_for_srepkg_wheel
+            orig_pkg_dist=self._orig_pkg_summary.src_for_srepkg_wheel
         ).iso_install_inner_pkg()
 
     def _build_srepkg_dist(self, output_dir: Path):
         dist_builder = build.ProjectBuilder(
-            srcdir=self._construction_dir.srepkg_root,
+            srcdir=self._orig_pkg_summary.srepkg_root,
             python_executable=sys.executable)
 
         dist_builder.build(
@@ -328,14 +327,15 @@ class SrepkgBuilder(re_int.SrepkgBuilderInterface):
 
     def __init__(
             self,
-            construction_dir: sb_new_int.SrepkgComponentReceiver,
+            orig_pkg_src_summary: re_ds.OrigPkgSrcSummary,
             output_dir: Path,
             srepkg_completers: List[SrepkgCompleter] = None
     ):
         if srepkg_completers is None:
             srepkg_completers = []
         self._srepkg_completers = srepkg_completers
-        self._construction_dir = construction_dir
+        # self._construction_dir = construction_dir
+        self._orig_pkg_src_summary = orig_pkg_src_summary
         self._output_dir = output_dir
         self._base_setup_cfg = configparser.ConfigParser()
         self._base_setup_cfg.read(
@@ -356,11 +356,11 @@ class SrepkgBuilder(re_int.SrepkgBuilderInterface):
     def _destinations(self):
         return {
             DestID.SREPKG_BASE_SETUP_CFG:
-                self._construction_dir.srepkg_root / 'base_setup.cfg',
+                self._orig_pkg_src_summary.srepkg_root / 'base_setup.cfg',
             DestID.SREPKG_INIT:
-                self._construction_dir.srepkg_inner / '__init__.py',
+                self._orig_pkg_src_summary.srepkg_inner / '__init__.py',
             DestID.SREPKG_ENTRY_PTS_DIR:
-                self._construction_dir.srepkg_inner / 'srepkg_entry_points',
+                self._orig_pkg_src_summary.srepkg_inner / 'srepkg_entry_points',
         }
 
     def _simple_construction_tasks(self):
@@ -371,13 +371,12 @@ class SrepkgBuilder(re_int.SrepkgBuilderInterface):
 
     def _build_entry_points(self):
         cse.EntryPointsBuilder(
-            orig_pkg_entry_pts=self._construction_dir
-            .orig_pkg_src_summary.entry_pts,
+            orig_pkg_entry_pts=self._orig_pkg_src_summary.entry_pts,
             entry_pt_template=self._sources[
                 SrcID.ENTRY_PT_TEMPLATE],
             srepkg_entry_pt_dir=self._destinations[
                 DestID.SREPKG_ENTRY_PTS_DIR],
-            srepkg_name=self._construction_dir.srepkg_inner.name,
+            srepkg_name=self._orig_pkg_src_summary.srepkg_inner.name,
             srepkg_config=self._base_setup_cfg,
             generic_entry_funct_name='entry_funct'
         ).build_entry_pts()
@@ -386,8 +385,8 @@ class SrepkgBuilder(re_int.SrepkgBuilderInterface):
 
     def _write_srepkg_cfg_non_entry_data(self):
         metadata = {
-            "name": self._construction_dir.srepkg_name,
-            "version": self._construction_dir.orig_pkg_src_summary.pkg_version
+            "name": self._orig_pkg_src_summary.srepkg_name,
+            "version": self._orig_pkg_src_summary.pkg_version
         }
 
         for (key, value) in metadata.items():
@@ -411,4 +410,4 @@ class SrepkgBuilder(re_int.SrepkgBuilderInterface):
         for completer in self._srepkg_completers:
             completer.build_and_cleanup(self._output_dir)
 
-        self._construction_dir.settle()
+        # self._construction_dir.settle()

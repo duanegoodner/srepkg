@@ -2,6 +2,8 @@ import abc
 from dataclasses import dataclass
 from typing import Union
 
+import srepkg.repackager_data_structs as rep_ds
+
 
 @dataclass
 class SrepkgCommand:
@@ -53,5 +55,8 @@ class ServiceBuilderInterface(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def create_srepkg_builder(self) -> SrepkgBuilderInterface:
+    def create_srepkg_builder(
+            self,
+            orig_pkg_src_summary: rep_ds.OrigPkgSrcSummary)\
+            -> SrepkgBuilderInterface:
         pass
