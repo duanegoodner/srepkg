@@ -163,51 +163,6 @@ class OrigSrcPreparerBuilder:
             receiver=construction_dir)
 
 
-class CompleterDispatch:
-    def __init__(
-            self,
-            construction_dir_summary: rep_ds.ConstructionDirSummary,
-            completer_class: Type[sbn.SrepkgCompleter]):
-        self._construction_dir_summary = construction_dir_summary
-        self._completer_class = completer_class
-
-    @property
-    @abc.abstractmethod
-    def _requirement_to_create(self) -> Union[Path, None]:
-        pass
-
-    def create(self):
-        if self._requirement_to_create:
-            return self._completer_class(
-                orig_pkg_summary=self._construction_dir_summary)
-
-
-class WheelCompleterDispatch(CompleterDispatch):
-    def __init__(
-            self,
-            construction_dir_summary: rep_ds.ConstructionDirSummary):
-        super().__init__(
-            construction_dir_summary=construction_dir_summary,
-            completer_class=sbn.SrepkgWheelCompleter)
-
-    @property
-    def _requirement_to_create(self) -> Union[Path, None]:
-        return self._construction_dir_summary.src_for_srepkg_wheel
-
-
-class SdistCompleterDispatch(CompleterDispatch):
-    def __init__(
-            self,
-            construction_dir_summary: rep_ds.ConstructionDirSummary):
-        super().__init__(
-            construction_dir_summary=construction_dir_summary,
-            completer_class=sbn.SrepkgSdistCompleter)
-
-    @property
-    def _requirement_to_create(self) -> Union[Path, None]:
-        return self._construction_dir_summary.src_for_srepkg_sdist
-
-
 class SrepkgBuilderBuilder:
 
     def __init__(
@@ -217,23 +172,28 @@ class SrepkgBuilderBuilder:
         self._construction_dir_summary = construction_dir_summary
         self._output_dir = output_dir_command
 
+    @property
+    def _completer_dispatch(self) ->\
+            dict[Type[sbn.SrepkgCompleter], Union[Path, None]]:
+        return {
+            sbn.SrepkgWheelCompleter:
+                self._construction_dir_summary.src_for_srepkg_wheel,
+            sbn.SrepkgSdistCompleter:
+                self._construction_dir_summary.src_for_srepkg_sdist
+        }
+
     def create(self):
 
-        completers = [
-            SdistCompleterDispatch(
-                construction_dir_summary=self._construction_dir_summary
-            ).create(),
-            WheelCompleterDispatch(
-                construction_dir_summary=self._construction_dir_summary
-            ).create()
-        ]
-
-        non_null_completers = [completer for completer in completers if
-                               completer is not None]
+        completers = []
+        for constructor, src_path in self._completer_dispatch.items():
+            if src_path is not None:
+                completers.append(
+                    constructor(orig_pkg_summary=self._construction_dir_summary)
+                )
 
         srepkg_builder = sbn.SrepkgBuilder(
             construction_dir_summary=self._construction_dir_summary,
-            srepkg_completers=non_null_completers,
+            srepkg_completers=completers,
             output_dir=Path(self._output_dir)
             if self._output_dir else Path.cwd()
         )

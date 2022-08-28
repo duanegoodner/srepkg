@@ -1,8 +1,12 @@
+from pathlib import Path
+
 import pytest
 import unittest.mock as mock
 
 import srepkg.service_builder
+import srepkg.srepkg_builder as sbn
 import srepkg.service_builder as sb
+import srepkg.repackager_data_structs as rep_ds
 import srepkg.repackager_interfaces as rep_int
 from srepkg.test.shared_fixtures import tmp_construction_dir, sample_pkgs
 
@@ -52,47 +56,38 @@ class TestRetrieverProviderDispatch:
         assert type(dist_provider).__name__ == provider_type
 
 
-# bldr_dispatch_conditions = [
-#     ("testproj", True, True),
-#     ("numpy_whl", False, True),
-#     ("testproj_whl", True, True)
-# ]
+class TestSrepkgBuilderBuilder:
 
+    def test_no_completer_sources(self):
+        construction_dir_summary = rep_ds.ConstructionDirSummary(
+            pkg_name="dummy",
+            pkg_version="dummy",
+            srepkg_name="dummy",
+            srepkg_root=Path("dummy"),
+            orig_pkg_dists=Path("dummy"),
+            srepkg_inner=Path("dummy"),
+        )
 
-class TestCompleterDispatches:
+        with mock.patch("srepkg.service_builder.SrepkgBuilderBuilder."
+                        "_completer_dispatch", new_callable=mock.PropertyMock)\
+                as mock_completer_dispatch:
+            mock_completer_dispatch.return_value = {
+                sbn.SrepkgWheelCompleter: None,
+                sbn.SrepkgSdistCompleter: None
+            }
+            srepkg_builder = sb.SrepkgBuilderBuilder(
+                output_dir_command=None,
+                construction_dir_summary=construction_dir_summary
+            ).create()
 
-    completer_conditions = [
-        ("testproj", True, True),
-        ("numpy_whl", False, True),
-        ("testproj_whl", True, True)
-    ]
-
-    @pytest.mark.parametrize(
-        "pkg_ref_attr, sdist_completer_exists, wheel_completer_exists",
-        completer_conditions)
-    def test_sdist_completer_dispatch(
-            self, pkg_ref_attr, sdist_completer_exists, wheel_completer_exists, sample_pkgs):
-        srepkg_command = rep_int.SrepkgCommand(
-            orig_pkg_ref=getattr(sample_pkgs, pkg_ref_attr))
-        service_builder = sb.ServiceBuilder(srepkg_command)
-        osp = service_builder.create_orig_src_preparer()
-        orig_src_summary = osp.prepare()
-        sdist_completer_dispatch = sb.SdistCompleterDispatch(
-            construction_dir_summary=orig_src_summary)
-        sdist_completer = sdist_completer_dispatch.create()
-        wheel_completer_dispatch = sb.WheelCompleterDispatch(
-            construction_dir_summary=orig_src_summary)
-        wheel_completer = wheel_completer_dispatch.create()
-
-        assert (sdist_completer is not None) == sdist_completer_exists
-        assert (wheel_completer is not None) == wheel_completer_exists
+        mock_completer_dispatch.assert_called_once_with()
 
 
 service_bldr_conditions = [
-        "testproj",
-        # "numpy_whl",
-        # "testproj_whl"
-    ]
+    "testproj",
+    # "numpy_whl",
+    # "testproj_whl"
+]
 
 
 class TestServiceBuilder:
@@ -111,11 +106,10 @@ class TestServiceBuilder:
     @pytest.mark.parametrize(
         "pkg_ref_attr",
         service_bldr_conditions)
-    # @mock.patch.object(srepkg.service_builder.SrepkgBuilderBuilder, "create")
-    @mock.patch.object(srepkg.service_builder.SdistCompleterDispatch, "create")
-    @mock.patch.object(srepkg.service_builder.WheelCompleterDispatch, "create")
+    @mock.patch("srepkg.srepkg_builder.SrepkgWheelCompleter")
+    @mock.patch("srepkg.srepkg_builder.SrepkgSdistCompleter")
     def test_create_srepkg_builder(
-            self, mock_sdist_completer_create, mock_wheel_completer_create,
+            self, MockSrepkgWheelComleter, MockSrepkgSdistCompleter,
             pkg_ref_attr, sample_pkgs):
         srepkg_command = rep_int.SrepkgCommand(
             orig_pkg_ref=getattr(sample_pkgs, pkg_ref_attr))
@@ -123,5 +117,5 @@ class TestServiceBuilder:
         osp = service_builder.create_orig_src_preparer()
         orig_src_summary = osp.prepare()
         srepkg_builder = service_builder.create_srepkg_builder(orig_src_summary)
-        mock_sdist_completer_create.assert_called_with()
-        mock_wheel_completer_create.assert_called_with()
+        assert MockSrepkgWheelComleter.called
+        assert MockSrepkgSdistCompleter.called
