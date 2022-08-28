@@ -1,4 +1,6 @@
 import abc
+import tempfile
+
 import build
 import shutil
 import sys
@@ -25,9 +27,11 @@ class DistProviderFromSrc(osp_int.DistProviderInterface):
     # Could get another ~40% reduction with threading or multiprocess
     # but at least for small packages, provide() takes less than 1 sed as is
 
-    def __init__(self, src_path: Path, dest_path: Path):
+    def __init__(self, src_path: Path, dest_path: Path,
+                 temp_dir_obj: tempfile.TemporaryDirectory = None):
         self._src_path = src_path
         self._dest_path = dest_path
+        self._temp_dir_obj = temp_dir_obj
 
     def provide(self):
         dist_builder = build.ProjectBuilder(

@@ -131,11 +131,11 @@ class GithubPkgRetriever(osp_int.RemotePkgRetrieverInterface):
 
     def __init__(self, pkg_ref: str, *args, **kwargs):
         self._pkg_ref = pkg_ref
-        self._copy_dest = Path(tempfile.TemporaryDirectory().name)
+        self._temp_dir_obj = tempfile.TemporaryDirectory()
 
     @property
     def copy_dest(self):
-        return self._copy_dest
+        return Path(self._temp_dir_obj.name)
 
     def retrieve(self):
         pass

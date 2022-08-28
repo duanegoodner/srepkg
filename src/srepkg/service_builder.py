@@ -247,11 +247,11 @@ class ServiceBuilder(rep_int.ServiceBuilderInterface):
         self._srepkg_command = srepkg_command
 
     def create_orig_src_preparer(self) -> rep_int.OrigSrcPreparerInterface:
-        osb_builder = OrigSrcPreparerBuilder(
+        osp_builder = OrigSrcPreparerBuilder(
             construction_dir_command=self._srepkg_command.construction_dir,
             orig_pkg_ref_command=self._srepkg_command.orig_pkg_ref,
             srepkg_name_command=self._srepkg_command.srepkg_name)
-        return osb_builder.create()
+        return osp_builder.create()
 
     def create_srepkg_builder(
             self,
