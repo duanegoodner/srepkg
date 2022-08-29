@@ -17,7 +17,7 @@ class AllExamplePackages:
     black_py_pi: str = "black"
     scrape_py_pi: str = "scrape"
     numpy_py_pi: str = "numpy"
-    howdoi_github: str = "https://github.com/gleitz/howdoi.git"
+    howdoi_github: str = "https://github.com/gleitz/howdoi"
     black_github: str = "https://github.com/psf/black"
     wheel_inspect_whl: str = str(src_dir / "wheel_inspect-1.7.1-py3-none-any.whl")
 

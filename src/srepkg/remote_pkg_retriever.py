@@ -1,5 +1,6 @@
 import functools
 import requests
+import subprocess
 import tempfile
 from packaging.tags import sys_tags
 from packaging.utils import parse_wheel_filename
@@ -104,10 +105,6 @@ class PyPIPkgRetriever(osp_int.RemotePkgRetrieverInterface):
         with (self._copy_dest / dist["filename"]).open(mode="wb") as dist_file:
             dist_file.write(response.content)
 
-    # def retrieve(self):
-    #     for dist in self._dists_to_download:
-    #         self._download(dist)
-
     def run(self):
         for dist in self._dists_to_download:
             self._download(dist)
@@ -124,4 +121,4 @@ class GithubPkgRetriever(osp_int.RemotePkgRetrieverInterface):
         return Path(self._temp_dir_obj.name)
 
     def run(self):
-        pass
+        subprocess.run(["git", "clone", self._pkg_ref, self.copy_dest])
