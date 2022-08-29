@@ -11,16 +11,6 @@ from pathlib import Path
 import srepkg.orig_src_preparer_interfaces as osp_int
 
 
-class NullDistProvider(osp_int.DistProviderInterface):
-
-    def __init__(self, *args, **kwargs):
-        self._src_path = None
-        self._dest_path = None
-
-    def provide(self):
-        pass
-
-
 class DistProviderFromSrc(osp_int.DistProviderInterface):
 
     # Using build.ProjectBuilder is 10x faster than subprocess
@@ -33,7 +23,7 @@ class DistProviderFromSrc(osp_int.DistProviderInterface):
         self._dest_path = dest_path
         self._temp_dir_obj = temp_dir_obj
 
-    def provide(self):
+    def run(self):
         dist_builder = build.ProjectBuilder(
             srcdir=str(self._src_path),
             python_executable=sys.executable)
@@ -59,5 +49,5 @@ class DistCopyProvider(osp_int.DistProviderInterface):
         self._src_path = src_path
         self._dest_path = dest_path
 
-    def provide(self):
+    def run(self):
         shutil.copy2(self._src_path, self._dest_path)

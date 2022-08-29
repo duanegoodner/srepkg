@@ -32,28 +32,23 @@ class TestConstructionDirDispatch:
 
 class TestRetrieverProviderDispatch:
     osp_conditions = [
-        ("testproj", "NullPkgRetriever", "DistProviderFromSrc"),
-        ("testproj_targz", "NullPkgRetriever", "DistCopyProvider"),
-        ("testproj_zip", "NullPkgRetriever", "DistCopyProvider"),
-        ("black_py_pi", "PyPIPkgRetriever", "NullDistProvider"),
-        ("black_github", "GithubPkgRetriever", "DistProviderFromSrc")
+        ("testproj", ["DistProviderFromSrc"]),
+        ("testproj_targz", ["DistCopyProvider"]),
+        ("testproj_zip", ["DistCopyProvider"]),
+        ("black_py_pi", ["PyPIPkgRetriever"]),
+        ("black_github", ["GithubPkgRetriever", "DistProviderFromSrc"])
     ]
 
-    @pytest.mark.parametrize("pkg_ref_attr, retriever_type, provider_type",
+    @pytest.mark.parametrize("pkg_ref_attr, retriever_provider_components",
                              osp_conditions)
-    def test_conditions(self, pkg_ref_attr, retriever_type, provider_type,
+    def test_conditions(self, pkg_ref_attr, retriever_provider_components,
                         tmp_construction_dir, sample_pkgs):
         pkg_ref_command = getattr(sample_pkgs, pkg_ref_attr)
-        pkg_retriever = sb.PkgRetrieverDispatch(
+        retriever_provider = sb.RetrieverProviderDispatch(
             pkg_ref_command=pkg_ref_command,
             construction_dir=tmp_construction_dir).create()
-        dist_provider = sb.DistProviderDispatch(
-            pkg_ref_command=pkg_ref_command,
-            construction_dir=tmp_construction_dir,
-            retriever=pkg_retriever).create()
-
-        assert type(pkg_retriever).__name__ == retriever_type
-        assert type(dist_provider).__name__ == provider_type
+        assert [(type(item).__name__ for item in retriever_provider) ==
+                retriever_provider_components]
 
 
 class TestSrepkgBuilderBuilder:

@@ -1,11 +1,12 @@
 import abc
 from functools import singledispatch
 from pathlib import Path
-from typing import Callable, Dict, Type, Union, NamedTuple
+from typing import List, Type, Union
 
 import srepkg.construction_dir as cdn
 import srepkg.dist_provider as opr
 import srepkg.orig_src_preparer as osp
+import srepkg.orig_src_preparer_interfaces as osp_int
 import srepkg.remote_pkg_retriever as rpr
 import srepkg.srepkg_builder as sbn
 
@@ -41,95 +42,57 @@ def _(construction_dir_command, srepkg_name_command: str = None):
         srepkg_name_command=srepkg_name_command)
 
 
-class DispatchEntry(NamedTuple):
-    constructor: Callable
-    kwargs: dict
+class RetrieverProviderDispatch:
 
-
-class PkgRefDispatchWithConstructionDir(abc.ABC):
     def __init__(self,
                  pkg_ref_command: str,
                  construction_dir: cdn.ConstructionDir,
-                 ):
+                 version_command: str = None):
         self._pkg_ref_command = pkg_ref_command
         self._construction_dir = construction_dir
+        self._version = version_command
+
+    def _create_for_local_src(self) -> List[osp_int.DistProviderInterface]:
+        provider = opr.DistProviderFromSrc(
+            src_path=Path(self._pkg_ref_command),
+            dest_path=self._construction_dir.orig_pkg_dists)
+        return [provider]
+
+    def _create_for_local_dist(self) -> List[osp_int.DistProviderInterface]:
+        provider = opr.DistCopyProvider(
+            src_path=Path(self._pkg_ref_command),
+            dest_path=self._construction_dir.orig_pkg_dists)
+        return [provider]
+
+    def _create_for_github(self):
+        retriever = rpr.GithubPkgRetriever(
+            pkg_ref=self._pkg_ref_command)
+        provider = opr.DistProviderFromSrc(
+            src_path=retriever.copy_dest,
+            dest_path=self._construction_dir.orig_pkg_dists)
+        return [retriever, provider]
+
+    def _create_for_pypi(self):
+        retriever = rpr.PyPIPkgRetriever(
+            pkg_ref=self._pkg_ref_command,
+            copy_dest=self._construction_dir.orig_pkg_dists,
+            version=self._version)
+        return [retriever]
 
     @property
-    @abc.abstractmethod
-    def _dispatch_table(self) -> Dict[PkgRefType, DispatchEntry]:
-        pass
+    def _dispatch_table(self):
+        return {
+            PkgRefType.LOCAL_SRC: self._create_for_local_src,
+            PkgRefType.LOCAL_DIST: self._create_for_local_dist,
+            PkgRefType.GITHUB_REPO: self._create_for_github,
+            PkgRefType.PYPI_PKG: self._create_for_pypi
+        }
 
     def create(self):
-        pkg_type = PkgRefIdentifier(self._pkg_ref_command) \
+
+        pkg_ref_type = PkgRefIdentifier(self._pkg_ref_command)\
             .identify_for_osp_dispatch()
-        dispatch_entry = self._dispatch_table[pkg_type]
-        return dispatch_entry.constructor(**dispatch_entry.kwargs)
-
-
-class PkgRetrieverDispatch(PkgRefDispatchWithConstructionDir):
-
-    @property
-    def _dispatch_table(self) -> Dict[PkgRefType, DispatchEntry]:
-        return {
-            PkgRefType.LOCAL_SRC:
-                DispatchEntry(constructor=rpr.NullPkgRetriever, kwargs={}),
-            PkgRefType.LOCAL_DIST:
-                DispatchEntry(constructor=rpr.NullPkgRetriever, kwargs={}),
-            PkgRefType.PYPI_PKG:
-                DispatchEntry(
-                    constructor=rpr.PyPIPkgRetriever,
-                    kwargs={
-                        "pkg_ref": self._pkg_ref_command,
-                        "copy_dest": self._construction_dir.orig_pkg_dists
-                    }),
-
-            PkgRefType.GITHUB_REPO:
-                DispatchEntry(
-                    constructor=rpr.GithubPkgRetriever,
-                    kwargs={
-                        "pkg_ref": self._pkg_ref_command
-                    })
-        }
-
-
-class DistProviderDispatch(PkgRefDispatchWithConstructionDir):
-
-    def __init__(self,
-                 pkg_ref_command: str,
-                 construction_dir: cdn.ConstructionDir,
-                 retriever: Union[rpr.PyPIPkgRetriever, rpr.NullPkgRetriever,
-                                  rpr.GithubPkgRetriever]):
-        super().__init__(pkg_ref_command=pkg_ref_command,
-                         construction_dir=construction_dir)
-        self._retriever = retriever
-
-    @property
-    def _dispatch_table(self) -> Dict[PkgRefType, DispatchEntry]:
-        return {
-            PkgRefType.LOCAL_SRC:
-                DispatchEntry(
-                    constructor=opr.DistProviderFromSrc,
-                    kwargs={
-                        "src_path": Path(self._pkg_ref_command),
-                        "dest_path": self._construction_dir.orig_pkg_dists
-                    }),
-            PkgRefType.LOCAL_DIST:
-                DispatchEntry(
-                    constructor=opr.DistCopyProvider,
-                    kwargs={
-                        "src_path": Path(self._pkg_ref_command),
-                        "dest_path": self._construction_dir.orig_pkg_dists,
-                    }),
-            PkgRefType.GITHUB_REPO:
-                DispatchEntry(
-                    constructor=opr.DistProviderFromSrc,
-                    kwargs={
-                        "src_path": self._retriever.copy_dest,
-                        "dest_path": self._construction_dir.orig_pkg_dists,
-                    }),
-            PkgRefType.PYPI_PKG:
-                DispatchEntry(constructor=opr.NullDistProvider, kwargs={})
-        }
+        return self._dispatch_table[pkg_ref_type]()
 
 
 class OrigSrcPreparerBuilder:
@@ -137,29 +100,26 @@ class OrigSrcPreparerBuilder:
     def __init__(self,
                  construction_dir_command: Union[str, None],
                  orig_pkg_ref_command: str,
-                 srepkg_name_command: str = None):
+                 srepkg_name_command: str = None,
+                 version_command: str = None):
         self._construction_dir_command = construction_dir_command
         self._orig_pkg_ref_command = orig_pkg_ref_command
         self._srepkg_name_command = srepkg_name_command
+        self._version_command = version_command
         self._construction_dir_dispatch = create_construction_dir
 
     def create(self):
         construction_dir = self._construction_dir_dispatch(
             self._construction_dir_command, self._srepkg_name_command)
 
-        pkg_retriever = PkgRetrieverDispatch(
-            pkg_ref_command=self._orig_pkg_ref_command,
-            construction_dir=construction_dir).create()
-
-        dist_provider = DistProviderDispatch(
+        retriever_provider = RetrieverProviderDispatch(
             pkg_ref_command=self._orig_pkg_ref_command,
             construction_dir=construction_dir,
-            retriever=pkg_retriever
+            version_command=self._version_command
         ).create()
 
         return osp.OrigSrcPreparer(
-            retriever=pkg_retriever,
-            provider=dist_provider,
+            retriever_provider=retriever_provider,
             receiver=construction_dir)
 
 
