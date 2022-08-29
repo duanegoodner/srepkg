@@ -3,15 +3,23 @@ import abc
 
 class RemotePkgRetrieverInterface(abc.ABC):
 
+    # @abc.abstractmethod
+    # def retrieve(self):
+    #     pass
+
     @abc.abstractmethod
-    def retrieve(self):
+    def run(self):
         pass
 
 
 class DistProviderInterface(abc.ABC):
 
+    # @abc.abstractmethod
+    # def provide(self):
+    #     pass
+
     @abc.abstractmethod
-    def provide(self):
+    def run(self):
         pass
 
 

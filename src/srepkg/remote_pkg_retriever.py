@@ -8,20 +8,6 @@ from pathlib import Path
 import srepkg.orig_src_preparer_interfaces as osp_int
 
 
-class NullPkgRetriever(osp_int.RemotePkgRetrieverInterface):
-
-    def __init__(self, *args, **kwargs):
-        self._pkg_ref = None
-        self._copy_dest = None
-
-    @property
-    def copy_dest(self):
-        return self._copy_dest
-
-    def retrieve(self):
-        pass
-
-
 class PyPIPkgRetriever(osp_int.RemotePkgRetrieverInterface):
     _pypi_api_base = "https://pypi.org/pypi/{}/json"
 
@@ -29,10 +15,6 @@ class PyPIPkgRetriever(osp_int.RemotePkgRetrieverInterface):
         self._pkg_ref = pkg_ref
         self._copy_dest = copy_dest
         self._version = version
-
-    @property
-    def copy_dest(self):
-        return self._copy_dest
 
     @property
     def _pkg_info_url(self):
@@ -122,7 +104,11 @@ class PyPIPkgRetriever(osp_int.RemotePkgRetrieverInterface):
         with (self._copy_dest / dist["filename"]).open(mode="wb") as dist_file:
             dist_file.write(response.content)
 
-    def retrieve(self):
+    # def retrieve(self):
+    #     for dist in self._dists_to_download:
+    #         self._download(dist)
+
+    def run(self):
         for dist in self._dists_to_download:
             self._download(dist)
 
@@ -137,5 +123,5 @@ class GithubPkgRetriever(osp_int.RemotePkgRetrieverInterface):
     def copy_dest(self):
         return Path(self._temp_dir_obj.name)
 
-    def retrieve(self):
+    def run(self):
         pass
