@@ -20,26 +20,20 @@ def test_build_from_src():
     construction_dir_summary = osp.prepare()
 
     srepkg_builder = service_builder.create_srepkg_builder(construction_dir_summary)
-    # assert len(srepkg_builder._srepkg_completers) == 2
-    # srepkg_builder.build()
 
-    # srepkg_builder._srepkg_completers[0]._adjust_base_pkg()
-    # srepkg_builder._srepkg_completers[0]._build_srepkg_dist()
-    # srepkg_builder._srepkg_completers[0]\
-    #     .build_and_cleanup(Path('/Users/duane/srepkg_pkgs'))
-    srepkg_builder._simple_construction_tasks()
-    srepkg_builder._build_entry_points()
-    srepkg_builder._write_srepkg_cfg_non_entry_data()
-    srepkg_builder._build_base_setup_cfg()
+    # srepkg_builder._simple_construction_tasks()
+    # srepkg_builder._build_entry_points()
+    # srepkg_builder._write_srepkg_cfg_non_entry_data()
+    # srepkg_builder._build_base_setup_cfg()
+    #
+    # srepkg_builder._srepkg_completers[0]._copy_ready_components()
+    # srepkg_builder._srepkg_completers[0]._write_from_templates()
+    # srepkg_builder._srepkg_completers[0]._write_srepkg_setup_cfg()
+    #
+    # srepkg_builder._srepkg_completers[0]._install_inner_pkg()
+    # srepkg_builder._srepkg_completers[1]._build_ipi_cfg()
 
-    srepkg_builder._srepkg_completers[1]._simple_copy_ops()
-    srepkg_builder._srepkg_completers[1]._build_manifest()
-    srepkg_builder._srepkg_completers[1]._build_srepkg_cfg()
-
-
-    # srepkg_builder._srepkg_completers[1]._adjust_base_pkg()
-    # srepkg_builder._srepkg_completers[1].build_and_cleanup()
-    # srepkg_builder.build()
+    srepkg_builder.build()
 
 
 if __name__ == '__main__':

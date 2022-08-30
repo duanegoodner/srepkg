@@ -14,7 +14,7 @@ def test_repackager(tmp_path_factory, sample_pkgs):
     construction_dir = Path("/Users/duane/srepkg_pkgs")
 
     srepkg_command = rep_int.SrepkgCommand(
-        orig_pkg_ref="/Users/duane/dproj/testproj",
+        orig_pkg_ref=sample_pkgs.testproj,
         dist_out_dir=str(dist_out_dir),
         construction_dir=str(construction_dir))
 

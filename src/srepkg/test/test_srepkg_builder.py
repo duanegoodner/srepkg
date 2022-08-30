@@ -75,6 +75,6 @@ class TestSrepkgBuilder:
         dest_dir = tmp_path_factory.mktemp("dest_dir")
 
         zip_name = str(dest_dir / "dest_zip.zip")
-        s_bldr.SrepkgSdistCompleter.zip_dir(
+        s_bldr.SrepkgSdistWriter.zip_dir(
             zip_name=zip_name, src_path=src_path,
             exclude_paths=[src_path / "file_to_exclude.txt"])

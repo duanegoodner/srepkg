@@ -8,6 +8,3 @@ def entry_funct():
     pkg_args = sys.argv[1:]
     venv_bin = Path(__file__).parent.parent.absolute() / "srepkg_venv" / "bin"
     subprocess.call([venv_bin / entry_command, *pkg_args])
-
-
-

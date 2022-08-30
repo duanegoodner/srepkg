@@ -95,6 +95,22 @@ class RetrieverProviderDispatch:
         return self._dispatch_table[pkg_ref_type]()
 
 
+class CompleterDispatch:
+
+    def _create_for_srepkg_sdist(self):
+        pass
+
+    def _create_for_srepkg_wheel(self):
+        pass
+
+    @property
+    def _dispatch_table(self):
+        return {
+            "src_for_srepkg_wheel": self._create_for_srepkg_wheel,
+            "src_for_srepkg_sdist": self._create_for_srepkg_sdist
+        }
+
+
 class OrigSrcPreparerBuilder:
 
     def __init__(self,
@@ -130,6 +146,8 @@ class SrepkgBuilderBuilder:
             output_dir_command: Union[str, None],
             construction_dir_summary: rep_ds.ConstructionDirSummary):
         self._construction_dir_summary = construction_dir_summary
+        if output_dir_command is None:
+            output_dir_command = str(Path.cwd())
         self._output_dir = output_dir_command
 
     @property
@@ -148,15 +166,15 @@ class SrepkgBuilderBuilder:
         for constructor, src_path in self._completer_dispatch.items():
             if src_path is not None:
                 completers.append(
-                    constructor(orig_pkg_summary=self._construction_dir_summary)
-                )
+                    constructor(
+                        orig_pkg_summary=self._construction_dir_summary,
+                        dist_out_dir=Path(self._output_dir)))
 
         srepkg_builder = sbn.SrepkgBuilder(
             construction_dir_summary=self._construction_dir_summary,
             srepkg_completers=completers,
             output_dir=Path(self._output_dir)
-            if self._output_dir else Path.cwd()
-        )
+            if self._output_dir else Path.cwd())
 
         return srepkg_builder
 
