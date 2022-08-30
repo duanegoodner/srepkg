@@ -181,7 +181,7 @@ class SrepkgSdistCompleter(SrepkgCompleter):
             SrcID.INNER_PKG_INSTALLER:
                 ipi_sub_pkg / 'inner_pkg_installer.py',
             SrcID.CMD_CLASSES: ipi_sub_pkg / 'cmd_classes.py',
-            SrcID.CMD_CLASS_CFG: ipi_sub_pkg / 'cmd_class.cfg'
+            SrcID.CMD_CLASS_CFG: self._gen_component_src_dir / 'cmd_class.cfg'
         }
 
     @property
