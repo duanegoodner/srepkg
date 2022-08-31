@@ -1,9 +1,10 @@
 from pathlib import Path
 from typing import NamedTuple
+from unittest import mock
 import srepkg.repackager_interfaces as rep_int
-import srepkg.repackager_data_structs as rep_ds
 import srepkg.service_builder as sb
 import srepkg.srepkg_builder as s_bldr
+from srepkg.test.shared_fixtures import dummy_cdir_summary
 
 
 class BuilderTestCondition(NamedTuple):
@@ -60,12 +61,9 @@ class TestSrepkgBuilder:
     def mock_build_wheel(self):
         pass
 
-    def test_init_builder_without_completers(self):
+    def test_init_builder_without_completers(self, dummy_cdir_summary):
         srepkg_builder = s_bldr.SrepkgBuilder(
-            construction_dir_summary=rep_ds.ConstructionDirSummary(
-                pkg_name="dummy", pkg_version="dummy", srepkg_name="dummy",
-                srepkg_root=Path("dummy"), orig_pkg_dists=Path("dummy"),
-                srepkg_inner=Path("dummy")),
+            construction_dir_summary=dummy_cdir_summary,
             output_dir=Path("dummy")
         )
 
@@ -78,3 +76,32 @@ class TestSrepkgBuilder:
         s_bldr.SrepkgSdistWriter.zip_dir(
             zip_name=zip_name, src_path=src_path,
             exclude_paths=[src_path / "file_to_exclude.txt"])
+
+    def test_copy_ready_comps_with_dir_as_content(self, dummy_cdir_summary,
+                                       tmp_path_factory):
+        srepkg_root = tmp_path_factory.mktemp("srepkg_root")
+        cdir_summary = dummy_cdir_summary
+        cdir_summary.srepkg_root = srepkg_root
+
+        repackaging_components = tmp_path_factory.mktemp("components_dir")
+        (repackaging_components / "wheel_completer_components").mkdir()
+        (repackaging_components / "wheel_completer_templates").mkdir()
+
+        dummy_content_path = repackaging_components / "content"
+        dummy_content_path.mkdir()
+
+        with mock.patch("srepkg.srepkg_builder.SrepkgWheelCompleter._props",
+                        new_callable=mock.PropertyMock) as mock_props:
+
+            mock_props.return_value = s_bldr.CompleterProperties(
+                components_dir=repackaging_components,
+                templates_dir=Path("dummy"),
+                dist_writer_type=s_bldr.SrepkgWheelWriter
+            )
+
+            wheel_completer = s_bldr.SrepkgWheelCompleter(
+                orig_pkg_summary=cdir_summary,
+                dist_out_dir=Path("dummy"),
+                repkg_components=repackaging_components)
+
+            wheel_completer._copy_ready_components()

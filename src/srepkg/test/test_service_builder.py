@@ -8,7 +8,9 @@ import srepkg.srepkg_builder as sbn
 import srepkg.service_builder as sb
 import srepkg.repackager_data_structs as rep_ds
 import srepkg.repackager_interfaces as rep_int
-from srepkg.test.shared_fixtures import tmp_construction_dir, sample_pkgs
+import srepkg.test.shared_fixtures as sf
+from srepkg.test.shared_fixtures import tmp_construction_dir, sample_pkgs,\
+    dummy_cdir_summary
 
 
 class TestConstructionDirDispatch:
@@ -53,15 +55,7 @@ class TestRetrieverProviderDispatch:
 
 class TestSrepkgBuilderBuilder:
 
-    def test_no_completer_sources(self):
-        construction_dir_summary = rep_ds.ConstructionDirSummary(
-            pkg_name="dummy",
-            pkg_version="dummy",
-            srepkg_name="dummy",
-            srepkg_root=Path("dummy"),
-            orig_pkg_dists=Path("dummy"),
-            srepkg_inner=Path("dummy"),
-        )
+    def test_no_completer_sources(self, dummy_cdir_summary):
 
         with mock.patch("srepkg.service_builder.SrepkgBuilderBuilder."
                         "_completer_dispatch", new_callable=mock.PropertyMock)\
@@ -72,7 +66,7 @@ class TestSrepkgBuilderBuilder:
             }
             srepkg_builder = sb.SrepkgBuilderBuilder(
                 output_dir_command=None,
-                construction_dir_summary=construction_dir_summary
+                construction_dir_summary=dummy_cdir_summary
             ).create()
 
         mock_completer_dispatch.assert_called_once_with()

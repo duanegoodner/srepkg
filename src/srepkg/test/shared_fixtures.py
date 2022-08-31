@@ -1,6 +1,7 @@
 import pytest
 from dataclasses import dataclass
 from pathlib import Path
+import srepkg.repackager_data_structs as rep_ds
 from srepkg.construction_dir import TempConstructionDir
 
 
@@ -19,7 +20,8 @@ class AllExamplePackages:
     numpy_py_pi: str = "numpy"
     howdoi_github: str = "https://github.com/gleitz/howdoi"
     black_github: str = "https://github.com/psf/black"
-    wheel_inspect_whl: str = str(src_dir / "wheel_inspect-1.7.1-py3-none-any.whl")
+    wheel_inspect_whl: str = str(src_dir /
+                                 "wheel_inspect-1.7.1-py3-none-any.whl")
 
 
 @pytest.fixture
@@ -31,4 +33,27 @@ def sample_pkgs():
 def tmp_construction_dir():
     return TempConstructionDir()
 
+
+@pytest.fixture
+def dummy_cdir_args():
+    return {
+        "pkg_name": "dummy",
+        "pkg_version": "dummy",
+        "srepkg_name": "dummy",
+        "srepkg_root": Path("dummy"),
+        "orig_pkg_dists": Path("dummy"),
+        "srepkg_inner": Path("dummy")
+    }
+
+
+@pytest.fixture
+def dummy_cdir_summary():
+    return rep_ds.ConstructionDirSummary(
+            pkg_name="dummy",
+            pkg_version="dummy",
+            srepkg_name="dummy",
+            srepkg_root=Path("dummy"),
+            orig_pkg_dists=Path("dummy"),
+            srepkg_inner=Path("dummy"),
+        )
 

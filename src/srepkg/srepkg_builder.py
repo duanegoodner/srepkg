@@ -81,14 +81,14 @@ class CompleterProperties:
 
 class SrepkgCompleter(abc.ABC):
 
-    _repkg_components =\
-        Path(__file__).parent.absolute() / "repackaging_components"
-
     def __init__(self,
                  orig_pkg_summary: re_ds.ConstructionDirSummary,
-                 dist_out_dir: Path):
+                 dist_out_dir: Path,
+                 repkg_components: Path = Path(
+                     __file__).parent.absolute() / "repackaging_components"):
         self._orig_pkg_summary = orig_pkg_summary
         self._dist_out_dir = dist_out_dir
+        self._repkg_components = repkg_components
 
     @property
     @abc.abstractmethod
@@ -260,9 +260,9 @@ class SrepkgBuilder(re_int.SrepkgBuilderInterface):
         cse.EntryPointsBuilder(
             orig_pkg_entry_pts=self._construction_dir_summary.entry_pts,
             entry_pt_template=Path(__file__).parent /
-            'repackaging_components' / 'base_templates' / 'generic_entry.py',
+                              'repackaging_components' / 'base_templates' / 'generic_entry.py',
             srepkg_entry_pt_dir=self._construction_dir_summary.srepkg_inner /
-            'srepkg_entry_points',
+                                'srepkg_entry_points',
             srepkg_name=self._construction_dir_summary.srepkg_inner.name,
             srepkg_config=self._base_setup_cfg,
             generic_entry_funct_name='entry_funct'

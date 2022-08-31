@@ -95,22 +95,6 @@ class RetrieverProviderDispatch:
         return self._dispatch_table[pkg_ref_type]()
 
 
-class CompleterDispatch:
-
-    def _create_for_srepkg_sdist(self):
-        pass
-
-    def _create_for_srepkg_wheel(self):
-        pass
-
-    @property
-    def _dispatch_table(self):
-        return {
-            "src_for_srepkg_wheel": self._create_for_srepkg_wheel,
-            "src_for_srepkg_sdist": self._create_for_srepkg_sdist
-        }
-
-
 class OrigSrcPreparerBuilder:
 
     def __init__(self,
