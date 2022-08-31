@@ -2,14 +2,14 @@ from pathlib import Path
 
 import pytest
 import unittest.mock as mock
-
+import srepkg.error_handling.custom_exceptions as ce
 import srepkg.service_builder
 import srepkg.srepkg_builder as sbn
 import srepkg.service_builder as sb
 import srepkg.repackager_data_structs as rep_ds
 import srepkg.repackager_interfaces as rep_int
 import srepkg.test.shared_fixtures as sf
-from srepkg.test.shared_fixtures import tmp_construction_dir, sample_pkgs,\
+from srepkg.test.shared_fixtures import tmp_construction_dir, sample_pkgs, \
     dummy_cdir_summary
 
 
@@ -56,9 +56,8 @@ class TestRetrieverProviderDispatch:
 class TestSrepkgBuilderBuilder:
 
     def test_no_completer_sources(self, dummy_cdir_summary):
-
         with mock.patch("srepkg.service_builder.SrepkgBuilderBuilder."
-                        "_completer_dispatch", new_callable=mock.PropertyMock)\
+                        "_completer_dispatch", new_callable=mock.PropertyMock) \
                 as mock_completer_dispatch:
             mock_completer_dispatch.return_value = {
                 sbn.SrepkgWheelCompleter: None,
@@ -108,3 +107,11 @@ class TestServiceBuilder:
         srepkg_builder = service_builder.create_srepkg_builder(orig_src_summary)
         assert MockSrepkgWheelComleter.called
         assert MockSrepkgSdistCompleter.called
+
+    def test_github_commit_arg_with_non_repo_source(self, sample_pkgs):
+        srepkg_command = rep_int.SrepkgCommand(
+            orig_pkg_ref=sample_pkgs.testproj,
+            git_commit_ref="dummy_commit_ref")
+        service_builder = sb.ServiceBuilder(srepkg_command)
+        with pytest.raises(ce.UnusableGitCommitRef):
+            osp = service_builder.create_orig_src_preparer()

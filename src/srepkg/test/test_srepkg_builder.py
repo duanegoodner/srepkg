@@ -58,8 +58,8 @@ class TestSrepkgBuilder:
             assert ('.whl' in dist_out_filetypes) == \
                    condition.srepkg_whl_exists
 
-    def mock_build_wheel(self):
-        pass
+    # def mock_build_wheel(self):
+    #     pass
 
     def test_init_builder_without_completers(self, dummy_cdir_summary):
         srepkg_builder = s_bldr.SrepkgBuilder(

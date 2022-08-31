@@ -9,13 +9,12 @@ import srepkg.utils.dist_archive_file_tools as cdi
 
 
 class PkgRefType(Enum):
-    LOCAL_SRC_GIT = auto()
     LOCAL_SRC_NONGIT = auto()
     LOCAL_WHEEL = auto()
     LOCAL_SDIST = auto()
     LOCAL_DIST = auto()
     PYPI_PKG = auto()
-    GITHUB_REPO = auto()
+    GIT_REPO = auto()
 
 
 class PkgRefIdentifier:
@@ -26,7 +25,9 @@ class PkgRefIdentifier:
         p = subprocess.run(
             ["git", "-C", self._orig_pkg_ref, "status"],
             stderr=subprocess.PIPE, stdout=subprocess.PIPE)
-        return p.returncode == 0
+        return (p.returncode == 0) and Path(self._orig_pkg_ref).is_dir() and (
+                ".git" in [item.name for item in
+                           list(Path(self._orig_pkg_ref).iterdir())])
 
     def is_local_src_non_git(self):
         return Path(self._orig_pkg_ref).is_dir() and (
@@ -54,16 +55,19 @@ class PkgRefIdentifier:
     def is_github_repo(self):
         url_parsed_ref = urlparse(self._orig_pkg_ref)
         return url_parsed_ref.netloc == 'github.com' and \
-            (len(url_parsed_ref.path.split('/')) > 1)
+               (len(url_parsed_ref.path.split('/')) > 1)
+
+    def is_git_repo(self):
+        return self.is_local_git_repo() or self.is_github_repo()
 
     def _check_all_types(self):
         return {
-            PkgRefType.LOCAL_SRC_GIT: self.is_local_git_repo(),
+            # PkgRefType.LOCAL_SRC_GIT: self.is_local_git_repo(),
             PkgRefType.LOCAL_SRC_NONGIT: self.is_local_src_non_git(),
             PkgRefType.LOCAL_SDIST: self.is_local_sdist(),
             PkgRefType.LOCAL_WHEEL: self.is_local_wheel(),
             PkgRefType.PYPI_PKG: self.is_pypi_pkg(),
-            PkgRefType.GITHUB_REPO: self.is_github_repo()
+            PkgRefType.GIT_REPO: self.is_git_repo()
         }
 
     def identify(self) -> PkgRefType:
@@ -87,4 +91,3 @@ class PkgRefIdentifier:
                 gen_pkg_ref_id == PkgRefType.LOCAL_WHEEL):
             return PkgRefType.LOCAL_DIST
         return gen_pkg_ref_id
-

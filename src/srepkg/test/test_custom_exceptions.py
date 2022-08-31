@@ -14,7 +14,9 @@ class TestCustomExceptions:
         (ce.NoSDistForWheelConstruction, Path("dummy_path")),
         (ce.NoEntryPtsTxtFile, Path("dummy_path")),
         (ce.MultipleEntryPtsTxtFiles, Path("dummy_path")),
-        (ce.NoConsoleScriptEntryPoints, Path("dummy_path"))
+        (ce.NoConsoleScriptEntryPoints, Path("dummy_path")),
+        (ce.GitCheckoutError, "dummy_commit_ref"),
+        (ce.UnusableGitCommitRef, "dummy_commit_ref")
     ])
     def test_exception_init_and_print(self, exception_name, exception_arg,
                                       capsys):

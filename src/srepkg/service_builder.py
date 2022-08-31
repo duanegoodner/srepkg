@@ -55,15 +55,8 @@ class RetrieverProviderDispatch:
         self._version = version_command
         self._git_commit_ref = git_commit_ref
 
-    def _create_for_local_src_git(self) -> List[osp_int.DistProviderInterface]:
-        provider = opr.DistProviderFromLocalGit(
-            src_path=Path(self._pkg_ref_command),
-            dest_path=self._construction_dir.orig_pkg_dists,
-            commit_ref=self._git_commit_ref)
-        return [provider]
-
-    def _create_for_local_src_nongit(self) -> List[
-        osp_int.DistProviderInterface]:
+    def _create_for_local_src_nongit(self) ->\
+            List[osp_int.DistProviderInterface]:
         provider = opr.DistProviderFromSrc(
             src_path=Path(self._pkg_ref_command),
             dest_path=self._construction_dir.orig_pkg_dists)
@@ -75,12 +68,16 @@ class RetrieverProviderDispatch:
             dest_path=self._construction_dir.orig_pkg_dists)
         return [provider]
 
-    def _create_for_github(self):
+    def _create_for_git_repo(self):
         retriever = rpr.GithubPkgRetriever(
             pkg_ref=self._pkg_ref_command)
-        provider = opr.DistProviderFromSrc(
+        # provider = opr.DistProviderFromSrc(
+        #     src_path=retriever.copy_dest,
+        #     dest_path=self._construction_dir.orig_pkg_dists)
+        provider = opr.DistProviderFromGitRepo(
             src_path=retriever.copy_dest,
-            dest_path=self._construction_dir.orig_pkg_dists)
+            dest_path=self._construction_dir.orig_pkg_dists,
+            git_commit_ref=self._git_commit_ref)
         return [retriever, provider]
 
     def _create_for_pypi(self):
@@ -93,10 +90,10 @@ class RetrieverProviderDispatch:
     @property
     def _dispatch_table(self):
         return {
-            PkgRefType.LOCAL_SRC_GIT: self._create_for_local_src_git,
+            # PkgRefType.LOCAL_SRC_GIT: self._create_for_local_src_git,
             PkgRefType.LOCAL_SRC_NONGIT: self._create_for_local_src_nongit,
             PkgRefType.LOCAL_DIST: self._create_for_local_dist,
-            PkgRefType.GITHUB_REPO: self._create_for_github,
+            PkgRefType.GIT_REPO: self._create_for_git_repo,
             PkgRefType.PYPI_PKG: self._create_for_pypi
         }
 
@@ -104,10 +101,7 @@ class RetrieverProviderDispatch:
         pkg_ref_type = PkgRefIdentifier(self._pkg_ref_command) \
             .identify_for_osp_dispatch()
 
-        if self._git_commit_ref and pkg_ref_type not in \
-                [
-                    PkgRefType.LOCAL_SRC_GIT, PkgRefType.GITHUB_REPO
-                ]:
+        if self._git_commit_ref and not pkg_ref_type == PkgRefType.GIT_REPO:
             raise ce.UnusableGitCommitRef(self._git_commit_ref)
 
         return self._dispatch_table[pkg_ref_type]()
