@@ -58,8 +58,8 @@ class TestSrepkgBuilder:
             assert ('.whl' in dist_out_filetypes) == \
                    condition.srepkg_whl_exists
 
-    def mock_build_wheel(self):
-        pass
+    # def mock_build_wheel(self):
+    #     pass
 
     def test_init_builder_without_completers(self, dummy_cdir_summary):
         srepkg_builder = s_bldr.SrepkgBuilder(
@@ -78,7 +78,7 @@ class TestSrepkgBuilder:
             exclude_paths=[src_path / "file_to_exclude.txt"])
 
     def test_copy_ready_comps_with_dir_as_content(self, dummy_cdir_summary,
-                                       tmp_path_factory):
+                                                  tmp_path_factory):
         srepkg_root = tmp_path_factory.mktemp("srepkg_root")
         cdir_summary = dummy_cdir_summary
         cdir_summary.srepkg_root = srepkg_root
@@ -92,7 +92,6 @@ class TestSrepkgBuilder:
 
         with mock.patch("srepkg.srepkg_builder.SrepkgWheelCompleter._props",
                         new_callable=mock.PropertyMock) as mock_props:
-
             mock_props.return_value = s_bldr.CompleterProperties(
                 components_dir=repackaging_components,
                 templates_dir=Path("dummy"),

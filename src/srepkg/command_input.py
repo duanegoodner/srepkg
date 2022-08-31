@@ -17,6 +17,16 @@ class SrepkgCommandLine(rep_int.SrepkgCommandInterface):
         )
 
         self._parser.add_argument(
+            "-g",
+            "--git_commit_ref",
+            type=str,
+            help="A reference to a git commit to be used. Can either be a "
+                 "branch name, or a commit SHA. Defaults to: HEAD of the "
+                 "default branch for a remote Github repository; the currently"
+                 " checked out branch for a local repository"
+        )
+
+        self._parser.add_argument(
             "-n",
             "--srepkg_name",
             type=str,

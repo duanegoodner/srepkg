@@ -92,11 +92,11 @@ class TestCompressedFileExtractor:
 class BrokenPkgRefIdentifier(pti.PkgRefIdentifier):
     def _check_all_types(self):
         return {
-            pti.PkgRefType.LOCAL_SRC: True,
+            pti.PkgRefType.LOCAL_SRC_NONGIT: True,
             pti.PkgRefType.LOCAL_SDIST: True,
             pti.PkgRefType.LOCAL_WHEEL: True,
             pti.PkgRefType.PYPI_PKG: True,
-            pti.PkgRefType.GITHUB_REPO: True
+            pti.PkgRefType.GIT_REPO: True
         }
 
 

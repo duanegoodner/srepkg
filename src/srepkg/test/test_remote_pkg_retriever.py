@@ -13,14 +13,22 @@ class TestRemotePackageRetriever:
             ("PyPIPkgRetriever", "scrape_py_pi", 1, 0),
             ("PyPIPkgRetriever", "numpy_py_pi", 1, 1),
             ("GithubPkgRetriever", "howdoi_github", 0, 0)
-    ])
+        ])
     def test_retriever(
             self, pkg_retriever, t_pkg_ref, num_whl_download,
             num_sdist_download, sample_pkgs, tmp_construction_dir):
         retriever_constructor = getattr(rpr, pkg_retriever)
-        retriever_constructor(
-            pkg_ref=Path(getattr(sample_pkgs, t_pkg_ref)),
-            copy_dest=tmp_construction_dir.orig_pkg_dists).run()
+        pkg_ref = Path(getattr(sample_pkgs, t_pkg_ref))
+
+        if pkg_retriever == "GithubPkgRetriever":
+            constructor_args = {"pkg_ref": pkg_ref}
+        else:
+            constructor_args = {
+                "pkg_ref": pkg_ref,
+                "copy_dest": tmp_construction_dir.orig_pkg_dists
+            }
+
+        retriever_constructor(**constructor_args).run()
         dists_in_cdir = list(tmp_construction_dir.orig_pkg_dists.iterdir())
         num_whl = len(
             [item for item in dists_in_cdir if item.suffix == ".whl"])
@@ -56,5 +64,3 @@ class TestPyPIPkgRetriever:
         retriever = rpr.PyPIPkgRetriever(
             pkg_ref="howdoi", copy_dest=tmp_path)
         retriever.run()
-
-

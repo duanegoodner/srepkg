@@ -127,3 +127,28 @@ class NoConsoleScriptEntryPoints(Exception):
 
     def __str__(self):
         return f"{str(self._whl_path)} -> {self._msg}"
+
+
+class GitCheckoutError(Exception):
+    def __init__(
+            self,
+            commit_ref: str,
+            msg="Error when attempting to checkout git commit ref"):
+        self._commit_ref = commit_ref
+        self._msg = msg
+
+    def __str__(self):
+        return f"{str(self._commit_ref)} -> {self._msg}"
+
+
+class UnusableGitCommitRef(Exception):
+    def __init__(
+            self,
+            commit_ref: str,
+            msg="Git commit ref can only be provided when original package ref"
+                "is either a Github repo or a local git repository"):
+        self._commit_ref = commit_ref
+        self._msg = msg
+
+    def __str__(self):
+        return f"{str(self._commit_ref)} -> {self._msg}"
