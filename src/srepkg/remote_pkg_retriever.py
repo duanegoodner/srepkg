@@ -112,7 +112,7 @@ class PyPIPkgRetriever(osp_int.RemotePkgRetrieverInterface):
 
 class GithubPkgRetriever(osp_int.RemotePkgRetrieverInterface):
 
-    def __init__(self, pkg_ref: str, *args, **kwargs):
+    def __init__(self, pkg_ref: str):
         self._pkg_ref = pkg_ref
         self._temp_dir_obj = tempfile.TemporaryDirectory()
 

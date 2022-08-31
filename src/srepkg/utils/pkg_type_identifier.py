@@ -1,4 +1,5 @@
 import requests
+import subprocess
 import sys
 from enum import Enum, auto
 from pathlib import Path
@@ -8,7 +9,8 @@ import srepkg.utils.dist_archive_file_tools as cdi
 
 
 class PkgRefType(Enum):
-    LOCAL_SRC = auto()
+    LOCAL_SRC_GIT = auto()
+    LOCAL_SRC_NONGIT = auto()
     LOCAL_WHEEL = auto()
     LOCAL_SDIST = auto()
     LOCAL_DIST = auto()
@@ -20,8 +22,15 @@ class PkgRefIdentifier:
     def __init__(self, orig_pkg_ref: str):
         self._orig_pkg_ref = orig_pkg_ref
 
-    def is_local_src(self):
-        return Path(self._orig_pkg_ref).is_dir()
+    def is_local_git_repo(self):
+        p = subprocess.run(
+            ["git", "-C", self._orig_pkg_ref, "status"],
+            stderr=subprocess.PIPE, stdout=subprocess.PIPE)
+        return p.returncode == 0
+
+    def is_local_src_non_git(self):
+        return Path(self._orig_pkg_ref).is_dir() and (
+            not self.is_local_git_repo())
 
     def is_local_wheel(self):
         return (not Path(self._orig_pkg_ref).is_dir()) and \
@@ -49,7 +58,8 @@ class PkgRefIdentifier:
 
     def _check_all_types(self):
         return {
-            PkgRefType.LOCAL_SRC: self.is_local_src(),
+            PkgRefType.LOCAL_SRC_GIT: self.is_local_git_repo(),
+            PkgRefType.LOCAL_SRC_NONGIT: self.is_local_src_non_git(),
             PkgRefType.LOCAL_SDIST: self.is_local_sdist(),
             PkgRefType.LOCAL_WHEEL: self.is_local_wheel(),
             PkgRefType.PYPI_PKG: self.is_pypi_pkg(),

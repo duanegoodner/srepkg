@@ -5,6 +5,7 @@ from typing import List, Type, Union
 
 import srepkg.construction_dir as cdn
 import srepkg.dist_provider as opr
+import srepkg.error_handling.custom_exceptions as ce
 import srepkg.orig_src_preparer as osp
 import srepkg.orig_src_preparer_interfaces as osp_int
 import srepkg.remote_pkg_retriever as rpr
@@ -47,12 +48,22 @@ class RetrieverProviderDispatch:
     def __init__(self,
                  pkg_ref_command: str,
                  construction_dir: cdn.ConstructionDir,
-                 version_command: str = None):
+                 version_command: str = None,
+                 git_commit_ref: str = None):
         self._pkg_ref_command = pkg_ref_command
         self._construction_dir = construction_dir
         self._version = version_command
+        self._git_commit_ref = git_commit_ref
 
-    def _create_for_local_src(self) -> List[osp_int.DistProviderInterface]:
+    def _create_for_local_src_git(self) -> List[osp_int.DistProviderInterface]:
+        provider = opr.DistProviderFromLocalGit(
+            src_path=Path(self._pkg_ref_command),
+            dest_path=self._construction_dir.orig_pkg_dists,
+            commit_ref=self._git_commit_ref)
+        return [provider]
+
+    def _create_for_local_src_nongit(self) -> List[
+        osp_int.DistProviderInterface]:
         provider = opr.DistProviderFromSrc(
             src_path=Path(self._pkg_ref_command),
             dest_path=self._construction_dir.orig_pkg_dists)
@@ -82,16 +93,23 @@ class RetrieverProviderDispatch:
     @property
     def _dispatch_table(self):
         return {
-            PkgRefType.LOCAL_SRC: self._create_for_local_src,
+            PkgRefType.LOCAL_SRC_GIT: self._create_for_local_src_git,
+            PkgRefType.LOCAL_SRC_NONGIT: self._create_for_local_src_nongit,
             PkgRefType.LOCAL_DIST: self._create_for_local_dist,
             PkgRefType.GITHUB_REPO: self._create_for_github,
             PkgRefType.PYPI_PKG: self._create_for_pypi
         }
 
     def create(self):
-
-        pkg_ref_type = PkgRefIdentifier(self._pkg_ref_command)\
+        pkg_ref_type = PkgRefIdentifier(self._pkg_ref_command) \
             .identify_for_osp_dispatch()
+
+        if self._git_commit_ref and pkg_ref_type not in \
+                [
+                    PkgRefType.LOCAL_SRC_GIT, PkgRefType.GITHUB_REPO
+                ]:
+            raise ce.UnusableGitCommitRef(self._git_commit_ref)
+
         return self._dispatch_table[pkg_ref_type]()
 
 
@@ -101,11 +119,14 @@ class OrigSrcPreparerBuilder:
                  construction_dir_command: Union[str, None],
                  orig_pkg_ref_command: str,
                  srepkg_name_command: str = None,
-                 version_command: str = None):
+                 version_command: str = None,
+                 git_commit_ref_command: str = None
+                 ):
         self._construction_dir_command = construction_dir_command
         self._orig_pkg_ref_command = orig_pkg_ref_command
         self._srepkg_name_command = srepkg_name_command
         self._version_command = version_command
+        self._git_commit_ref_command = git_commit_ref_command
         self._construction_dir_dispatch = create_construction_dir
 
     def create(self):
@@ -115,7 +136,8 @@ class OrigSrcPreparerBuilder:
         retriever_provider = RetrieverProviderDispatch(
             pkg_ref_command=self._orig_pkg_ref_command,
             construction_dir=construction_dir,
-            version_command=self._version_command
+            version_command=self._version_command,
+            git_commit_ref=self._git_commit_ref_command
         ).create()
 
         return osp.OrigSrcPreparer(
@@ -135,7 +157,7 @@ class SrepkgBuilderBuilder:
         self._output_dir = output_dir_command
 
     @property
-    def _completer_dispatch(self) ->\
+    def _completer_dispatch(self) -> \
             dict[Type[sbn.SrepkgCompleter], Union[Path, None]]:
         return {
             sbn.SrepkgWheelCompleter:
@@ -172,7 +194,9 @@ class ServiceBuilder(rep_int.ServiceBuilderInterface):
         osp_builder = OrigSrcPreparerBuilder(
             construction_dir_command=self._srepkg_command.construction_dir,
             orig_pkg_ref_command=self._srepkg_command.orig_pkg_ref,
-            srepkg_name_command=self._srepkg_command.srepkg_name)
+            srepkg_name_command=self._srepkg_command.srepkg_name,
+            git_commit_ref_command=self._srepkg_command.git_commit_ref
+        )
         return osp_builder.create()
 
     def create_srepkg_builder(
