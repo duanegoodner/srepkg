@@ -42,14 +42,14 @@ class TestPyPIPkgRetriever:
 
     def test_custom_version(self, tmp_path):
         retriever = rpr.PyPIPkgRetriever(
-            pkg_ref="scrape", copy_dest=tmp_path, version="0.11.1")
+            pkg_ref="scrape", copy_dest=tmp_path, version_command="0.11.1")
         retriever.run()
         copy_dest_contents = list(tmp_path.iterdir())
         downloaded_whl = [item for item in copy_dest_contents if
                           item.suffix == ".whl"]
         downloaded_whl_filename = downloaded_whl[0].name
         name, version, bld, tag = parse_wheel_filename(downloaded_whl_filename)
-        assert str(version) == retriever._version
+        assert str(version) == retriever._version_command
 
     def test_no_pi_whl_no_sdist(self, tmp_path):
         with mock.patch.object(

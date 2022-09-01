@@ -12,6 +12,7 @@ class SrepkgCommand:
     construction_dir: Union[str, None] = None
     dist_out_dir: Union[str, None] = None
     git_commit_ref: Union[str, None] = None
+    orig_pkg_version: Union[str, None] = None
 
 
 class SrepkgCommandInterface(abc.ABC):
