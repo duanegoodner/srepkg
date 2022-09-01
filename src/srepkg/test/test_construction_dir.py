@@ -25,7 +25,7 @@ class TestConstructionDirInit:
         assert set(construction_dir._srepkg_root_contents) == \
                {construction_dir.srepkg_inner, construction_dir.orig_pkg_dists}
         assert construction_dir.srepkg_inner_contents == []
-        assert construction_dir.orig_pkg_version is None
+        assert construction_dir.pypi_version is None
         assert construction_dir.wheel_path is None
 
     def test_init_custom_construction_dir(self, tmp_path):

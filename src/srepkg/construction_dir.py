@@ -84,7 +84,7 @@ class ConstructionDir(osp_int.ManageableConstructionDir):
             return list(self._unique_orig_pkgs)[0].name
 
     @property
-    def orig_pkg_version(self):
+    def pypi_version(self):
         if self._unique_orig_pkgs:
             return list(self._unique_orig_pkgs)[0].version
 
@@ -157,7 +157,7 @@ class ConstructionDir(osp_int.ManageableConstructionDir):
 
         self._summary = rp_ds.ConstructionDirSummary(
             pkg_name=self.orig_pkg_name,
-            pkg_version=self.orig_pkg_version,
+            pkg_version=self.pypi_version,
             srepkg_name=self._srepkg_name,
             srepkg_root=self._srepkg_root,
             orig_pkg_dists=self.orig_pkg_dists,
@@ -211,7 +211,7 @@ class SdistToWheelConverter:
     @property
     def _unpacked_src_dir_name(self):
         pkg_name = self._construction_dir.orig_pkg_name
-        pkg_version = self._construction_dir.orig_pkg_version
+        pkg_version = self._construction_dir.pypi_version
         return f"{pkg_name}-{pkg_version}"
 
     def _get_build_from_dist(self):

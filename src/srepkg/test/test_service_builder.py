@@ -1,14 +1,10 @@
-from pathlib import Path
-
 import pytest
 import unittest.mock as mock
 import srepkg.error_handling.custom_exceptions as ce
 import srepkg.service_builder
 import srepkg.srepkg_builder as sbn
 import srepkg.service_builder as sb
-import srepkg.repackager_data_structs as rep_ds
 import srepkg.repackager_interfaces as rep_int
-import srepkg.test.shared_fixtures as sf
 from srepkg.test.shared_fixtures import tmp_construction_dir, sample_pkgs, \
     dummy_cdir_summary
 
@@ -51,6 +47,25 @@ class TestRetrieverProviderDispatch:
             construction_dir=tmp_construction_dir).create()
         assert [(type(item).__name__ for item in retriever_provider) ==
                 retriever_provider_components]
+
+    def test_github_commit_arg_with_non_repo_source(
+            self, tmp_construction_dir, sample_pkgs):
+
+        with pytest.raises(ce.UnusableGitCommitRef):
+            retriever_provider = sb.RetrieverProviderDispatch(
+                pkg_ref_command=sample_pkgs.testproj,
+                construction_dir=tmp_construction_dir,
+                git_ref="dummy_git_ref"
+            ).create()
+
+    def test_version_arg_for_non_pypi_pkg_ref(
+            self, tmp_construction_dir, sample_pkgs):
+
+        with pytest.raises(ce.UnusableVersionArgument):
+            retriever_provider = sb.RetrieverProviderDispatch(
+                pkg_ref_command=sample_pkgs.testproj,
+                construction_dir=tmp_construction_dir,
+                version_command="1.0.0").create()
 
 
 class TestSrepkgBuilderBuilder:
@@ -107,11 +122,3 @@ class TestServiceBuilder:
         srepkg_builder = service_builder.create_srepkg_builder(orig_src_summary)
         assert MockSrepkgWheelComleter.called
         assert MockSrepkgSdistCompleter.called
-
-    def test_github_commit_arg_with_non_repo_source(self, sample_pkgs):
-        srepkg_command = rep_int.SrepkgCommand(
-            orig_pkg_ref=sample_pkgs.testproj,
-            git_commit_ref="dummy_commit_ref")
-        service_builder = sb.ServiceBuilder(srepkg_command)
-        with pytest.raises(ce.UnusableGitCommitRef):
-            osp = service_builder.create_orig_src_preparer()
