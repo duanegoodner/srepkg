@@ -52,10 +52,10 @@ class RetrieverProviderDispatch:
                  git_commit_ref: str = None):
         self._pkg_ref_command = pkg_ref_command
         self._construction_dir = construction_dir
-        self._version = version_command
+        self._version_command = version_command
         self._git_commit_ref = git_commit_ref
 
-    def _create_for_local_src_nongit(self) ->\
+    def _create_for_local_src_nongit(self) -> \
             List[osp_int.DistProviderInterface]:
         provider = opr.DistProviderFromSrc(
             src_path=Path(self._pkg_ref_command),
@@ -77,14 +77,16 @@ class RetrieverProviderDispatch:
         provider = opr.DistProviderFromGitRepo(
             src_path=retriever.copy_dest,
             dest_path=self._construction_dir.orig_pkg_dists,
-            git_commit_ref=self._git_commit_ref)
+            git_commit_ref=self._git_commit_ref,
+            version_command=self._version_command
+        )
         return [retriever, provider]
 
     def _create_for_pypi(self):
         retriever = rpr.PyPIPkgRetriever(
             pkg_ref=self._pkg_ref_command,
             copy_dest=self._construction_dir.orig_pkg_dists,
-            version=self._version)
+            version_command=self._version_command)
         return [retriever]
 
     @property
@@ -103,6 +105,11 @@ class RetrieverProviderDispatch:
 
         if self._git_commit_ref and not pkg_ref_type == PkgRefType.GIT_REPO:
             raise ce.UnusableGitCommitRef(self._git_commit_ref)
+
+        if self._version_command and (
+                pkg_ref_type not in
+                [PkgRefType.GIT_REPO, PkgRefType.PYPI_PKG]):
+            raise ce.UnusableVersionArgument(self._version_command)
 
         return self._dispatch_table[pkg_ref_type]()
 
@@ -189,7 +196,8 @@ class ServiceBuilder(rep_int.ServiceBuilderInterface):
             construction_dir_command=self._srepkg_command.construction_dir,
             orig_pkg_ref_command=self._srepkg_command.orig_pkg_ref,
             srepkg_name_command=self._srepkg_command.srepkg_name,
-            git_commit_ref_command=self._srepkg_command.git_commit_ref
+            git_commit_ref_command=self._srepkg_command.git_commit_ref,
+            version_command=self._srepkg_command.orig_pkg_version
         )
         return osp_builder.create()
 

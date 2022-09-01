@@ -47,9 +47,11 @@ class DistProviderFromSrc(osp_int.DistProviderInterface):
 
 class DistProviderFromGitRepo(DistProviderFromSrc):
     def __init__(
-            self, src_path: Path, dest_path: Path, git_commit_ref: str = None):
+            self, src_path: Path, dest_path: Path,
+            git_commit_ref: str = None, version_command=None):
         super().__init__(src_path, dest_path)
         self._git_commit_ref = git_commit_ref
+        self._version_command = version_command
 
     def _checkout_commit_ref(self):
         if self._git_commit_ref:

@@ -12,10 +12,10 @@ import srepkg.orig_src_preparer_interfaces as osp_int
 class PyPIPkgRetriever(osp_int.RemotePkgRetrieverInterface):
     _pypi_api_base = "https://pypi.org/pypi/{}/json"
 
-    def __init__(self, pkg_ref: str, copy_dest: Path, version: str = None):
+    def __init__(self, pkg_ref: str, copy_dest: Path, version_command: str = None):
         self._pkg_ref = pkg_ref
         self._copy_dest = copy_dest
-        self._version = version
+        self._version_command = version_command
 
     @property
     def _pkg_info_url(self):
@@ -28,8 +28,8 @@ class PyPIPkgRetriever(osp_int.RemotePkgRetrieverInterface):
 
     @property
     def _version_url_info(self):
-        if self._version:
-            return self._pkg_metadata["releases"][self._version]
+        if self._version_command:
+            return self._pkg_metadata["releases"][self._version_command]
         else:
             return self._pkg_metadata["urls"]
 

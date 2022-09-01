@@ -8,23 +8,25 @@ import srepkg.utils.dist_archive_file_tools as daft
 
 class TestOrigSrcPreparer:
 
-    @pytest.mark.parametrize("pkg_ref, git_commit_ref, expected_archive_types", [
-        ("testproj", None, {daft.ArchiveDistType.WHEEL}),
-        ("testproj_whl", None, {daft.ArchiveDistType.WHEEL}),
-        ("testproj_targz", None, {
-            daft.ArchiveDistType.SDIST, daft.ArchiveDistType.WHEEL}),
-        ("testproj_zip", None, {
-            daft.ArchiveDistType.SDIST, daft.ArchiveDistType.WHEEL}),
-        ("black_github", None, {daft.ArchiveDistType.WHEEL}),
-        ("black_github", "767604e03f5e454ae5b5c268cd5831c672f46de8",
-         {daft.ArchiveDistType.WHEEL}),
-
-    ])
-    def test_sources(self, pkg_ref, git_commit_ref, expected_archive_types,
-                     sample_pkgs):
+    @pytest.mark.parametrize(
+        "pkg_ref, git_commit_ref, version_command, expected_archive_types", [
+            ("testproj", None, None, {daft.ArchiveDistType.WHEEL}),
+            ("testproj_whl", None, None, {daft.ArchiveDistType.WHEEL}),
+            ("testproj_targz", None, None, {
+                daft.ArchiveDistType.SDIST, daft.ArchiveDistType.WHEEL}),
+            ("testproj_zip", None, None, {
+                daft.ArchiveDistType.SDIST, daft.ArchiveDistType.WHEEL}),
+            ("black_github", None, None, {daft.ArchiveDistType.WHEEL}),
+            ("black_github", "767604e03f5e454ae5b5c268cd5831c672f46de8",
+             None, {daft.ArchiveDistType.WHEEL}),
+            ("scrape_py_pi", None, "0.11.1", {daft.ArchiveDistType.WHEEL})
+        ])
+    def test_sources(self, pkg_ref, git_commit_ref, version_command,
+                     expected_archive_types, sample_pkgs):
         cmd = rep_int.SrepkgCommand(
             orig_pkg_ref=getattr(sample_pkgs, pkg_ref),
-            git_commit_ref=git_commit_ref)
+            git_commit_ref=git_commit_ref,
+            orig_pkg_version=version_command)
         src_preparer = sb.ServiceBuilder(cmd).create_orig_src_preparer()
         src_preparer.prepare()
         final_dist_types = {

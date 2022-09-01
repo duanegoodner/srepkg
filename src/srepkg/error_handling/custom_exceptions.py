@@ -152,3 +152,33 @@ class UnusableGitCommitRef(Exception):
 
     def __str__(self):
         return f"{str(self._commit_ref)} -> {self._msg}"
+
+
+class PkgVersionWithCommitRef(Exception):
+    def __init__(
+            self,
+            commit_ref: str,
+            pkg_version: str,
+            msg="Cannot specify package version and git commit ref in same "
+                "command"):
+        self._commit_ref = commit_ref
+        self._pkg_version = pkg_version
+        self._msg = msg
+
+    def __str__(self):
+        return f"ORIG_PKG_VERSION: {str(self._pkg_version)}," \
+               f"GIT_COMMIT_REF: {str(self._commit_ref)} -> {self._msg}"
+
+
+class UnusableVersionArgument(Exception):
+    def __init__(
+            self,
+            version_argument: str,
+            msg="Version argument can only be provided when original package "
+                "ref is either a Github repo or a PyPI package"):
+        self._version_argument = version_argument
+        self._msg = msg
+
+    def __str__(self):
+        return f"{str(self._version_argument)} -> {self._msg}"
+
