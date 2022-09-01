@@ -1,5 +1,7 @@
-import srepkg.command_input as ci
+
 import pytest
+import srepkg.command_input as ci
+import srepkg.error_handling.custom_exceptions as ce
 
 
 class TestCommandInput:
@@ -48,3 +50,10 @@ class TestCommandInput:
             ci.SrepkgCommandLine().get_args(
                 [self.local_src_pkg_ref, "-n",
                  self.user_srepkg_name, self.extra_arg])
+
+    def test_pypi_version_and_git_ref(self):
+        with pytest.raises(ce.PkgVersionWithCommitRef):
+            ci.SrepkgCommandLine().get_args(
+                [self.local_src_pkg_ref, "-g", "dummy_git_ref", "-r",
+                 "dummy_pypi_version"]
+            )

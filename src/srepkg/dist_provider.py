@@ -48,21 +48,21 @@ class DistProviderFromSrc(osp_int.DistProviderInterface):
 class DistProviderFromGitRepo(DistProviderFromSrc):
     def __init__(
             self, src_path: Path, dest_path: Path,
-            git_commit_ref: str = None, version_command=None):
+            git_ref: str = None, version_command=None):
         super().__init__(src_path, dest_path)
-        self._git_commit_ref = git_commit_ref
+        self._git_ref = git_ref
         self._version_command = version_command
 
     def _checkout_commit_ref(self):
-        if self._git_commit_ref:
+        if self._git_ref:
             p = subprocess.run(
-                ["git", "checkout", self._git_commit_ref],
+                ["git", "checkout", self._git_ref],
                 stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                 cwd=self._src_path
             )
 #             TODO send stdout & stderr to log
             if p.returncode != 0:
-                raise ce.GitCheckoutError(self._git_commit_ref)
+                raise ce.GitCheckoutError(self._git_ref)
 
     def run(self):
         self._checkout_commit_ref()
