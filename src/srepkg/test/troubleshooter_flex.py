@@ -21,19 +21,19 @@ def test_build_from_src():
 
     srepkg_builder = service_builder.create_srepkg_builder(construction_dir_summary)
 
-    # srepkg_builder._simple_construction_tasks()
-    # srepkg_builder._build_entry_points()
-    # srepkg_builder._write_srepkg_cfg_non_entry_data()
-    # srepkg_builder._build_base_setup_cfg()
-    #
-    # srepkg_builder._srepkg_completers[0]._copy_ready_components()
-    # srepkg_builder._srepkg_completers[0]._write_from_templates()
-    # srepkg_builder._srepkg_completers[0]._write_srepkg_setup_cfg()
-    #
+    srepkg_builder._simple_construction_tasks()
+    srepkg_builder._build_entry_points()
+    srepkg_builder._write_srepkg_cfg_non_entry_data()
+    srepkg_builder._build_base_setup_cfg()
+
+    srepkg_builder._srepkg_completers[1]._copy_ready_components()
+    srepkg_builder._srepkg_completers[1]._write_from_templates()
+    srepkg_builder._srepkg_completers[1]._write_srepkg_setup_cfg()
+    srepkg_builder._srepkg_completers[1]._extra_construction_tasks()
     # srepkg_builder._srepkg_completers[0]._install_inner_pkg()
     # srepkg_builder._srepkg_completers[1]._build_ipi_cfg()
 
-    srepkg_builder.build()
+    # srepkg_builder.build()
 
 
 if __name__ == '__main__':

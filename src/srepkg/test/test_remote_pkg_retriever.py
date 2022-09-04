@@ -18,7 +18,7 @@ class TestRemotePackageRetriever:
             self, pkg_retriever, t_pkg_ref, num_whl_download,
             num_sdist_download, sample_pkgs, tmp_construction_dir):
         retriever_constructor = getattr(rpr, pkg_retriever)
-        pkg_ref = Path(getattr(sample_pkgs, t_pkg_ref))
+        pkg_ref = getattr(sample_pkgs, t_pkg_ref)
 
         if pkg_retriever == "GithubPkgRetriever":
             constructor_args = {"pkg_ref": pkg_ref}

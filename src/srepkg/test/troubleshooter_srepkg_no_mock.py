@@ -10,4 +10,4 @@ def test_srepkg(mocker, sample_pkgs):
     # main([sample_pkgs.testproj, "-d", "/Users/duane/srepkg_pkgs", "-n"
     #       "from_script"])
 
-    main(["https://github.com/psf/black", "-g", "prepare-release-22.8.0"])
+    main([sample_pkgs.testproj])

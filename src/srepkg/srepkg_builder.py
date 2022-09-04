@@ -6,6 +6,7 @@ import build
 import configparser
 import shutil
 import string
+import subprocess
 from pathlib import Path
 from typing import List, NamedTuple, Callable
 from zipfile import ZIP_DEFLATED, ZipFile
@@ -69,7 +70,14 @@ class SrepkgWheelWriter(SrepkgDistWriter):
             python_executable=sys.executable)
         dist_builder.build(
             distribution="wheel",
-            output_directory=self._dist_out_dir)
+            output_directory=self._dist_out_dir,
+            config_settings={"quiet": "quiet"}
+        )
+
+        # subprocess.run([
+        #     "pip", "wheel", "-w", str(self._dist_out_dir),
+        #     str(self._orig_pkg_summary.srepkg_root),
+        #     "--no-deps", "--no-index", "--quiet"])
 
 
 @dataclass
