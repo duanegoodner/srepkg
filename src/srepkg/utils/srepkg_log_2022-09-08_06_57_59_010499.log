@@ -1,0 +1,10 @@
+2022-09-08 06:57:59,043:ERROR:std_err.srepkg.utils.lehs_caller:git: 'blabla' is not a git command. See 'git --help'.
+2022-09-08 06:57:59,044:CRITICAL:std_err:Uncaught exception
+Traceback (most recent call last):
+  File "/Users/duane/dproj/srepkg/src/srepkg/utils/lehs_caller_caller.py", line 10, in <module>
+    lc.run_git_lehs()
+  File "/Users/duane/dproj/srepkg/src/srepkg/utils/lehs_caller.py", line 29, in run_git_lehs
+    git_sub_proc.run()
+  File "/Users/duane/dproj/srepkg/src/srepkg/utils/logged_error_handled_subprocess.py", line 56, in run
+    raise self._default_exception(sub_proc)
+srepkg.utils.lehs_caller.BuildSubprocessError: CompletedProcess(args=['git', 'blabla'], returncode=1) -> Error occurred when running subprocess intended build a sdist or wheel.

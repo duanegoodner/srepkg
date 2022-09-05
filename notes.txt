@@ -1,0 +1,5 @@
+- save git commit info
+- cmd suffix option
+- enums to lock down builder code
+- test which black wheel is downloaded (pure py or platform specific)
+- modify msg re: "pkg ref consistent w/ >1 pkg"

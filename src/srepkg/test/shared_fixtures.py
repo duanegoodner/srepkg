@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from pathlib import Path
 import srepkg.repackager_data_structs as rep_ds
 from srepkg.construction_dir import TempConstructionDir
+import srepkg.logging_initializer as lgr
 
 
 @dataclass
@@ -56,4 +57,11 @@ def dummy_cdir_summary():
             orig_pkg_dists=Path("dummy"),
             srepkg_inner=Path("dummy"),
         )
+
+
+@pytest.fixture
+def app_logger():
+    app_logger = lgr.LoggingInitializer()
+    app_logger.setup()
+    return app_logger
 

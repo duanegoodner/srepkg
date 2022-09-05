@@ -13,6 +13,7 @@ class SrepkgCommand:
     dist_out_dir: Union[str, None] = None
     git_ref: Union[str, None] = None
     pypi_version: Union[str, None] = None
+    logfile_dir: Union[str, None] = None
 
 
 class SrepkgCommandInterface(abc.ABC):

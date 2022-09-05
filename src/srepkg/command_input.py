@@ -73,6 +73,17 @@ class SrepkgCommandLine(rep_int.SrepkgCommandInterface):
                  "saved. Default is the current working directory."
         )
 
+        self._parser.add_argument(
+            "-f",
+            "--logfile_dir",
+            type=str,
+            nargs="?",
+            action="store",
+            help="Directory to write srepkg log file to. Default behavior is"
+                 "to write log to file in temporary directory that is "
+                 "automatically deleted at end of execution."
+        )
+
     def get_args(self, *args) -> rep_int.SrepkgCommand:
         self._attach_args()
         args_namespace = self._parser.parse_args(*args)

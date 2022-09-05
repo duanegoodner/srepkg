@@ -18,27 +18,13 @@ class DistProviderFromSrc(osp_int.DistProviderInterface):
 
     def run(self):
 
-        # with yaspin().dots as sp:
-        #     sp.text = "Building original source wheel..."
-
-        # dist_builder = build.ProjectBuilder(
-        #     srcdir=str(self._src_path),
-        #     python_executable=sys.executable)
-        #
-        # # build wheel first
-        # wheel_path_str = dist_builder.build(
-        #     distribution='wheel',
-        #     output_directory=str(self._dest_path),
-        #     config_settings={"quiet": "quiet"}
-        # )
-
-        new_wheel_path = db.DistBuilder(
+        wheel_path = db.DistBuilder(
             distribution="wheel",
             srcdir=self._src_path,
             output_directory=self._dest_path
         ).build()
 
-        wheel_filename = new_wheel_path.name
+        wheel_filename = wheel_path.name
         name, version, bld, tags = parse_wheel_filename(wheel_filename)
 
         if Tag("py3", "none", "any") not in tags:

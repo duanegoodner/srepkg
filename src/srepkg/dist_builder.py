@@ -1,11 +1,10 @@
-import argparse
-import tempfile
-
-import build
 import hashlib
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
+import srepkg.dist_builder_sub_process as dbs
+import srepkg.utils.logged_err_detecting_subprocess as leds
 
 
 class DistBuilder:
@@ -31,13 +30,55 @@ class DistBuilder:
                 hash_md5.update(chunk)
         return hash_md5.hexdigest()
 
-    def build(self):
-        orig_dest_checksums = [self._calc_md5(item) for item in
-                               self._output_directory.iterdir()]
-        subprocess.run([sys.executable, __file__, self._distribution,
-                        str(self._srcdir), str(self._output_directory)])
+    @property
+    def _files_in_dest_dir(self):
+        return [item for item in self._output_directory.iterdir() if not
+        item.is_dir()]
 
-        new_files = [item for item in self._output_directory.iterdir() if
+    def build(self):
+        orig_dest_checksums = [
+            self._calc_md5(item) for item in self._files_in_dest_dir
+        ]
+
+        leds.LoggedErrDetectingSubprocess(
+            cmd=[
+                sys.executable, dbs.__file__,
+                self._distribution,
+                str(self._srcdir),
+                str(self._output_directory)
+            ],
+            gen_logger_name=__name__,
+            std_out_logger_name="std_out",
+            std_err_logger_name="std_err",
+            default_exception=BuildSubprocessError
+        ).run()
+
+        # std_out_buffer = tempfile.NamedTemporaryFile()
+        # std_err_buffer = tempfile.NamedTemporaryFile()
+        # build_process = subprocess.run([
+        #     sys.executable, __file__,
+        #     self._distribution,
+        #     str(self._srcdir),
+        #     str(self._output_directory)],
+        #     stdout=std_out_buffer, stderr=std_err_buffer,
+        #     universal_newlines=True)
+        #
+        # std_out_buffer.seek(0)
+        # for line in std_out_buffer:
+        #     logging.getLogger(__name__).info(line.decode("utf-8").strip())
+        #
+        # std_err_buffer.seek(0)
+        # if build_process.returncode == 0:
+        #     for line in std_err_buffer:
+        #         logging.getLogger(__name__).warning(
+        #             line.decode("utf-8").strip())
+        # else:
+        #     for line in std_err_buffer:
+        #         logging.getLogger(f"std_err.{__name__}").error(
+        #             line.decode("utf-8").strip())
+        #     raise BuildSubprocessError(build_process)
+
+        new_files = [item for item in self._files_in_dest_dir if
                      self._calc_md5(item) not in orig_dest_checksums]
 
         assert len(new_files) == 1
@@ -45,45 +86,14 @@ class DistBuilder:
         return new_files[0]
 
 
-class _DistBuilderArgParser:
+class BuildSubprocessError(Exception):
+    def __init__(
+            self,
+            sub_process: subprocess.CompletedProcess,
+            msg="Error occurred when running subprocess intended build a sdist"
+                "or wheel."):
+        self._sub_process = sub_process
+        self._msg = msg
 
-    def __init__(self):
-        self._parser = argparse.ArgumentParser()
-
-    def _define_args(self):
-        self._parser.add_argument("distribution", type=str)
-        self._parser.add_argument("srcdir", type=str)
-        self._parser.add_argument("output_directory", type=str)
-
-    def get_args(self, *args):
-        self._define_args()
-        args_namespace = self._parser.parse_args(*args)
-        return _DistBuilder(**vars(args_namespace))
-
-
-class _DistBuilder:
-
-    def __init__(self, distribution: str, srcdir: str, output_directory: str):
-        self._distribution = distribution
-        self._srcdir = srcdir
-        self._output_directory = output_directory
-
-    def build_dist(self) -> Path:
-        dist_builder = build.ProjectBuilder(
-            srcdir=self._srcdir,
-            python_executable=sys.executable)
-
-        dist_path_str = dist_builder.build(
-            distribution=self._distribution,
-            output_directory=self._output_directory)
-
-        return Path(dist_path_str)
-
-
-def main(*args):
-    dist_builder = _DistBuilderArgParser().get_args(*args)
-    dist_path = dist_builder.build_dist()
-
-
-if __name__ == "__main__":
-    main()
+    def __str__(self):
+        return f"{str(self._sub_process)} -> {self._msg}"

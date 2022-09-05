@@ -12,6 +12,7 @@ from yaspin import yaspin
 from zipfile import ZIP_DEFLATED, ZipFile
 import inner_pkg_installer.inner_pkg_installer as ipi
 import srepkg.cs_entry_pts as cse
+import srepkg.dist_builder as db
 import srepkg.repackager_interfaces as re_int
 import srepkg.repackager_data_structs as re_ds
 import srepkg.srepkg_builder_int as sb_new_int
@@ -66,14 +67,13 @@ class SrepkgWheelWriter(SrepkgDistWriter):
 
     def write_dist(self):
 
-        dist_builder = build.ProjectBuilder(
-            srcdir=self._orig_pkg_summary.srepkg_root,
-            python_executable=sys.executable)
-        dist_builder.build(
+        wheel_path = db.DistBuilder(
             distribution="wheel",
-            output_directory=self._dist_out_dir,
-            config_settings={"quiet": "quiet"}
-        )
+            srcdir=self._orig_pkg_summary.srepkg_root,
+            output_directory=self._dist_out_dir
+        ).build()
+
+
 
 
 

@@ -7,7 +7,7 @@ import uuid
 from pathlib import Path
 from typing import List
 from yaspin import yaspin
-
+import srepkg.dist_builder as db
 import srepkg.error_handling.custom_exceptions as ce
 import srepkg.utils.dist_archive_file_tools as cft
 import srepkg.orig_src_preparer_interfaces as osp_int
@@ -237,15 +237,10 @@ class SdistToWheelConverter:
         self._compressed_file_extractor.extract(
             build_from_dist.path, unpack_root)
 
-        dist_builder = build.ProjectBuilder(
-            srcdir=str(unpack_root / self._unpacked_src_dir_name),
-            python_executable=sys.executable
-        )
-
-        dist_builder.build(
-            distribution='wheel',
-            output_directory=str(self._construction_dir.orig_pkg_dists),
-            config_settings={"quiet": "quiet"}
-        )
+        wheel_path = db.DistBuilder(
+            distribution="wheel",
+            srcdir=unpack_root / self._unpacked_src_dir_name,
+            output_directory=self._construction_dir.orig_pkg_dists
+        ).build()
 
         temp_unpack_dir_obj.cleanup()
