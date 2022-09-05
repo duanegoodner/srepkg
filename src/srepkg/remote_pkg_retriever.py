@@ -2,6 +2,7 @@ import functools
 import requests
 import subprocess
 import tempfile
+from yaspin import yaspin
 from packaging.tags import sys_tags
 from packaging.utils import parse_wheel_filename
 from pathlib import Path
@@ -106,6 +107,8 @@ class PyPIPkgRetriever(osp_int.RemotePkgRetrieverInterface):
             dist_file.write(response.content)
 
     def run(self):
+        # with yaspin().bouncingBall as sp:
+        #     sp.text = "Retrieving original package from PyPI..."
         for dist in self._dists_to_download:
             self._download(dist)
 
@@ -121,4 +124,6 @@ class GithubPkgRetriever(osp_int.RemotePkgRetrieverInterface):
         return Path(self._temp_dir_obj.name)
 
     def run(self):
-        subprocess.run(["git", "clone", self._pkg_ref, self.copy_dest])
+        # with yaspin().bouncingBall as sp:
+        #     sp.text = "Retrieving original package from Github..."
+        subprocess.run(["git", "clone", self._pkg_ref, self.copy_dest, "--quiet"])

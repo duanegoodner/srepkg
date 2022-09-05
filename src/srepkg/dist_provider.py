@@ -1,11 +1,11 @@
-import build
 import shutil
 import subprocess
-import sys
 from packaging.tags import Tag
 from packaging.utils import parse_wheel_filename
 from pathlib import Path
+from yaspin import yaspin
 
+import srepkg.dist_builder as db
 import srepkg.error_handling.custom_exceptions as ce
 import srepkg.orig_src_preparer_interfaces as osp_int
 
@@ -17,25 +17,42 @@ class DistProviderFromSrc(osp_int.DistProviderInterface):
         self._dest_path = dest_path
 
     def run(self):
-        dist_builder = build.ProjectBuilder(
-            srcdir=str(self._src_path),
-            python_executable=sys.executable)
 
-        # build wheel first
-        wheel_path_str = dist_builder.build(
-            distribution='wheel',
-            output_directory=str(self._dest_path),
-            config_settings={"quiet": "quiet"}
-        )
+        # with yaspin().dots as sp:
+        #     sp.text = "Building original source wheel..."
 
-        wheel_filename = Path(wheel_path_str).name
+        # dist_builder = build.ProjectBuilder(
+        #     srcdir=str(self._src_path),
+        #     python_executable=sys.executable)
+        #
+        # # build wheel first
+        # wheel_path_str = dist_builder.build(
+        #     distribution='wheel',
+        #     output_directory=str(self._dest_path),
+        #     config_settings={"quiet": "quiet"}
+        # )
+
+        new_wheel_path = db.DistBuilder(
+            distribution="wheel",
+            srcdir=self._src_path,
+            output_directory=self._dest_path
+        ).build()
+
+        wheel_filename = new_wheel_path.name
         name, version, bld, tags = parse_wheel_filename(wheel_filename)
 
         if Tag("py3", "none", "any") not in tags:
-            dist_builder.build(
-                distribution='sdist',
-                output_directory=str(self._dest_path),
-                config_settings={"--quiet": ""})
+
+            db.DistBuilder(
+                distribution="sdist",
+                srcdir=self._src_path,
+                output_directory=self._dest_path
+            ).build()
+
+            # dist_builder.build(
+            #     distribution='sdist',
+            #     output_directory=str(self._dest_path),
+            #     config_settings={"quiet": "quiet"})
 
 
 class DistProviderFromGitRepo(DistProviderFromSrc):

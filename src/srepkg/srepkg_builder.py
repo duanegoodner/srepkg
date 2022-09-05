@@ -6,9 +6,9 @@ import build
 import configparser
 import shutil
 import string
-import subprocess
 from pathlib import Path
 from typing import List, NamedTuple, Callable
+from yaspin import yaspin
 from zipfile import ZIP_DEFLATED, ZipFile
 import inner_pkg_installer.inner_pkg_installer as ipi
 import srepkg.cs_entry_pts as cse
@@ -65,6 +65,7 @@ class SrepkgSdistWriter(SrepkgDistWriter):
 class SrepkgWheelWriter(SrepkgDistWriter):
 
     def write_dist(self):
+
         dist_builder = build.ProjectBuilder(
             srcdir=self._orig_pkg_summary.srepkg_root,
             python_executable=sys.executable)
@@ -74,10 +75,6 @@ class SrepkgWheelWriter(SrepkgDistWriter):
             config_settings={"quiet": "quiet"}
         )
 
-        # subprocess.run([
-        #     "pip", "wheel", "-w", str(self._dist_out_dir),
-        #     str(self._orig_pkg_summary.srepkg_root),
-        #     "--no-deps", "--no-index", "--quiet"])
 
 
 @dataclass
@@ -199,6 +196,9 @@ class SrepkgWheelCompleter(SrepkgCompleter):
         )
 
     def _install_inner_pkg(self):
+
+        # with yaspin().dots as sp:
+        #     sp.text = "Installing original package in venv..."
         ipi.InnerPkgInstaller(
             venv_path=self._orig_pkg_summary.srepkg_inner / "srepkg_venv",
             orig_pkg_dist=self._orig_pkg_summary.src_for_srepkg_wheel

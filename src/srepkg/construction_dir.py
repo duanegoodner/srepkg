@@ -6,6 +6,7 @@ import tempfile
 import uuid
 from pathlib import Path
 from typing import List
+from yaspin import yaspin
 
 import srepkg.error_handling.custom_exceptions as ce
 import srepkg.utils.dist_archive_file_tools as cft
@@ -226,6 +227,9 @@ class SdistToWheelConverter:
         return build_from_dist
 
     def build_wheel(self):
+        # with yaspin().bouncingBall as sp:
+        #     sp.text = "Building original package wheel from sdist..."
+
         build_from_dist = self._get_build_from_dist()
         temp_unpack_dir_obj = tempfile.TemporaryDirectory()
         unpack_root = Path(temp_unpack_dir_obj.name)
@@ -240,7 +244,8 @@ class SdistToWheelConverter:
 
         dist_builder.build(
             distribution='wheel',
-            output_directory=str(self._construction_dir.orig_pkg_dists)
+            output_directory=str(self._construction_dir.orig_pkg_dists),
+            config_settings={"quiet": "quiet"}
         )
 
         temp_unpack_dir_obj.cleanup()

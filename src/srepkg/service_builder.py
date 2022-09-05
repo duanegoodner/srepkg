@@ -1,7 +1,7 @@
 import abc
 from functools import singledispatch
 from pathlib import Path
-from typing import List, Type, Union
+from typing import List, Type, Union, Dict
 
 import srepkg.construction_dir as cdn
 import srepkg.dist_provider as opr
@@ -157,7 +157,7 @@ class SrepkgBuilderBuilder:
 
     @property
     def _completer_dispatch(self) -> \
-            dict[Type[sbn.SrepkgCompleter], Union[Path, None]]:
+            Dict[Type[sbn.SrepkgCompleter], Union[Path, None]]:
         return {
             sbn.SrepkgWheelCompleter:
                 self._construction_dir_summary.src_for_srepkg_wheel,

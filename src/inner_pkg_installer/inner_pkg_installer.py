@@ -5,6 +5,7 @@ import sys
 from packaging import version
 from types import SimpleNamespace
 from pathlib import Path
+from yaspin import yaspin
 
 
 class CustomVenvBuilder(venv.EnvBuilder):
@@ -23,10 +24,10 @@ class CustomVenvBuilder(venv.EnvBuilder):
 
     def post_setup(self, context) -> None:
         subprocess.call([
-            context.env_exe, "-m", "pip", "install", "--upgrade", "pip"])
+            context.env_exe, "-m", "pip", "install", "--upgrade", "pip", "--quiet"])
         subprocess.call([
-            context.env_exe, "-m", "pip", "install", "--upgrade", "setuptools"])
-        subprocess.call([context.env_exe, "-m", "pip", "install", "--upgrade", "wheel"])
+            context.env_exe, "-m", "pip", "install", "--upgrade", "setuptools", "--quiet"])
+        subprocess.call([context.env_exe, "-m", "pip", "install", "--upgrade", "wheel", "--quiet"])
 
         self._context = context
 
@@ -163,12 +164,17 @@ class InnerPkgInstaller:
         self._orig_pkg_dist = orig_pkg_dist
 
     def build_venv(self):
+        # with yaspin().bouncingBall as sp:
+        #     sp.text = "Setting up virtual env..."
+
         env_builder = CustomVenvBuilder()
         env_builder.create(self._venv_path)
 
         return env_builder.context
 
     def iso_install_inner_pkg(self):
+        # with yaspin().bouncingBall as sp:
+        #     sp.text = "Installing original package into virtual env..."
         venv_context = self.build_venv()
         venv_manager = VenvManager(
             env_dir=Path(venv_context.env_dir),
