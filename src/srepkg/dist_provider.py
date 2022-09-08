@@ -8,6 +8,7 @@ from yaspin import yaspin
 import srepkg.dist_builder as db
 import srepkg.error_handling.custom_exceptions as ce
 import srepkg.orig_src_preparer_interfaces as osp_int
+import srepkg.utils.logged_err_detecting_subprocess as leds
 
 
 class DistProviderFromSrc(osp_int.DistProviderInterface):
@@ -51,14 +52,24 @@ class DistProviderFromGitRepo(DistProviderFromSrc):
 
     def _checkout_commit_ref(self):
         if self._git_ref:
-            p = subprocess.run(
-                ["git", "checkout", self._git_ref],
-                stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+
+            leds.LoggedErrDetectingSubprocess(
+                cmd=["git", "checkout", self._git_ref],
+                gen_logger_name=__name__,
+                std_out_logger_name="std_out",
+                std_err_logger_name="std_err",
+                default_exception=ce.GitCheckoutError,
                 cwd=self._src_path
-            )
-            #             TODO send stdout & stderr to log
-            if p.returncode != 0:
-                raise ce.GitCheckoutError(self._git_ref)
+            ).run()
+
+            # p = subprocess.run(
+            #     ["git", "checkout", self._git_ref],
+            #     stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+            #     cwd=self._src_path
+            # )
+            # #             TODO send stdout & stderr to log
+            # if p.returncode != 0:
+            #     raise ce.GitCheckoutError(self._git_ref)
 
     def run(self):
         self._checkout_commit_ref()

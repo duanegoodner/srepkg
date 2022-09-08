@@ -32,8 +32,10 @@ class DistBuilder:
 
     @property
     def _files_in_dest_dir(self):
-        return [item for item in self._output_directory.iterdir() if not
-        item.is_dir()]
+        return [
+            item for item in self._output_directory.iterdir() if not
+            item.is_dir()
+        ]
 
     def build(self):
         orig_dest_checksums = [
@@ -52,31 +54,6 @@ class DistBuilder:
             std_err_logger_name="std_err",
             default_exception=BuildSubprocessError
         ).run()
-
-        # std_out_buffer = tempfile.NamedTemporaryFile()
-        # std_err_buffer = tempfile.NamedTemporaryFile()
-        # build_process = subprocess.run([
-        #     sys.executable, __file__,
-        #     self._distribution,
-        #     str(self._srcdir),
-        #     str(self._output_directory)],
-        #     stdout=std_out_buffer, stderr=std_err_buffer,
-        #     universal_newlines=True)
-        #
-        # std_out_buffer.seek(0)
-        # for line in std_out_buffer:
-        #     logging.getLogger(__name__).info(line.decode("utf-8").strip())
-        #
-        # std_err_buffer.seek(0)
-        # if build_process.returncode == 0:
-        #     for line in std_err_buffer:
-        #         logging.getLogger(__name__).warning(
-        #             line.decode("utf-8").strip())
-        # else:
-        #     for line in std_err_buffer:
-        #         logging.getLogger(f"std_err.{__name__}").error(
-        #             line.decode("utf-8").strip())
-        #     raise BuildSubprocessError(build_process)
 
         new_files = [item for item in self._files_in_dest_dir if
                      self._calc_md5(item) not in orig_dest_checksums]

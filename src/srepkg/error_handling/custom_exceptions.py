@@ -1,3 +1,4 @@
+import subprocess
 from pathlib import Path
 from typing import List
 
@@ -134,13 +135,14 @@ class NoConsoleScriptEntryPoints(Exception):
 class GitCheckoutError(Exception):
     def __init__(
             self,
-            commit_ref: str,
-            msg="Error when attempting to checkout git commit ref"):
-        self._commit_ref = commit_ref
+            sub_process: subprocess.CompletedProcess,
+            msg="Error when attempting to checkout git commit in a "
+                "subprocess"):
+        self._sub_process = sub_process
         self._msg = msg
 
     def __str__(self):
-        return f"{str(self._commit_ref)} -> {self._msg}"
+        return f"{str(self._sub_process)} -> {self._msg}"
 
 
 class UnusableGitCommitRef(Exception):

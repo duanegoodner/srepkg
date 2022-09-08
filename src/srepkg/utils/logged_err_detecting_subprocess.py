@@ -1,6 +1,7 @@
 import logging
 import subprocess
 import tempfile
+from pathlib import Path
 from typing import Dict, List, Callable
 
 
@@ -24,6 +25,7 @@ class LoggedErrDetectingSubprocess:
             gen_logger_name: str,
             std_out_logger_name: str,
             std_err_logger_name: str,
+            cwd: Path = Path.cwd(),
             default_exception: Callable[
                 [subprocess.CompletedProcess], Exception] = SubprocessError,
             exception_table: Dict[int, Callable[
@@ -37,12 +39,14 @@ class LoggedErrDetectingSubprocess:
         self._std_err_buffer = tempfile.NamedTemporaryFile()
         if exception_table is None:
             exception_table = {}
+        self._cwd = cwd
         self._default_exception = default_exception
         self._exception_table = exception_table
 
     def run(self):
         sub_proc = subprocess.run(
             self._cmd,
+            cwd=self._cwd,
             stdout=self._std_out_buffer,
             stderr=self._std_err_buffer,
             universal_newlines=True)
