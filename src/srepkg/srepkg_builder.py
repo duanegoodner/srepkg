@@ -297,13 +297,16 @@ class SrepkgBuilder(re_int.SrepkgBuilderInterface):
 
         return self
 
-    def build(self):
+    def _build_srepkg_base(self):
         self._simple_construction_tasks() \
             ._build_entry_points() \
             ._write_srepkg_cfg_non_entry_data() \
             ._build_base_setup_cfg()
 
+    def _complete_dists(self):
         for completer in self._srepkg_completers:
             completer.build_and_cleanup()
 
-        # self._construction_dir.settle()
+    def build(self):
+        self._build_srepkg_base()
+        self._complete_dists()
