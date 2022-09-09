@@ -1,13 +1,14 @@
 import functools
+import logging
 import requests
-import subprocess
 import tempfile
-from yaspin import yaspin
 from packaging.tags import sys_tags
 from packaging.utils import parse_wheel_filename
 from pathlib import Path
 
+import srepkg.error_handling.custom_exceptions as ce
 import srepkg.orig_src_preparer_interfaces as osp_int
+import srepkg.utils.logged_err_detecting_subprocess as leds
 
 
 class PyPIPkgRetriever(osp_int.RemotePkgRetrieverInterface):
@@ -109,6 +110,10 @@ class PyPIPkgRetriever(osp_int.RemotePkgRetrieverInterface):
     def run(self):
         # with yaspin().bouncingBall as sp:
         #     sp.text = "Retrieving original package from PyPI..."
+
+        logging.getLogger(f"std_out.{__name__}").info(
+            "Retrieving original package from Python Packaging Index")
+
         for dist in self._dists_to_download:
             self._download(dist)
 
@@ -126,4 +131,15 @@ class GithubPkgRetriever(osp_int.RemotePkgRetrieverInterface):
     def run(self):
         # with yaspin().bouncingBall as sp:
         #     sp.text = "Retrieving original package from Github..."
-        subprocess.run(["git", "clone", self._pkg_ref, self.copy_dest, "--quiet"])
+        # subprocess.run(["git", "clone", self._pkg_ref, self.copy_dest])
+
+        logging.getLogger(f"std_out.{__name__}").info(
+            "Cloning original package into temporary directory")
+
+        leds.LoggedErrDetectingSubprocess(
+            cmd=["git", "clone", self._pkg_ref, self.copy_dest],
+            gen_logger_name=__name__,
+            std_out_logger_name="std_out",
+            std_err_logger_name="std_err",
+            default_exception=ce.GitCheckoutError
+        ).run()

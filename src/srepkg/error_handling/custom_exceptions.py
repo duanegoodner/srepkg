@@ -132,6 +132,9 @@ class NoConsoleScriptEntryPoints(Exception):
         return f"{str(self._whl_path)} -> {self._msg}"
 
 
+# TODO Make subprocess exception base class and have others inherit from it
+
+
 class GitCheckoutError(Exception):
     def __init__(
             self,
@@ -143,6 +146,34 @@ class GitCheckoutError(Exception):
 
     def __str__(self):
         return f"{str(self._sub_process)} -> {self._msg}"
+
+
+class GitCloneError(Exception):
+    def __init__(
+            self,
+            sub_process: subprocess.CompletedProcess,
+            msg="Error when cloning original package Github repo via "
+                "subprocess"):
+
+        self._sub_process = sub_process
+        self._msg = msg
+
+    def __str__(self):
+        return f"{str(self._sub_process)} -> {self._msg}"
+
+
+class WheelUnpackError(Exception):
+    def __init__(
+            self,
+            sub_process: subprocess.CompletedProcess,
+            msg="Error when unpacking wheel via subprocess"):
+
+        self._sub_process = sub_process
+        self._msg = msg
+
+    def __str__(self):
+        return f"{str(self._sub_process)} -> {self._msg}"
+
 
 
 class UnusableGitCommitRef(Exception):

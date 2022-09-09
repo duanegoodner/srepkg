@@ -8,7 +8,11 @@ def main(*args):
 
     srepkg_command = ci_new.SrepkgCommandLine().get_args(*args)
 
-    lgr.LoggingInitializer(logfile_dir=srepkg_command.logfile_dir).setup()
+    logger_initializer = lgr.LoggingInitializer(
+        logfile_dir=srepkg_command.logfile_dir)
+    logger_initializer.setup()
+
+    # lgr.LoggingInitializer(logfile_dir=srepkg_command.logfile_dir).setup()
 
     service_class_builder = scb.ServiceBuilder(srepkg_command)
 

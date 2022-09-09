@@ -1,4 +1,5 @@
 import hashlib
+import logging
 import subprocess
 import sys
 import tempfile
@@ -55,12 +56,16 @@ class DistBuilder:
             default_exception=BuildSubprocessError
         ).run()
 
-        new_files = [item for item in self._files_in_dest_dir if
-                     self._calc_md5(item) not in orig_dest_checksums]
+        new_wheel_files = [
+            item for item in self._files_in_dest_dir if
+            (self._calc_md5(item) not in orig_dest_checksums and
+             item.suffix == ".whl")]
 
-        assert len(new_files) == 1
+        logging.getLogger(__name__).debug(str(new_wheel_files))
+        logging.getLogger(__name__).debug(str(self._files_in_dest_dir))
+        assert len(new_wheel_files) == 1
 
-        return new_files[0]
+        return new_wheel_files[0]
 
 
 class BuildSubprocessError(Exception):
@@ -68,7 +73,7 @@ class BuildSubprocessError(Exception):
             self,
             sub_process: subprocess.CompletedProcess,
             msg="Error occurred when running subprocess intended build a sdist"
-                "or wheel."):
+                " or wheel."):
         self._sub_process = sub_process
         self._msg = msg
 

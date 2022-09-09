@@ -1,7 +1,6 @@
 import abc
-import build
+import logging
 import pkginfo
-import sys
 import tempfile
 import uuid
 from pathlib import Path
@@ -233,6 +232,9 @@ class SdistToWheelConverter:
         build_from_dist = self._get_build_from_dist()
         temp_unpack_dir_obj = tempfile.TemporaryDirectory()
         unpack_root = Path(temp_unpack_dir_obj.name)
+
+        logging.getLogger(f"std_out.{__name__}").info(
+            "Extracting files from sdist")
 
         self._compressed_file_extractor.extract(
             build_from_dist.path, unpack_root)

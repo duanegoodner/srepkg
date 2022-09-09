@@ -79,7 +79,7 @@ class SrepkgCommandLine(rep_int.SrepkgCommandInterface):
             type=str,
             nargs="?",
             action="store",
-            help="Directory to write srepkg log file to. Default behavior is"
+            help="Directory to write srepkg log file to. Default behavior is "
                  "to write log to file in temporary directory that is "
                  "automatically deleted at end of execution."
         )

@@ -1,3 +1,4 @@
+import logging
 import requests
 import subprocess
 import sys
@@ -6,6 +7,7 @@ from pathlib import Path
 from urllib.parse import urlparse
 import srepkg.error_handling.error_messages as em
 import srepkg.utils.dist_archive_file_tools as cdi
+import srepkg.utils.logged_err_detecting_subprocess as leds
 
 
 class PkgRefType(Enum):
@@ -22,9 +24,21 @@ class PkgRefIdentifier:
         self._orig_pkg_ref = orig_pkg_ref
 
     def is_local_git_repo(self):
+        # choose to NOT wrape this in LoggedErrorDetectingSubprocess b/c we
+        # are OK if subprocess return code != 0
+        logging.getLogger(__name__).debug(
+            "Running git status as subprocess to check if original pkg is a "
+            "local git repo")
         p = subprocess.run(
             ["git", "-C", self._orig_pkg_ref, "status"],
-            stderr=subprocess.PIPE, stdout=subprocess.PIPE)
+            stderr=subprocess.PIPE, stdout=subprocess.PIPE,
+            universal_newlines=True)
+
+        for line in p.stdout.strip().split("\n"):
+            logging.getLogger(__name__).debug(line)
+        for line in p.stderr.strip().split("\n"):
+            logging.getLogger(__name__).debug(line)
+
         return (p.returncode == 0) and Path(self._orig_pkg_ref).is_dir() and (
                 ".git" in [item.name for item in
                            list(Path(self._orig_pkg_ref).iterdir())])

@@ -9,8 +9,10 @@ class LoggingInitializer:
 
     def __init__(self, logfile_dir: Path = None):
         if logfile_dir is None:
-            logfile_temp_dir_obj = tempfile.TemporaryDirectory()
-            logfile_dir = Path(logfile_temp_dir_obj.name)
+            self._logfile_dir_temp_obj = tempfile.TemporaryDirectory()
+            logfile_dir = Path(self._logfile_dir_temp_obj.name)
+        else:
+            self._logfile_dir_temp_obj = None
         self._logfile_dir = logfile_dir
         self._log_filename = \
             f"srepkg_log_{datetime.now().strftime('%Y-%m-%d_%H_%M_%S_%f')}.log"
@@ -30,6 +32,8 @@ class LoggingInitializer:
             format='%(asctime)s:%(levelname)s:%(name)s:%(message)s',
             filename=f"{str(self._logfile_dir)}/{self._log_filename}",
             filemode='w')
+
+
 
         console_log_handler_info = {
             "std_err": (logging.DEBUG, sys.stderr),

@@ -3,6 +3,8 @@ import zipfile
 import tarfile
 from enum import Enum, auto
 from pathlib import Path
+import srepkg.error_handling.custom_exceptions as ce
+import srepkg.utils.logged_err_detecting_subprocess as leds
 from srepkg.error_handling.custom_exceptions import UnsupportedCompressionType
 
 
@@ -17,7 +19,7 @@ class ArchiveDistType(Enum):
     SDIST = auto()
     WHEEL = auto()
     UNKNOWN = auto()
-    
+
 
 # https://stackoverflow.com/a/13044946/17979376
 # https://stackoverflow.com/a/63404232/17979376
@@ -26,7 +28,7 @@ class ArchiveIdentifier:
         b"\x1f\x8b\x08": ArchiveFileType.TAR_GZ,
         b"\x50\x4b\x03\x04": ArchiveFileType.ZIP
     }
-    
+
     dist_file_table = {
         ArchiveFileType.TAR_GZ: ArchiveDistType.SDIST,
         ArchiveFileType.ZIP: ArchiveDistType.SDIST,
@@ -68,9 +70,18 @@ class CompressedFileExtractor:
 
     @staticmethod
     def _extract_whl(compressed_file: Path, output_dir: Path):
-        subprocess.call(
-            ['wheel', 'unpack', str(compressed_file), '--dest',
-             str(output_dir)])
+        # TODO replace with leds.LoggedErrDetectingSubprocess
+        # subprocess.call(
+        #     ['wheel', 'unpack', str(compressed_file), '--dest',
+        #      str(output_dir)])
+
+        leds.LoggedErrDetectingSubprocess(
+            cmd=['wheel', 'unpack', str(compressed_file), '--dest',
+                 str(output_dir)],
+            gen_logger_name=__name__,
+            std_out_logger_name="std_out",
+            std_err_logger_name="std_err",
+            default_exception=ce.WheelUnpackError)
 
     @staticmethod
     def _extract_unknown(compressed_file: Path, output_dir: Path):

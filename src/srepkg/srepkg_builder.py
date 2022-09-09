@@ -1,11 +1,9 @@
 import abc
-import sys
-from dataclasses import dataclass
-
-import build
 import configparser
+import logging
 import shutil
 import string
+from dataclasses import dataclass
 from pathlib import Path
 from typing import List, NamedTuple, Callable
 from yaspin import yaspin
@@ -58,6 +56,9 @@ class SrepkgSdistWriter(SrepkgDistWriter):
             f"{self._orig_pkg_summary.srepkg_name}-" \
             f"{self._orig_pkg_summary.pkg_version}.zip"
 
+        logging.getLogger(f"std_out.{__name__}").info(
+            "Building srepkg sdist")
+
         self.zip_dir(zip_name=str(self._dist_out_dir / output_filename),
                      src_path=self._orig_pkg_summary.srepkg_root,
                      exclude_paths=exclude_paths)
@@ -67,14 +68,14 @@ class SrepkgWheelWriter(SrepkgDistWriter):
 
     def write_dist(self):
 
+        logging.getLogger(f"std_out.{__name__}").info(
+            "Building srepkg wheel")
+
         wheel_path = db.DistBuilder(
             distribution="wheel",
             srcdir=self._orig_pkg_summary.srepkg_root,
             output_directory=self._dist_out_dir
         ).build()
-
-
-
 
 
 @dataclass

@@ -17,6 +17,7 @@ class AllExamplePackages:
     numpy_whl: str = str(
         src_dir / "numpy-1.23.2-cp39-cp39-macosx_10_9_x86_64.whl")
     black_py_pi: str = "black"
+    black_22p1p0_macosx_whl: str = str(src_dir / "black-22.1.0-cp310-cp310-macosx_10_9_x86_64.whl")
     scrape_py_pi: str = "scrape"
     numpy_py_pi: str = "numpy"
     howdoi_github: str = "https://github.com/gleitz/howdoi"

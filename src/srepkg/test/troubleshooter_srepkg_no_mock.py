@@ -10,4 +10,4 @@ def test_srepkg(mocker, sample_pkgs):
     # main([sample_pkgs.testproj, "-d", "/Users/duane/srepkg_pkgs", "-n"
     #       "from_script"])
 
-    main([sample_pkgs.numpy_py_pi])
+    main(["black", "-r", "22.1.0"])

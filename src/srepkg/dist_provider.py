@@ -1,5 +1,5 @@
+import logging
 import shutil
-import subprocess
 from packaging.tags import Tag
 from packaging.utils import parse_wheel_filename
 from pathlib import Path
@@ -19,6 +19,9 @@ class DistProviderFromSrc(osp_int.DistProviderInterface):
 
     def run(self):
 
+        logging.getLogger(f"std_out.{__name__}").info(
+            "Building original package wheel from source code.")
+
         wheel_path = db.DistBuilder(
             distribution="wheel",
             srcdir=self._src_path,
@@ -30,16 +33,14 @@ class DistProviderFromSrc(osp_int.DistProviderInterface):
 
         if Tag("py3", "none", "any") not in tags:
 
+            logging.getLogger(f"std_out.{__name__}").info(
+                "Building original package sdist from source code")
+
             db.DistBuilder(
                 distribution="sdist",
                 srcdir=self._src_path,
                 output_directory=self._dest_path
             ).build()
-
-            # dist_builder.build(
-            #     distribution='sdist',
-            #     output_directory=str(self._dest_path),
-            #     config_settings={"quiet": "quiet"})
 
 
 class DistProviderFromGitRepo(DistProviderFromSrc):
@@ -61,15 +62,6 @@ class DistProviderFromGitRepo(DistProviderFromSrc):
                 default_exception=ce.GitCheckoutError,
                 cwd=self._src_path
             ).run()
-
-            # p = subprocess.run(
-            #     ["git", "checkout", self._git_ref],
-            #     stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-            #     cwd=self._src_path
-            # )
-            # #             TODO send stdout & stderr to log
-            # if p.returncode != 0:
-            #     raise ce.GitCheckoutError(self._git_ref)
 
     def run(self):
         self._checkout_commit_ref()
