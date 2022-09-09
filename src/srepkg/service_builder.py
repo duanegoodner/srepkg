@@ -1,4 +1,5 @@
 import abc
+import sys
 from functools import singledispatch
 from pathlib import Path
 from typing import List, Type, Union, Dict
@@ -6,6 +7,7 @@ from typing import List, Type, Union, Dict
 import srepkg.construction_dir as cdn
 import srepkg.dist_provider as opr
 import srepkg.error_handling.custom_exceptions as ce
+import srepkg.error_handling.error_messages as em
 import srepkg.orig_src_preparer as osp
 import srepkg.orig_src_preparer_interfaces as osp_int
 import srepkg.remote_pkg_retriever as rpr
@@ -102,6 +104,12 @@ class RetrieverProviderDispatch:
     def create(self):
         pkg_ref_type = PkgRefIdentifier(self._pkg_ref_command) \
             .identify_for_osp_dispatch()
+
+        if pkg_ref_type == PkgRefType.UNKNOWN:
+            sys.exit(em.PkgIdentifierError.PkgNotFound.msg)
+
+        if pkg_ref_type == PkgRefType.MULTIPLE_POSSIBLE:
+            sys.exit(em.PkgIdentifierError.MultiplePotentialPackages.msg)
 
         if self._git_ref and not pkg_ref_type == PkgRefType.GIT_REPO:
             raise ce.UnusableGitCommitRef(self._git_ref)

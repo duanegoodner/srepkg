@@ -106,11 +106,14 @@ class TestPkgRefIdentifier:
 
     def test_bad_pkg_ref(self):
         pkg_ref_identifier = pti.PkgRefIdentifier("bad_ref")
-        with pytest.raises(SystemExit):
-            pkg_ref_identifier.identify()
+        pkg_ref_type = pkg_ref_identifier.identify()
+        assert pkg_ref_type == pti.PkgRefType.UNKNOWN
+        # with pytest.raises(SystemExit):
+        #     pkg_ref_identifier.identify()
 
     def test_multiple_possible_types(self):
         pkg_ref_identifier = BrokenPkgRefIdentifier(
             orig_pkg_ref=str(self.local_test_pkgs_path / "testproj"))
-        with pytest.raises(SystemExit):
-            pkg_ref_identifier.identify()
+        pkg_ref_type = pkg_ref_identifier.identify()
+        assert pkg_ref_type == pti.PkgRefType.MULTIPLE_POSSIBLE
+
