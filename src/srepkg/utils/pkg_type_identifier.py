@@ -17,6 +17,8 @@ class PkgRefType(Enum):
     LOCAL_DIST = auto()
     PYPI_PKG = auto()
     GIT_REPO = auto()
+    UNKNOWN = auto()
+    MULTIPLE_POSSIBLE = auto()
 
 
 class PkgRefIdentifier:
@@ -92,10 +94,12 @@ class PkgRefIdentifier:
         num_matches = len(matching_items)
 
         if num_matches == 0:
-            sys.exit(em.PkgIdentifierError.PkgNotFound.msg)
+            return PkgRefType.UNKNOWN
+            # sys.exit(em.PkgIdentifierError.PkgNotFound.msg)
 
         if num_matches > 1:
-            sys.exit(em.PkgIdentifierError.MultiplePotentialPackages.msg)
+            return PkgRefType.MULTIPLE_POSSIBLE
+            # sys.exit(em.PkgIdentifierError.MultiplePotentialPackages.msg)
 
         return matching_items[0]
 
@@ -105,3 +109,4 @@ class PkgRefIdentifier:
                 gen_pkg_ref_id == PkgRefType.LOCAL_WHEEL):
             return PkgRefType.LOCAL_DIST
         return gen_pkg_ref_id
+

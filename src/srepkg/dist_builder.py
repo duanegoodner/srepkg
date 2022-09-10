@@ -1,11 +1,11 @@
 import hashlib
-import logging
-import subprocess
 import sys
 import tempfile
 from pathlib import Path
 import srepkg.dist_builder_sub_process as dbs
+import srepkg.error_handling.custom_exceptions as ce
 import srepkg.utils.logged_err_detecting_subprocess as leds
+import srepkg.utils.pkg_type_identifier as pti
 
 
 class DistBuilder:
@@ -53,29 +53,14 @@ class DistBuilder:
             gen_logger_name=__name__,
             std_out_logger_name="std_out",
             std_err_logger_name="std_err",
-            default_exception=BuildSubprocessError
+            default_exception=ce.BuildSubprocessError
         ).run()
 
-        new_wheel_files = [
+        new_dist_files = [
             item for item in self._files_in_dest_dir if
             (self._calc_md5(item) not in orig_dest_checksums and
-             item.suffix == ".whl")]
+             (pti.PkgRefIdentifier(str(item)).identify_for_osp_dispatch() ==
+             pti.PkgRefType.LOCAL_DIST))]
+        assert len(new_dist_files) == 1
 
-        logging.getLogger(__name__).debug(str(new_wheel_files))
-        logging.getLogger(__name__).debug(str(self._files_in_dest_dir))
-        assert len(new_wheel_files) == 1
-
-        return new_wheel_files[0]
-
-
-class BuildSubprocessError(Exception):
-    def __init__(
-            self,
-            sub_process: subprocess.CompletedProcess,
-            msg="Error occurred when running subprocess intended build a sdist"
-                " or wheel."):
-        self._sub_process = sub_process
-        self._msg = msg
-
-    def __str__(self):
-        return f"{str(self._sub_process)} -> {self._msg}"
+        return new_dist_files[0]

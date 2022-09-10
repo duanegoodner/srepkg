@@ -218,4 +218,17 @@ class PkgVersionWithCommitRef(Exception):
                f"GIT_COMMIT_REF: {str(self._commit_ref)} -> {self._msg}"
 
 
+class BuildSubprocessError(Exception):
+    def __init__(
+            self,
+            sub_process: subprocess.CompletedProcess,
+            msg="Error occurred when running subprocess intended build a sdist"
+                " or wheel."):
+        self._sub_process = sub_process
+        self._msg = msg
+
+    def __str__(self):
+        return f"{str(self._sub_process)} -> {self._msg}"
+
+
 

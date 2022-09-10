@@ -24,6 +24,7 @@ class AllExamplePackages:
     black_github: str = "https://github.com/psf/black"
     wheel_inspect_whl: str = str(src_dir /
                                  "wheel_inspect-1.7.1-py3-none-any.whl")
+    cowsay_py_pi: str = "cowsay"
 
 
 @pytest.fixture
