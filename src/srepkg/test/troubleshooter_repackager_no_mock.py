@@ -1,11 +1,7 @@
-import unittest.mock as mock
 from pathlib import Path
-
 import srepkg.repackager as rep
 import srepkg.repackager_interfaces as rep_int
 import srepkg.service_builder as sb
-import srepkg.srepkg_builder as s_bldr
-
 from srepkg.test.shared_fixtures import sample_pkgs
 
 

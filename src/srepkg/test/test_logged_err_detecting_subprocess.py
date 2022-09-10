@@ -1,5 +1,6 @@
 import pytest
 import subprocess
+import srepkg.error_handling.custom_exceptions as ce
 import srepkg.logging_initializer as lgr
 import srepkg.utils.logged_err_detecting_subprocess as leds
 from srepkg.test.shared_fixtures import app_logger
@@ -22,8 +23,8 @@ class TestLoggedErrorDetectingSubprocess:
 
     @pytest.mark.parametrize(
         "command, exception", [
-            # (["not_a_command"], FileNotFoundError),
-            (["git", "asdfas"], db.BuildSubprocessError)
+            (["not_a_command"], FileNotFoundError),
+            (["git", "asdfas"], ce.BuildSubprocessError)
         ])
     def test_bad_command(self, command, exception, app_logger):
         bad_sub_proc = leds.LoggedErrDetectingSubprocess(
