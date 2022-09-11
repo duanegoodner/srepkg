@@ -5,7 +5,10 @@ import subprocess
 import sys
 import tempfile
 import venv
+from dataclasses import dataclass
 from datetime import datetime
+from typing import NamedTuple
+
 from packaging import version
 from types import SimpleNamespace
 from pathlib import Path
@@ -83,6 +86,27 @@ class SitePackagesInspector:
                         data_key="Version", dist_info_dir=item)
 
 
+class PyVersion:
+
+    def __init__(self, version_str: str):
+        self._version_str = version_str
+
+    @property
+    def major(self):
+        major_pattern = r"((?<=^)[\d]{1,2}(?=\.))"
+        return int(re.findall(major_pattern, self._version_str)[0])
+
+    @property
+    def minor(self):
+        minor_pattern = r"((?<=\.)[\d]{1,2}(?=\.))"
+        return int(re.findall(minor_pattern, self._version_str)[0])
+
+    @property
+    def micro(self):
+        micro_pattern = r"((?<=\.)[\d]{1,2}$)"
+        return int(re.findall(micro_pattern, self._version_str)[0])
+
+
 class CustomVenvBuilder(venv.EnvBuilder):
     def __init__(self):
         super().__init__(with_pip=True)
@@ -145,7 +169,9 @@ class VenvManager:
 
     @property
     def _version(self):
-        return version.parse(self._pyvenv_cfg.get("pyvenv_cfg", "version"))
+        return PyVersion(self._pyvenv_cfg.get("pyvenv_cfg", "version"))
+
+        # return version.parse(self._pyvenv_cfg.get("pyvenv_cfg", "version"))
 
     @property
     def _site_packages(self):
