@@ -5,10 +5,16 @@ import tempfile
 from packaging.tags import sys_tags
 from packaging.utils import parse_wheel_filename
 from pathlib import Path
+from yaspin import yaspin
 
 import srepkg.error_handling.custom_exceptions as ce
 import srepkg.orig_src_preparer_interfaces as osp_int
 import srepkg.utils.logged_err_detecting_subprocess as leds
+
+try:
+    from inner_pkg_installer.yaspin_status import yaspin_logging as show_status
+except(ModuleNotFoundError, ImportError):
+    from inner_pkg_installer.simple_status import simple_status as show_status
 
 
 class PyPIPkgRetriever(osp_int.RemotePkgRetrieverInterface):
@@ -108,14 +114,14 @@ class PyPIPkgRetriever(osp_int.RemotePkgRetrieverInterface):
             dist_file.write(response.content)
 
     def run(self):
-        # with yaspin().bouncingBall as sp:
-        #     sp.text = "Retrieving original package from PyPI..."
 
-        logging.getLogger(f"std_out.{__name__}").info(
-            "Retrieving original package from Python Packaging Index")
-
-        for dist in self._dists_to_download:
-            self._download(dist)
+        msg = f"Retrieving {self._pkg_ref} from Python Packaging Index"
+        logging.getLogger(__name__).info(msg)
+        with yaspin().layer as spinner:
+            spinner.text = msg
+            for dist in self._dists_to_download:
+                self._download(dist)
+            spinner.ok("✔")
 
 
 class GithubPkgRetriever(osp_int.RemotePkgRetrieverInterface):
@@ -129,17 +135,15 @@ class GithubPkgRetriever(osp_int.RemotePkgRetrieverInterface):
         return Path(self._temp_dir_obj.name)
 
     def run(self):
-        # with yaspin().bouncingBall as sp:
-        #     sp.text = "Retrieving original package from Github..."
-        # subprocess.run(["git", "clone", self._pkg_ref, self.copy_dest])
-
-        logging.getLogger(f"std_out.{__name__}").info(
-            "Cloning original package into temporary directory")
-
-        leds.LoggedErrDetectingSubprocess(
-            cmd=["git", "clone", self._pkg_ref, self.copy_dest],
-            gen_logger_name=__name__,
-            std_out_logger_name="std_out",
-            std_err_logger_name="std_err",
-            default_exception=ce.GitCheckoutError
-        ).run()
+        msg = f"Cloning {self._pkg_ref} into temporary directory"
+        logging.getLogger(__name__).info(msg)
+        with yaspin().layer as spinner:
+            spinner.text = msg
+            leds.LoggedErrDetectingSubprocess(
+                cmd=["git", "clone", self._pkg_ref, self.copy_dest],
+                gen_logger_name=__name__,
+                std_out_logger_name="std_out",
+                std_err_logger_name="std_err",
+                default_exception=ce.GitCheckoutError
+            ).run()
+            spinner.ok("✔")

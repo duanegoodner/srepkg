@@ -5,7 +5,9 @@ import tempfile
 import uuid
 from pathlib import Path
 from typing import List
+
 from yaspin import yaspin
+
 import srepkg.dist_builder as db
 import srepkg.error_handling.custom_exceptions as ce
 import srepkg.utils.dist_archive_file_tools as cft
@@ -226,23 +228,29 @@ class SdistToWheelConverter:
         return build_from_dist
 
     def build_wheel(self):
-        # with yaspin().bouncingBall as sp:
-        #     sp.text = "Building original package wheel from sdist..."
 
         build_from_dist = self._get_build_from_dist()
-        temp_unpack_dir_obj = tempfile.TemporaryDirectory()
-        unpack_root = Path(temp_unpack_dir_obj.name)
 
-        logging.getLogger(f"std_out.{__name__}").info(
-            "Extracting files from sdist")
+        msg = f"Converting {build_from_dist.path.name} to a wheel"
+        logging.getLogger(__name__).info(msg)
+        with yaspin().layer as spinner:
+            spinner.text = msg
 
-        self._compressed_file_extractor.extract(
-            build_from_dist.path, unpack_root)
+            temp_unpack_dir_obj = tempfile.TemporaryDirectory()
+            unpack_root = Path(temp_unpack_dir_obj.name)
 
-        wheel_path = db.DistBuilder(
-            distribution="wheel",
-            srcdir=unpack_root / self._unpacked_src_dir_name,
-            output_directory=self._construction_dir.orig_pkg_dists
-        ).build()
+            self._compressed_file_extractor.extract(
+                build_from_dist.path, unpack_root)
 
-        temp_unpack_dir_obj.cleanup()
+            wheel_path = db.DistBuilder(
+                distribution="wheel",
+                srcdir=unpack_root / self._unpacked_src_dir_name,
+                output_directory=self._construction_dir.orig_pkg_dists
+            ).build()
+
+            temp_unpack_dir_obj.cleanup()
+
+            spinner.ok("✔")
+
+        completed_msg = f"\tBuilt wheel {wheel_path.name}"
+        logging.getLogger(f"std_out.{__name__}").info(completed_msg)

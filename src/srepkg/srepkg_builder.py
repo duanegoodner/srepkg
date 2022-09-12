@@ -6,7 +6,6 @@ import string
 from dataclasses import dataclass
 from pathlib import Path
 from typing import List, NamedTuple, Callable
-from yaspin import yaspin
 from zipfile import ZIP_DEFLATED, ZipFile
 import inner_pkg_installer.inner_pkg_installer as ipi
 import srepkg.cs_entry_pts as cse
@@ -14,6 +13,11 @@ import srepkg.dist_builder as db
 import srepkg.repackager_interfaces as re_int
 import srepkg.repackager_data_structs as re_ds
 import srepkg.srepkg_builder_int as sb_new_int
+
+try:
+    from inner_pkg_installer.yaspin_status import yaspin_logging as show_status
+except(ModuleNotFoundError, ImportError):
+    from inner_pkg_installer.simple_status import simple_status as show_status
 
 
 class TemplateWriteOp(NamedTuple):
@@ -46,36 +50,61 @@ class SrepkgSdistWriter(SrepkgDistWriter):
                     zf.write(file, file.relative_to(src_path.parent))
 
     def write_dist(self):
-        exclude_paths = [
-            item for item in
-            list((self._orig_pkg_summary.srepkg_root / 'orig_dist').iterdir())
-            if item != self._orig_pkg_summary.src_for_srepkg_sdist
-        ]
+        @show_status(
+            base_logger=logging.getLogger(__name__),
+            std_out_logger=logging.getLogger(f"std_out.{__name__}"))
+        def _write_dist(status_msg_kwarg):
+            exclude_paths = [
+                item for item in
+                list((self._orig_pkg_summary.srepkg_root / 'orig_dist').iterdir())
+                if item != self._orig_pkg_summary.src_for_srepkg_sdist
+            ]
 
-        output_filename = \
-            f"{self._orig_pkg_summary.srepkg_name}-" \
-            f"{self._orig_pkg_summary.pkg_version}.zip"
+            output_filename = \
+                f"{self._orig_pkg_summary.srepkg_name}-" \
+                f"{self._orig_pkg_summary.pkg_version}.zip"
 
-        logging.getLogger(f"std_out.{__name__}").info(
-            "Building srepkg sdist")
+            # logging.getLogger(f"std_out.{__name__}").info(
+            #     "Building srepkg sdist")
 
-        self.zip_dir(zip_name=str(self._dist_out_dir / output_filename),
-                     src_path=self._orig_pkg_summary.srepkg_root,
-                     exclude_paths=exclude_paths)
+            self.zip_dir(zip_name=str(self._dist_out_dir / output_filename),
+                         src_path=self._orig_pkg_summary.srepkg_root,
+                         exclude_paths=exclude_paths)
+            
+        _write_dist(status_msg_kwarg="Building srepkg sdist")
 
 
 class SrepkgWheelWriter(SrepkgDistWriter):
 
     def write_dist(self):
+        @show_status(
+            base_logger=logging.getLogger(__name__),
+            std_out_logger=logging.getLogger(f"std_out.{__name__}"))
+        def _write_dist(status_msg_kwarg):
+            wheel_path = db.DistBuilder(
+                distribution="wheel",
+                srcdir=self._orig_pkg_summary.srepkg_root,
+                output_directory=self._dist_out_dir
+            ).build()
 
-        logging.getLogger(f"std_out.{__name__}").info(
-            "Building srepkg wheel")
-
-        wheel_path = db.DistBuilder(
-            distribution="wheel",
-            srcdir=self._orig_pkg_summary.srepkg_root,
-            output_directory=self._dist_out_dir
-        ).build()
+        _write_dist(status_msg_kwarg="Building srepkg wheel")
+    #
+    #
+    #
+    #
+    # @show_status(
+    #     base_logger=logging.getLogger(__name__),
+    #     std_out_logger=logging.getLogger(f"std_out.{__name__}"))
+    # def write_dist(self, status_msg_kwarg=self.status_msg_kwarg):
+    #
+    #     # logging.getLogger(f"std_out.{__name__}").info(
+    #     #     "Building srepkg wheel")
+    #
+    #     wheel_path = db.DistBuilder(
+    #         distribution="wheel",
+    #         srcdir=self._orig_pkg_summary.srepkg_root,
+    #         output_directory=self._dist_out_dir
+    #     ).build()
 
 
 @dataclass
