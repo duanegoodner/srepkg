@@ -6,13 +6,17 @@ import sys
 import tempfile
 import venv
 from datetime import datetime
-from packaging import version
 from types import SimpleNamespace
 from pathlib import Path
-from yaspin import yaspin
+from typing import Dict
+
+try:
+    from .yaspin_status import yaspin_logging as show_status
+except(ModuleNotFoundError, ImportError):
+    from .simple_status import simple_status as show_status
 
 
-class IPILoggingInitializer:
+class IPILogging:
 
     @staticmethod
     def confirm_setup():
@@ -83,10 +87,32 @@ class SitePackagesInspector:
                         data_key="Version", dist_info_dir=item)
 
 
+class PyVersion:
+
+    def __init__(self, version_str: str):
+        self._version_str = version_str
+
+    @property
+    def major(self):
+        major_pattern = r"((?<=^)[\d]{1,2}(?=\.))"
+        return int(re.findall(major_pattern, self._version_str)[0])
+
+    @property
+    def minor(self):
+        minor_pattern = r"((?<=\.)[\d]{1,2}(?=\.))"
+        return int(re.findall(minor_pattern, self._version_str)[0])
+
+    @property
+    def micro(self):
+        micro_pattern = r"((?<=\.)[\d]{1,2}$)"
+        return int(re.findall(micro_pattern, self._version_str)[0])
+
+
 class CustomVenvBuilder(venv.EnvBuilder):
     def __init__(self):
         super().__init__(with_pip=True)
         self._context = SimpleNamespace()
+        self._site_pkgs = None
         self._version_info = sys.version_info
 
     @property
@@ -96,6 +122,10 @@ class CustomVenvBuilder(venv.EnvBuilder):
     @property
     def version_info(self):
         return self._version_info
+
+    @property
+    def site_pkgs(self):
+        return self._site_pkgs
 
     def post_setup(self, context) -> None:
         subprocess.call([
@@ -108,18 +138,9 @@ class CustomVenvBuilder(venv.EnvBuilder):
             [context.env_exe, "-m", "pip", "install", "--upgrade", "wheel",
              "--quiet"])
 
-        site_pkgs_path = Path(
+        self._site_pkgs = Path(
             f"{context.env_dir}/lib/python{sys.version_info.major}."
             f"{sys.version_info.minor}/site-packages")
-
-        site_pkgs_inspector = SitePackagesInspector(site_pkgs_path)
-
-        logging.getLogger(f"std_out.{__name__}").info(
-            f"Newly created venv contains pip=="
-            f"{site_pkgs_inspector.get_pkg_version('pip')}, setuptools=="
-            f"{site_pkgs_inspector.get_pkg_version('setuptools')}, and "
-            f"wheel=={site_pkgs_inspector.get_pkg_version('wheel')}")
-
         self._context = context
 
 
@@ -145,13 +166,20 @@ class VenvManager:
 
     @property
     def _version(self):
-        return version.parse(self._pyvenv_cfg.get("pyvenv_cfg", "version"))
+        return PyVersion(self._pyvenv_cfg.get("pyvenv_cfg", "version"))
 
     @property
     def _site_packages(self):
 
         return self._env_dir / f"lib/python{str(self._version.major)}." \
                                f"{str(self._version.minor)}" / "site-packages"
+
+    @property
+    def pypa_pkg_versions(self) -> Dict[str, str]:
+        pypa_pkgs = ["pip", "setuptools", "wheel"]
+        site_pkgs_inspector = SitePackagesInspector(self._site_packages)
+        return {pkg: site_pkgs_inspector.get_pkg_version(pkg) for pkg in
+                pypa_pkgs}
 
     @property
     def _relative_shebang(self):
@@ -233,27 +261,45 @@ class InnerPkgCfgReader:
 
 class InnerPkgInstaller:
     def __init__(
-            self, venv_path: Path, orig_pkg_dist: Path):
+            self,
+            venv_path: Path,
+            orig_pkg_dist: Path):
         self._venv_path = venv_path
         self._orig_pkg_dist = orig_pkg_dist
 
-    def build_venv(self):
-        # with yaspin().bouncingBall as sp:
-        #     sp.text = "Setting up virtual env..."
-
+    @show_status(
+        base_logger=logging.getLogger(__name__),
+        std_out_logger=logging.getLogger(f"std_out.{__name__}"))
+    def build_venv(self, status_msg_kwarg):
         env_builder = CustomVenvBuilder()
-        logging.getLogger(f"std_out.{__name__}").info(
-            "Creating virtual env")
         env_builder.create(self._venv_path)
 
         return env_builder.context
 
-    def iso_install_inner_pkg(self):
-        # with yaspin().bouncingBall as sp:
-        #     sp.text = "Installing original package into virtual env..."
-        IPILoggingInitializer.confirm_setup()
-        venv_context = self.build_venv()
-        venv_manager = VenvManager(context=venv_context)
+    @show_status(
+        base_logger=logging.getLogger(__name__),
+        std_out_logger=logging.getLogger(f"std_out.{__name__}"))
+    def install_orig_pkg_in_venv(self, status_msg_kwarg, venv_manager):
         venv_manager.pip_install(
             self._orig_pkg_dist, "--quiet"
         ).rewire_shebangs()
+
+    def iso_install_inner_pkg(self):
+        IPILogging.confirm_setup()
+        venv_context = self.build_venv(status_msg_kwarg="Creating virtual env")
+        venv_manager = VenvManager(context=venv_context)
+
+        pkg_versions = "\n".join([f"\t• {pkg}=={version}" for pkg, version in
+                                  venv_manager.pypa_pkg_versions.items()])
+        msg = f"\tVirtual env created with the following pypa " \
+              f"packages installed:\n{pkg_versions}"
+        logging.getLogger(f"std_out.{__name__}").info(msg)
+
+        self.install_orig_pkg_in_venv(
+            venv_manager=venv_manager,
+            status_msg_kwarg=f"Installing {self._orig_pkg_dist.name} in "
+                             f"virtual env")
+
+        # venv_manager.pip_install(
+        #     self._orig_pkg_dist, "--quiet"
+        # ).rewire_shebangs()

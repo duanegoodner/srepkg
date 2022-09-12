@@ -3,7 +3,7 @@ from pathlib import Path
 from setuptools.command.install import install
 from setuptools.command.develop import develop
 from setuptools.command.egg_info import egg_info
-import inner_pkg_installer as ipi
+import inner_pkg_installer.inner_pkg_installer as ipi
 
 
 class InnerPkgCfgReader:
