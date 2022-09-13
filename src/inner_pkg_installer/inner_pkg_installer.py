@@ -138,9 +138,9 @@ class CustomVenvBuilder(venv.EnvBuilder):
             [context.env_exe, "-m", "pip", "install", "--upgrade", "wheel",
              "--quiet"])
 
-        self._site_pkgs = Path(
-            f"{context.env_dir}/lib/python{sys.version_info.major}."
-            f"{sys.version_info.minor}/site-packages")
+        # self._site_pkgs = Path(
+        #     f"{context.env_dir}/lib/python{sys.version_info.major}."
+        #     f"{sys.version_info.minor}/site-packages")
         self._context = context
 
 
@@ -266,6 +266,7 @@ class InnerPkgInstaller:
             orig_pkg_dist: Path):
         self._venv_path = venv_path
         self._orig_pkg_dist = orig_pkg_dist
+        self._venv_manager = None
 
     @show_status(
         base_logger=logging.getLogger(__name__),
@@ -279,27 +280,24 @@ class InnerPkgInstaller:
     @show_status(
         base_logger=logging.getLogger(__name__),
         std_out_logger=logging.getLogger(f"std_out.{__name__}"))
-    def install_orig_pkg_in_venv(self, status_msg_kwarg, venv_manager):
-        venv_manager.pip_install(
+    def install_orig_pkg_in_venv(self, status_msg_kwarg):
+        self._venv_manager.pip_install(
             self._orig_pkg_dist, "--quiet"
         ).rewire_shebangs()
 
-    def iso_install_inner_pkg(self):
-        IPILogging.confirm_setup()
-        venv_context = self.build_venv(status_msg_kwarg="Creating virtual env")
-        venv_manager = VenvManager(context=venv_context)
-
-        pkg_versions = "\n".join([f"\t• {pkg}=={version}" for pkg, version in
-                                  venv_manager.pypa_pkg_versions.items()])
+    def show_post_venv_creation_summary(self):
+        pkg_versions = "\n".join(
+            [f"\t• {pkg}=={version}" for pkg, version in
+             self._venv_manager.pypa_pkg_versions.items()])
         msg = f"\tVirtual env created with the following pypa " \
               f"packages installed:\n{pkg_versions}"
         logging.getLogger(f"std_out.{__name__}").info(msg)
 
+    def iso_install_inner_pkg(self):
+        IPILogging.confirm_setup()
+        venv_context = self.build_venv(status_msg_kwarg="Creating virtual env")
+        self._venv_manager = VenvManager(context=venv_context)
+        self.show_post_venv_creation_summary()
         self.install_orig_pkg_in_venv(
-            venv_manager=venv_manager,
-            status_msg_kwarg=f"Installing {self._orig_pkg_dist.name} in "
-                             f"virtual env")
-
-        # venv_manager.pip_install(
-        #     self._orig_pkg_dist, "--quiet"
-        # ).rewire_shebangs()
+            status_msg_kwarg=
+            f"Installing {self._orig_pkg_dist.name} in virtual env")

@@ -1,7 +1,6 @@
 import pytest
 from unittest import mock
 from packaging.utils import parse_wheel_filename
-from pathlib import Path
 import srepkg.remote_pkg_retriever as rpr
 from srepkg.test.shared_fixtures import sample_pkgs, tmp_construction_dir
 
