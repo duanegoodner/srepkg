@@ -7,7 +7,7 @@ from srepkg.test.shared_fixtures import sample_pkgs
 def test_build_from_src(sample_pkgs):
 
     cur_command = rep_int.SrepkgCommand(
-        orig_pkg_ref=sample_pkgs.cowsay_py_pi,
+        orig_pkg_ref=sample_pkgs.numpy_py_pi,
         construction_dir='/Users/duane/srepkg_pkgs',
         dist_out_dir='/Users/duane/srepkg_pkgs',
     )

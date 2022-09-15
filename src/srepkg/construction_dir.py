@@ -15,6 +15,8 @@ import srepkg.orig_src_preparer_interfaces as osp_int
 import srepkg.repackager_data_structs as rp_ds
 import srepkg.utils.wheel_entry_point_extractor as we_pe
 
+from inner_pkg_installer import yaspin_updater as yu
+
 DEFAULT_DIST_CLASSES = (pkginfo.SDist, pkginfo.Wheel)
 DEFAULT_SREPKG_SUFFIX = "srepkg"
 
@@ -231,11 +233,9 @@ class SdistToWheelConverter:
 
         build_from_dist = self._get_build_from_dist()
 
-        msg = f"Converting {build_from_dist.path.name} to a wheel"
-        logging.getLogger(__name__).info(msg)
-        with yaspin().layer as spinner:
-            spinner.text = msg
-
+        with yu.yaspin_log_updater(
+                msg=f"Converting {build_from_dist.path.name} to a wheel",
+                logger= logging.getLogger(__name__)) as updater:
             temp_unpack_dir_obj = tempfile.TemporaryDirectory()
             unpack_root = Path(temp_unpack_dir_obj.name)
 
@@ -249,8 +249,6 @@ class SdistToWheelConverter:
             ).build()
 
             temp_unpack_dir_obj.cleanup()
-
-            spinner.ok("✔")
 
         completed_msg = f"\tBuilt wheel {wheel_path.name}"
         logging.getLogger(f"std_out.{__name__}").info(completed_msg)

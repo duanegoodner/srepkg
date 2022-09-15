@@ -5,15 +5,25 @@ import subprocess
 import sys
 import tempfile
 import venv
+from contextlib import contextmanager
 from datetime import datetime
 from types import SimpleNamespace
 from pathlib import Path
 from typing import Dict
+from unittest.mock import Mock
+
+# try:
+#     from .yaspin_status import yaspin_logging as show_status
+# except(ModuleNotFoundError, ImportError):
+#     from .simple_status import simple_status as show_status
 
 try:
-    from .yaspin_status import yaspin_logging as show_status
+    from .yaspin_updater import yaspin_log_updater as status_display
 except(ModuleNotFoundError, ImportError):
-    from .simple_status import simple_status as show_status
+    @contextmanager
+    def status_display(msg, logger: logging.Logger):
+        logger.info(msg)
+        yield
 
 
 class IPILogging:
@@ -268,19 +278,23 @@ class InnerPkgInstaller:
         self._orig_pkg_dist = orig_pkg_dist
         self._venv_manager = None
 
-    @show_status(
-        base_logger=logging.getLogger(__name__),
-        std_out_logger=logging.getLogger(f"std_out.{__name__}"))
-    def build_venv(self, status_msg_kwarg):
+    # @show_status(
+    #     base_logger=logging.getLogger(__name__),
+    #     std_out_logger=logging.getLogger(f"std_out.{__name__}"))
+    def build_venv(self,
+                   # status_msg_kwarg
+                   ):
         env_builder = CustomVenvBuilder()
         env_builder.create(self._venv_path)
 
         return env_builder.context
 
-    @show_status(
-        base_logger=logging.getLogger(__name__),
-        std_out_logger=logging.getLogger(f"std_out.{__name__}"))
-    def install_orig_pkg_in_venv(self, status_msg_kwarg):
+    # @show_status(
+    #     base_logger=logging.getLogger(__name__),
+    #     std_out_logger=logging.getLogger(f"std_out.{__name__}"))
+    def install_orig_pkg_in_venv(self,
+                                 # status_msg_kwarg
+                                 ):
         self._venv_manager.pip_install(
             self._orig_pkg_dist, "--quiet"
         ).rewire_shebangs()
@@ -295,9 +309,21 @@ class InnerPkgInstaller:
 
     def iso_install_inner_pkg(self):
         IPILogging.confirm_setup()
-        venv_context = self.build_venv(status_msg_kwarg="Creating virtual env")
+
+        with status_display(
+                msg="Creating virtual env",
+                logger=logging.getLogger(__name__)
+        ) as updater:
+            # spinner.text = "Creating virtual env"
+            venv_context = self.build_venv()
+            # spinner.ok("✔")
+
         self._venv_manager = VenvManager(context=venv_context)
         self.show_post_venv_creation_summary()
-        self.install_orig_pkg_in_venv(
-            status_msg_kwarg=
-            f"Installing {self._orig_pkg_dist.name} in virtual env")
+
+        with status_display(
+            msg=f"Installing {self._orig_pkg_dist.name} in virtual env",
+            logger=logging.getLogger(__name__)
+        ) as updater:
+            # spinner.text = f"Installing {self._orig_pkg_dist.name} in virtual env"
+            self.install_orig_pkg_in_venv()

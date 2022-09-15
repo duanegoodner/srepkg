@@ -3,17 +3,13 @@ import shutil
 from packaging.tags import Tag
 from packaging.utils import parse_wheel_filename
 from pathlib import Path
-from yaspin import yaspin
 
 import srepkg.dist_builder as db
 import srepkg.error_handling.custom_exceptions as ce
 import srepkg.orig_src_preparer_interfaces as osp_int
 import srepkg.utils.logged_err_detecting_subprocess as leds
 
-try:
-    from inner_pkg_installer.yaspin_status import yaspin_logging as show_status
-except(ModuleNotFoundError, ImportError):
-    from inner_pkg_installer.simple_status import simple_status as show_status
+import inner_pkg_installer.yaspin_updater as yu
 
 
 class DistProviderFromSrc(osp_int.DistProviderInterface):
@@ -23,36 +19,27 @@ class DistProviderFromSrc(osp_int.DistProviderInterface):
         self._dest_path = dest_path
 
     def run(self):
-
-        msg = "Building original package wheel from source code"
-        logging.getLogger(__name__).info(msg)
-        with yaspin().layer as spinner:
-            spinner.text = msg
+        with yu.yaspin_log_updater(
+                msg="Building original package wheel from source code",
+                logger=logging.getLogger(__name__)):
             wheel_path = db.DistBuilder(
                 distribution="wheel",
                 srcdir=self._src_path,
                 output_directory=self._dest_path
             ).build()
-            spinner.ok("✔")
 
         wheel_filename = wheel_path.name
         name, version, bld, tags = parse_wheel_filename(wheel_filename)
 
         if Tag("py3", "none", "any") not in tags:
-
-            logging.getLogger(f"std_out.{__name__}").info(
-                "Building original package sdist from source code")
-
-            msg = "Building original package Sdist from source code"
-            logging.getLogger(__name__).info(msg)
-            with yaspin().layer as spinner:
-                spinner.text = msg
+            with yu.yaspin_log_updater(
+                    msg="Building original package Sdist from source code",
+                    logger=logging.getLogger(__name__)):
                 db.DistBuilder(
                     distribution="sdist",
                     srcdir=self._src_path,
                     output_directory=self._dest_path
                 ).build()
-                spinner.ok("✔")
 
 
 class DistProviderFromGitRepo(DistProviderFromSrc):
@@ -65,12 +52,9 @@ class DistProviderFromGitRepo(DistProviderFromSrc):
 
     def _checkout_commit_ref(self):
         if self._git_ref:
-
-            msg = f"Checking out {self._git_ref}"
-            logging.getLogger(__name__).info(msg)
-            with yaspin().layer as spinner:
-                spinner.text = msg
-
+            with yu.yaspin_log_updater(
+                    msg=f"Checking out {self._git_ref}",
+                    logger=logging.getLogger(__name__)):
                 leds.LoggedErrDetectingSubprocess(
                     cmd=["git", "checkout", self._git_ref],
                     gen_logger_name=__name__,
@@ -79,8 +63,6 @@ class DistProviderFromGitRepo(DistProviderFromSrc):
                     default_exception=ce.GitCheckoutError,
                     cwd=self._src_path
                 ).run()
-
-            spinner.ok("✔")
 
     def run(self):
         self._checkout_commit_ref()
@@ -94,8 +76,11 @@ class DistCopyProvider(osp_int.DistProviderInterface):
         self._dest_path = dest_path
 
     def run(self):
-        msg = f"Copying {self._src_path.name} into {self._dest_path.parent}"
-        with yaspin().layer as spinner:
-            spinner.text = msg
+        with yu.yaspin_log_updater(
+                msg=(f"Copying {self._src_path.name} into "
+                     f"srepkg build directory"),
+                logger=logging.getLogger(__name__)):
             shutil.copy2(self._src_path, self._dest_path)
-            spinner.ok("✔")
+
+        logging.getLogger(__name__).info(
+            f"Copied {self._src_path} into {self._dest_path}")

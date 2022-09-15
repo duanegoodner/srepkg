@@ -12,12 +12,7 @@ import srepkg.cs_entry_pts as cse
 import srepkg.dist_builder as db
 import srepkg.repackager_interfaces as re_int
 import srepkg.repackager_data_structs as re_ds
-import srepkg.srepkg_builder_int as sb_new_int
-
-try:
-    from inner_pkg_installer.yaspin_status import yaspin_logging as show_status
-except(ModuleNotFoundError, ImportError):
-    from inner_pkg_installer.simple_status import simple_status as show_status
+import inner_pkg_installer.yaspin_updater as yu
 
 
 class TemplateWriteOp(NamedTuple):
@@ -36,7 +31,7 @@ class SrepkgDistWriter(abc.ABC):
         self._dist_out_dir = dist_out_dir
 
     @abc.abstractmethod
-    def write_dist(self):
+    def write_dist(self) -> str:
         pass
 
 
@@ -50,61 +45,52 @@ class SrepkgSdistWriter(SrepkgDistWriter):
                     zf.write(file, file.relative_to(src_path.parent))
 
     def write_dist(self):
-        @show_status(
-            base_logger=logging.getLogger(__name__),
-            std_out_logger=logging.getLogger(f"std_out.{__name__}"))
-        def _write_dist(status_msg_kwarg):
+        with yu.yaspin_log_updater(
+                msg="Building srepkg sdist",
+                logger=logging.getLogger(__name__)):
             exclude_paths = [
                 item for item in
-                list((self._orig_pkg_summary.srepkg_root / 'orig_dist').iterdir())
+                list((
+                             self._orig_pkg_summary.srepkg_root / 'orig_dist').iterdir())
                 if item != self._orig_pkg_summary.src_for_srepkg_sdist
             ]
 
-            output_filename = \
-                f"{self._orig_pkg_summary.srepkg_name}-" \
+            output_filename = (
+                f"{self._orig_pkg_summary.srepkg_name}-"
                 f"{self._orig_pkg_summary.pkg_version}.zip"
+            )
 
-            # logging.getLogger(f"std_out.{__name__}").info(
-            #     "Building srepkg sdist")
+            sdist_path = self._dist_out_dir / output_filename
 
-            self.zip_dir(zip_name=str(self._dist_out_dir / output_filename),
+            self.zip_dir(zip_name=str(sdist_path),
                          src_path=self._orig_pkg_summary.srepkg_root,
                          exclude_paths=exclude_paths)
-            
-        _write_dist(status_msg_kwarg="Building srepkg sdist")
+
+        logging.getLogger(f"std_out.{__name__}").info(
+            f"\t{self._orig_pkg_summary.srepkg_name} sdist saved as: "
+            f"{str(sdist_path)}"
+        )
+
+        return str(sdist_path)
 
 
 class SrepkgWheelWriter(SrepkgDistWriter):
 
     def write_dist(self):
-        @show_status(
-            base_logger=logging.getLogger(__name__),
-            std_out_logger=logging.getLogger(f"std_out.{__name__}"))
-        def _write_dist(status_msg_kwarg):
+        with yu.yaspin_log_updater(
+                msg="Building srepkg wheel",
+                logger=logging.getLogger(__name__)) as updater:
             wheel_path = db.DistBuilder(
                 distribution="wheel",
                 srcdir=self._orig_pkg_summary.srepkg_root,
                 output_directory=self._dist_out_dir
             ).build()
 
-        _write_dist(status_msg_kwarg="Building srepkg wheel")
-    #
-    #
-    #
-    #
-    # @show_status(
-    #     base_logger=logging.getLogger(__name__),
-    #     std_out_logger=logging.getLogger(f"std_out.{__name__}"))
-    # def write_dist(self, status_msg_kwarg=self.status_msg_kwarg):
-    #
-    #     # logging.getLogger(f"std_out.{__name__}").info(
-    #     #     "Building srepkg wheel")
-    #
-    #     wheel_path = db.DistBuilder(
-    #         distribution="wheel",
-    #         srcdir=self._orig_pkg_summary.srepkg_root,
-    #         output_directory=self._dist_out_dir
-    #     ).build()
+        logging.getLogger(f"std_out.{__name__}").info(
+            f"\t{self._orig_pkg_summary.srepkg_name} wheel saved as: {wheel_path}"
+        )
+
+        return wheel_path
 
 
 @dataclass
@@ -202,7 +188,7 @@ class SrepkgCompleter(abc.ABC):
         pass
 
     def _write_dist(self):
-        self._dist_writer.write_dist()
+        return self._dist_writer.write_dist()
 
     def build_and_cleanup(self):
         initial_contents = list(self._orig_pkg_summary.srepkg_root.rglob('*'))
@@ -210,8 +196,10 @@ class SrepkgCompleter(abc.ABC):
         self._write_from_templates()
         self._write_srepkg_setup_cfg()
         self._extra_construction_tasks()
-        self._write_dist()
+        dist_path = self._write_dist()
         self._restore_construction_dir_to(initial_contents)
+
+        return dist_path
 
 
 class SrepkgWheelCompleter(SrepkgCompleter):
@@ -226,9 +214,6 @@ class SrepkgWheelCompleter(SrepkgCompleter):
         )
 
     def _install_inner_pkg(self):
-
-        # with yaspin().dots as sp:
-        #     sp.text = "Installing original package in venv..."
         ipi.InnerPkgInstaller(
             venv_path=self._orig_pkg_summary.srepkg_inner / "srepkg_venv",
             orig_pkg_dist=self._orig_pkg_summary.src_for_srepkg_wheel
@@ -333,9 +318,34 @@ class SrepkgBuilder(re_int.SrepkgBuilderInterface):
             ._build_base_setup_cfg()
 
     def _complete_dists(self):
+        dist_paths = []
+
         for completer in self._srepkg_completers:
-            completer.build_and_cleanup()
+            dist_paths.append(completer.build_and_cleanup())
+
+        return dist_paths
 
     def build(self):
         self._build_srepkg_base()
-        self._complete_dists()
+        dist_paths = self._complete_dists()
+
+        entry_pts_message = "\n".join([
+            f"\t• {entry_point.command}" for entry_point in
+            self._construction_dir_summary.entry_pts.cs_entry_pts
+        ])
+
+        qualifier = (
+            "either of the following commands:"
+            if len(self._srepkg_completers) == 2 else
+            "the command:"
+        )
+
+        commands = "\n".join([f"\t• pip install {dist_path}" for dist_path in dist_paths])
+
+        logging.getLogger(f"std_out.{__name__}").info(
+            f"\n{self._construction_dir_summary.srepkg_name} can be installed "
+            f"using {qualifier}\n{commands}"
+            f"\nUpon installation, {self._construction_dir_summary.srepkg_name} "
+            f"will provide access to the following command line entry points: "
+            f"\n{entry_pts_message}"
+        )

@@ -1,16 +1,13 @@
 import functools
 import logging
-from typing import Dict, Any, List, Tuple, FrozenSet
-
 import requests
 import tempfile
 from packaging.tags import sys_tags, Tag
-from packaging.utils import parse_wheel_filename, NormalizedName, BuildTag
+from packaging.utils import parse_wheel_filename
 from pathlib import Path
+from typing import Dict, Any, List
 
-from packaging.version import Version
-from yaspin import yaspin
-
+import inner_pkg_installer.yaspin_updater as yu
 import srepkg.error_handling.custom_exceptions as ce
 import srepkg.orig_src_preparer_interfaces as osp_int
 import srepkg.utils.logged_err_detecting_subprocess as leds
@@ -115,13 +112,12 @@ class PyPIPkgRetriever(osp_int.RemotePkgRetrieverInterface):
 
     def run(self) -> None:
 
-        msg = f"Retrieving {self._pkg_ref} from Python Packaging Index"
-        logging.getLogger(__name__).info(msg)
-        with yaspin().layer as spinner:
-            spinner.text = msg
+        with yu.yaspin_log_updater(
+                msg=f"Retrieving {self._pkg_ref} from Python Packaging Index",
+                logger=logging.getLogger(__name__)) as updater:
+
             for dist in self._dists_to_download:
                 self._download(dist)
-            spinner.ok("✔")
 
         downloaded_files = "\n".join([f"\t• {dist['filename']}" for dist in self._dists_to_download])
         post_msg = f"\tDownloaded files:\n{downloaded_files}"
@@ -139,10 +135,9 @@ class GithubPkgRetriever(osp_int.RemotePkgRetrieverInterface):
         return Path(self._temp_dir_obj.name)
 
     def run(self):
-        msg = f"Cloning {self._pkg_ref} into temporary directory"
-        logging.getLogger(__name__).info(msg)
-        with yaspin().layer as spinner:
-            spinner.text = msg
+        with yu.yaspin_log_updater(
+                msg=f"Cloning {self._pkg_ref} into temporary directory",
+                logger=logging.getLogger(__name__)) as updater:
             leds.LoggedErrDetectingSubprocess(
                 cmd=["git", "clone", self._pkg_ref, self.copy_dest],
                 gen_logger_name=__name__,
@@ -150,4 +145,3 @@ class GithubPkgRetriever(osp_int.RemotePkgRetrieverInterface):
                 std_err_logger_name="std_err",
                 default_exception=ce.GitCheckoutError
             ).run()
-            spinner.ok("✔")
