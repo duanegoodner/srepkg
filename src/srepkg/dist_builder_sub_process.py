@@ -29,7 +29,7 @@ class _DistBuilder:
 
     def build_dist(self) -> Path:
         dist_builder = build.ProjectBuilder(
-            srcdir=self._srcdir,
+            source_dir=self._srcdir,
             python_executable=sys.executable)
 
         dist_path_str = dist_builder.build(
