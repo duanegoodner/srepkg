@@ -11,3 +11,10 @@ def test_srepkg(mocker, sample_pkgs):
     #       "from_script"])
 
     main(["black", "-r", "22.1.0"])
+
+def run_repkg():
+    main(["black", "-r", "22.1.0"])
+
+
+if __name__ == "__main__":
+    run_repkg()
