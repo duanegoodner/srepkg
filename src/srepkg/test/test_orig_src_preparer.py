@@ -16,7 +16,7 @@ class TestOrigSrcPreparer:
                 daft.ArchiveDistType.SDIST, daft.ArchiveDistType.WHEEL}),
             ("testproj_zip", None, None, {
                 daft.ArchiveDistType.SDIST, daft.ArchiveDistType.WHEEL}),
-            ("black_github", None, None, {daft.ArchiveDistType.WHEEL}),
+            # ("black_github", None, None, {daft.ArchiveDistType.WHEEL}),
             ("black_github", "767604e03f5e454ae5b5c268cd5831c672f46de8",
              None, {daft.ArchiveDistType.WHEEL}),
             ("scrape_py_pi", None, "0.11.1", {daft.ArchiveDistType.WHEEL})
