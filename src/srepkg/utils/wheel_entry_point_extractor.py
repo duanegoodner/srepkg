@@ -33,7 +33,8 @@ class WheelEntryPointExtractor:
         return re_ds.CSEntryPoint(
             command=entry_point.name,
             module=entry_point.module,
-            attr=entry_point.object
+            # attr=entry_point.object
+            attr=entry_point.attr
         )
 
     def get_entry_points(self):
