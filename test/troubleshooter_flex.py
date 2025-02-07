@@ -1,7 +1,7 @@
 from pathlib import Path
 import srepkg.repackager_interfaces as rep_int
 import srepkg.service_builder as sb
-from srepkg.test.shared_fixtures import sample_pkgs
+from .shared_fixtures import sample_pkgs
 
 
 def test_build_from_src(sample_pkgs):
