@@ -1,5 +1,4 @@
-
-from wheel.bdist_wheel import bdist_wheel
+from setuptools.command.bdist_wheel import bdist_wheel
 
 
 class BdistWheelAbi3(bdist_wheel):
