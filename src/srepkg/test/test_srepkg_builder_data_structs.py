@@ -30,9 +30,12 @@ class TestSrepkgBuilderDataStructs:
             dist_path=self.local_test_pkgs_path /
             "testproj-0.0.0-py3-none-any.whl",
             dist_type=pkginfo.Wheel)
-        return re_ds.ConstructionDirSummary(
-            **dummy_cdir_args,
-            dists=[dist_info])
+        construction_dir_summary = re_ds.ConstructionDirSummary(**dummy_cdir_args, dists=[dist_info])
+        assert len(construction_dir_summary.dists) == 1
+        assert construction_dir_summary.has_platform_indep_wheel
+        assert construction_dir_summary.has_wheel
+        assert not construction_dir_summary.has_sdist
+        assert construction_dir_summary.src_for_srepkg_wheel.name == "testproj-0.0.0-py3-none-any.whl"
 
     def test_construction_dir_summary_init_with_dists_and_entry_pts(
             self, dummy_cdir_args):
@@ -43,10 +46,14 @@ class TestSrepkgBuilderDataStructs:
             dist_type=pkginfo.Wheel)
         entry_pt = re_ds.CSEntryPoint(
             command="test", module="test", attr="test")
-        return re_ds.ConstructionDirSummary(
-            **dummy_cdir_args,
+        construction_dir_summary = re_ds.ConstructionDirSummary(**dummy_cdir_args,
             dists=[dist_info],
             entry_pts=re_ds.PkgCSEntryPoints([entry_pt]))
+        assert len(construction_dir_summary.dists) == 1
+        assert construction_dir_summary.has_platform_indep_wheel
+        assert construction_dir_summary.has_wheel
+        assert not construction_dir_summary.has_sdist
+        assert construction_dir_summary.src_for_srepkg_wheel.name == "testproj-0.0.0-py3-none-any.whl"
 
     def test_wheel_path_getter_without_wheel(self, dummy_cdir_args):
         construction_dir_summary = re_ds.ConstructionDirSummary(
