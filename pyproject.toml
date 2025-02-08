@@ -1,0 +1,40 @@
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "srepkg"
+version = "0.1.0"
+description = "Repackages apps to restrict installation into isolated env"
+authors = [
+    { name = "Duane Goodner", email = "dmgoodner@gmail.com" }
+]
+readme = "README.md"
+requires-python = ">=3.7"
+license = { file = "LICENSE" }
+keywords = []
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent"
+]
+dependencies = [
+    "build",
+    "Cython",
+    "entry_points_txt",
+    "packaging",
+    "pkginfo",
+    "requests",
+    "yaspin"
+]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["src"]
+#exclude = ["srepkg.test*"]
+
+[project.scripts]
+srepkg = "srepkg.srepkg:main"

@@ -1,2 +1,0 @@
-[console_scripts]
-my_123_multiplier = testproj.app:run
