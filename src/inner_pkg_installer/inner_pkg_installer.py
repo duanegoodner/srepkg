@@ -1,3 +1,8 @@
+"""
+Contains classes that handle venv creation and installation of original\
+package in venv
+"""
+
 import configparser
 import logging
 import re
@@ -28,6 +33,10 @@ except (ModuleNotFoundError, ImportError):
 
 
 class IPILogging:
+    """
+    Takes care of logging during venv creation and installation of original
+    package in venv.
+    """
 
     @staticmethod
     def confirm_setup():
@@ -67,6 +76,9 @@ class IPILogging:
 
 
 class SitePackagesInspector:
+    """
+    Gets versions of packages installed in venv.
+    """
 
     def __init__(self, site_pkgs: Path):
         self._site_pkgs = site_pkgs
@@ -130,6 +142,10 @@ class PyVersion:
 
 
 class CustomVenvBuilder(venv.EnvBuilder):
+    """
+    Sublcass of standard library EnvBuilder with extra methods used to
+    install and/or upgrade pip, setuptools, and wheel in the venv.
+    """
     def __init__(self):
         super().__init__(with_pip=True)
         self._context = SimpleNamespace()
@@ -190,6 +206,11 @@ class CustomVenvBuilder(venv.EnvBuilder):
 
 
 class VenvManager:
+    """
+    Proovides methods for obtaining info abou packages in venv and, most
+    importantly, modifying shebangs of console script entry point files so
+    they are accessible from environment srepkg was run from (outside of venv).
+    """
     def __init__(self, context):
         self._context = context
         self._pyvenv_cfg = configparser.ConfigParser()
@@ -257,6 +278,16 @@ class VenvManager:
                     self._get_console_scripts(path / "entry_points.txt")
 
     def _update_cs_shebang(self, cs_path: Path):
+        """
+        Modifies shebang of a console script file so it can be called from outside
+        of venv (in the environment where srepkg was run from)
+
+        Args:
+            cs_path: Path of a console script (entry point).
+
+        Returns:
+            None
+        """
         if cs_path.exists():
             with cs_path.open(mode="r+") as f:
                 first_line = f.readline()
@@ -270,11 +301,24 @@ class VenvManager:
                     f.truncate()
 
     def _update_all_cs_shebangs(self):
+        """
+        Modifies shebang of all console scripts except any pip entry point script
+        that does not have dist info.
+
+        Returns:
+            None
+        """
 
         for console_script in self._console_scripts:
             self._update_cs_shebang(self._env_dir / "bin" / console_script)
 
     def _update_rogue_pip_cs_shebang(self):
+        """
+        Updates shebang of any pip entrypoint script that does not have dist info.
+        Returns:
+
+        """
+
         pip_cs_without_dist_info = (
             self._env_dir
             / "bin"
@@ -284,12 +328,21 @@ class VenvManager:
             self._update_cs_shebang(pip_cs_without_dist_info)
 
     def rewire_shebangs(self):
+        """
+        Modifies shebang of each console script in venv so it can be called
+        form environment where srepkg was run from (outside of venv).
+        Returns:
+            None
+        """
         self._gather_all_console_scripts()
         self._update_all_cs_shebangs()
         self._update_rogue_pip_cs_shebang()
 
 
 class InnerPkgCfgReader:
+    """
+    Gets metadate from the original package.
+    """
     def __init__(self, inner_pkg_cfg: Path):
         self._inner_pkg_cfg_file = inner_pkg_cfg
         self._inner_pkg_cfg = configparser.ConfigParser()
@@ -309,6 +362,9 @@ class InnerPkgCfgReader:
 
 
 class InnerPkgInstaller:
+    """
+    Installs original package in venv.
+    """
     def __init__(self, venv_path: Path, orig_pkg_dist: Path):
         self._venv_path = venv_path
         self._orig_pkg_dist = orig_pkg_dist

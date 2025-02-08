@@ -23,17 +23,24 @@ class SrepkgCommandInterface(abc.ABC):
         pass
 
 
-class PkgDistProviderInterface(abc.ABC):
-
-    @abc.abstractmethod
-    def provide(self):
-        pass
+# class PkgDistProviderInterface(abc.ABC):
+#
+#     @abc.abstractmethod
+#     def provide(self):
+#         pass
 
 
 class OrigSrcPreparerInterface(abc.ABC):
 
     @abc.abstractmethod
     def prepare(self):
+        """
+        Prepares original package for repackaging. Saves prepared
+        files to disk.
+
+        Returns:
+            None
+        """
         pass
 
 
@@ -41,10 +48,19 @@ class SrepkgBuilderInterface(abc.ABC):
 
     @abc.abstractmethod
     def build(self):
+        """
+        Builds package with isolation layer (saves to disk)
+        Returns:
+            None
+        """
         pass
 
 
 class ServiceBuilderInterface(abc.ABC):
+    """
+    Interface with one method for preparing original package files for
+    repackaging and one method for performing repackaging.
+    """
 
     @abc.abstractmethod
     def create_orig_src_preparer(self) -> OrigSrcPreparerInterface:
