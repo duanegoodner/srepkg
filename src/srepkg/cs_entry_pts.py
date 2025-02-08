@@ -5,6 +5,10 @@ import srepkg.repackager_data_structs as re_ds
 
 
 class EntryPointsBuilder:
+    """
+    Creates console entry script files in the env from which srepkg
+    was called (outside of venv where original package gets installed).
+    """
 
     def __init__(
         self,
@@ -72,4 +76,9 @@ class EntryPointsBuilder:
         return self
 
     def build_entry_pts(self):
+        """
+        Creates console entry points in env from which srepkg was called.
+        Returns:
+            None
+        """
         self._write_entry_point_files()._write_entry_point_init()._update_srepkg_config()

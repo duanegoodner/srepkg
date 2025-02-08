@@ -1,3 +1,8 @@
+"""
+Contains classes responsible for building sdist and/or wheel from the venv
+(happens after original package has been installed in venv)
+"""
+
 import abc
 import configparser
 import logging
@@ -22,6 +27,9 @@ class TemplateWriteOp(NamedTuple):
 
 
 class SrepkgDistWriter(abc.ABC):
+    """
+    Interface with method for creating a distribution of a SRE package.
+    """
 
     def __init__(
         self,
@@ -37,6 +45,9 @@ class SrepkgDistWriter(abc.ABC):
 
 
 class SrepkgSdistWriter(SrepkgDistWriter):
+    """
+    Creates a source distribution of SRE package.
+    """
 
     @staticmethod
     def zip_dir(zip_name: str, src_path: Path, exclude_paths: List[Path]):
@@ -81,6 +92,9 @@ class SrepkgSdistWriter(SrepkgDistWriter):
 
 
 class SrepkgWheelWriter(SrepkgDistWriter):
+    """
+    Creates a wheel distribution of SRE package.
+    """
 
     def write_dist(self):
         with yu.yaspin_log_updater(
@@ -107,6 +121,10 @@ class CompleterProperties:
 
 
 class SrepkgCompleter(abc.ABC):
+    """
+    Interface (with many concrete methods) for handling file copying and
+    modification to prepare of dist creation, and creating distribution.
+    """
 
     def __init__(
         self,
@@ -208,7 +226,11 @@ class SrepkgCompleter(abc.ABC):
     def _write_dist(self):
         return self._dist_writer.write_dist()
 
-    def build_and_cleanup(self):
+    def build_and_cleanup(self) -> str:
+        """
+        Builds distribution and cleans up directory used for dist building.
+        Returns: Path to the created distribution.
+        """
         initial_contents = list(self._orig_pkg_summary.srepkg_root.rglob("*"))
         self._copy_ready_components()
         self._write_from_templates()
@@ -221,7 +243,9 @@ class SrepkgCompleter(abc.ABC):
 
 
 class SrepkgWheelCompleter(SrepkgCompleter):
-
+    """
+    Completes construction of a wheel distribution.
+    """
     @property
     def _props(self) -> CompleterProperties:
         return CompleterProperties(
@@ -242,6 +266,9 @@ class SrepkgWheelCompleter(SrepkgCompleter):
 
 
 class SrepkgSdistCompleter(SrepkgCompleter):
+    """
+    Completes construction of a sdist distribution.
+    """
 
     @property
     def _props(self) -> CompleterProperties:
@@ -275,7 +302,10 @@ class SrepkgSdistCompleter(SrepkgCompleter):
 
 
 class SrepkgBuilder(re_int.SrepkgBuilderInterface):
-
+    """
+    Builds sdist and wheel distribution of SRE package and output file and entry-point
+    info to terminal.
+    """
     def __init__(
         self,
         construction_dir_summary: re_ds.ConstructionDirSummary,
