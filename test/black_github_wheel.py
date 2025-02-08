@@ -9,7 +9,8 @@ def run():
     cmd = rep_int.SrepkgCommand(
         orig_pkg_ref="https://github.com/psf/black",
         git_ref=None,
-        pypi_version=None)
+        pypi_version=None,
+    )
 
     src_preparer = sb.ServiceBuilder(cmd).create_orig_src_preparer()
     src_preparer.prepare()
