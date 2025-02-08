@@ -4,7 +4,7 @@ from unittest import mock
 import srepkg.repackager_interfaces as rep_int
 import srepkg.service_builder as sb
 import srepkg.srepkg_builder as s_bldr
-from .shared_fixtures import dummy_cdir_summary
+from shared_fixtures import dummy_cdir_summary
 
 
 class BuilderTestCondition(NamedTuple):

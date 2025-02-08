@@ -6,7 +6,7 @@ import srepkg.construction_dir as cdn
 import srepkg.error_handling.custom_exceptions as ce
 import srepkg.repackager_interfaces as rep_int
 import srepkg.service_builder as sb
-from .shared_fixtures import sample_pkgs, tmp_construction_dir
+from shared_fixtures import sample_pkgs, tmp_construction_dir
 
 
 class TestConstructionDirInit:

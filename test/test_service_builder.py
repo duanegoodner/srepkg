@@ -5,7 +5,7 @@ import srepkg.service_builder
 import srepkg.srepkg_builder as sbn
 import srepkg.service_builder as sb
 import srepkg.repackager_interfaces as rep_int
-from .shared_fixtures import tmp_construction_dir, sample_pkgs, \
+from shared_fixtures import tmp_construction_dir, sample_pkgs, \
     dummy_cdir_summary
 
 

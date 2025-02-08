@@ -3,7 +3,7 @@ import subprocess
 import srepkg.error_handling.custom_exceptions as ce
 import srepkg.logging_initializer as lgr
 import srepkg.utils.logged_err_detecting_subprocess as leds
-from .shared_fixtures import app_logger
+from shared_fixtures import app_logger
 import srepkg.dist_builder as db
 
 
