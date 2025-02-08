@@ -9,6 +9,14 @@ import srepkg.service_builder as scb
 
 
 def main(*args) -> None:
+    """
+
+    Args:
+        *args (): entry point args, typically from command line
+
+    Returns:
+        None
+    """
     srepkg_command = ci.SrepkgCommandLine().get_args(*args)
 
     logger_initializer = lgr.LoggingInitializer(

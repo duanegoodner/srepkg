@@ -1,14 +1,26 @@
+"""
+Contains class for retrieving arguments from command line.
+"""
+
 import argparse
 import srepkg.error_handling.custom_exceptions as ce
 import srepkg.repackager_interfaces as rep_int
 
 
 class SrepkgCommandLine(rep_int.SrepkgCommandInterface):
-
+    """
+    Retrieves arguments from command line.
+    """
     def __init__(self):
         self._parser = argparse.ArgumentParser()
 
     def _attach_args(self):
+        """
+        Attaches command line arguments to parser.
+
+        Returns:
+            None
+        """
         self._parser.add_argument(
             "orig_pkg_ref",
             type=str,
@@ -85,6 +97,15 @@ class SrepkgCommandLine(rep_int.SrepkgCommandInterface):
         )
 
     def get_args(self, *args) -> rep_int.SrepkgCommand:
+        """
+
+        Args:
+            *args (): Entry point arguments, typically from command line.
+
+        Returns:
+            a SrepkgCommand instance
+
+        """
         self._attach_args()
         args_namespace = self._parser.parse_args(*args)
         if args_namespace.git_ref and args_namespace.pypi_version:

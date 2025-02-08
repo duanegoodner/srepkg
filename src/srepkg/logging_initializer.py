@@ -1,3 +1,7 @@
+"""
+Contqains LoggingInitialzer class
+"""
+
 import logging
 import sys
 import tempfile
@@ -6,8 +10,15 @@ from pathlib import Path
 
 
 class LoggingInitializer:
-
+    """
+    Applies global logging settings.
+    """
     def __init__(self, logfile_dir: Path = None):
+        """
+
+        Args:
+            logfile_dir: path where logfile is saved.
+        """
         if logfile_dir is None:
             self._logfile_dir_temp_obj = tempfile.TemporaryDirectory()
             logfile_dir = Path(self._logfile_dir_temp_obj.name)

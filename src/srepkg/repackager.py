@@ -2,6 +2,9 @@ import srepkg.repackager_interfaces as rep_int
 
 
 class Repackager:
+    """
+    Repackages original package with isolation layer.
+    """
     def __init__(
         self,
         srepkg_command: rep_int.SrepkgCommand,

@@ -1,8 +1,11 @@
-import abc
+"""
+Contains classes for generating appropriate ServiceBuilder based on a SrepkgCommand.
+"""
+
 import sys
 from functools import singledispatch
 from pathlib import Path
-from typing import List, Type, Union, Dict
+from typing import List, Type, Union, Dict, Callable
 
 import srepkg.construction_dir as cdn
 import srepkg.dist_provider as opr
@@ -48,6 +51,10 @@ def _(construction_dir_command, srepkg_name_command: str = None):
 
 
 class RetrieverProviderDispatch:
+    """
+    Determines which implementation of DistProviderInterface is needed,
+    and (if necessary) which implementation of RemotePkgRetrieverInterface is needed.
+    """
 
     def __init__(
         self,
@@ -56,6 +63,14 @@ class RetrieverProviderDispatch:
         version_command: str = None,
         git_ref: str = None,
     ):
+        """
+
+        Args:
+            pkg_ref_command: package identifier (e.g. PyPI name, GitHub repo)
+            construction_dir: object with path and methods management methods for build dir
+            version_command: PyPI version
+            git_ref: git commit or tag
+        """
         self._pkg_ref_command = pkg_ref_command
         self._construction_dir = construction_dir
         self._version_command = version_command
@@ -99,7 +114,7 @@ class RetrieverProviderDispatch:
         return [retriever]
 
     @property
-    def _dispatch_table(self):
+    def _dispatch_table(self) -> Dict[PkgRefType, Callable]:
         return {
             # PkgRefType.LOCAL_SRC_GIT: self._create_for_local_src_git,
             PkgRefType.LOCAL_SRC_NONGIT: self._create_for_local_src_nongit,
@@ -108,7 +123,13 @@ class RetrieverProviderDispatch:
             PkgRefType.PYPI_PKG: self._create_for_pypi,
         }
 
-    def create(self):
+    def create(self) -> List:
+        """
+
+        Returns:
+            1 or 2 element List with instance of a DistProviderInterface
+            and/or a RemotePkgRetrieverInterface
+        """
         pkg_ref_type = PkgRefIdentifier(
             self._pkg_ref_command
         ).identify_for_osp_dispatch()
@@ -207,6 +228,10 @@ class SrepkgBuilderBuilder:
 
 
 class ServiceBuilder(rep_int.ServiceBuilderInterface):
+    """
+    Contains methods for generating instances of appropriate
+    OrigSrcPreparerInterface and SrepkgBuilderInterface for a SrepkgCommand
+    """
 
     def __init__(self, srepkg_command: rep_int.SrepkgCommand):
         self._srepkg_command = srepkg_command
