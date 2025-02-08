@@ -102,7 +102,7 @@ class SrepkgWheelWriter(SrepkgDistWriter):
         ) as updater:
             wheel_path = db.DistBuilder(
                 distribution="wheel",
-                srcdir=self._orig_pkg_summary.srepkg_root,
+                source_dir=self._orig_pkg_summary.srepkg_root,
                 output_directory=self._dist_out_dir,
             ).build()
 

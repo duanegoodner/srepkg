@@ -25,7 +25,7 @@ class DistProviderFromSrc(osp_int.DistProviderInterface):
         ):
             wheel_path = db.DistBuilder(
                 distribution="wheel",
-                srcdir=self._src_path,
+                source_dir=self._src_path,
                 output_directory=self._dest_path,
             ).build()
 
@@ -39,7 +39,7 @@ class DistProviderFromSrc(osp_int.DistProviderInterface):
             ):
                 db.DistBuilder(
                     distribution="sdist",
-                    srcdir=self._src_path,
+                    source_dir=self._src_path,
                     output_directory=self._dest_path,
                 ).build()
 

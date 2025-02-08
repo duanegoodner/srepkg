@@ -11,7 +11,7 @@ class _DistBuilderArgParser:
 
     def _define_args(self):
         self._parser.add_argument("distribution", type=str)
-        self._parser.add_argument("srcdir", type=str)
+        self._parser.add_argument("source_dir", type=str)
         self._parser.add_argument("output_directory", type=str)
 
     def get_args(self, *args):
@@ -22,14 +22,14 @@ class _DistBuilderArgParser:
 
 class _DistBuilder:
 
-    def __init__(self, distribution: str, srcdir: str, output_directory: str):
+    def __init__(self, distribution: str, source_dir: str, output_directory: str):
         self._distribution = distribution
-        self._srcdir = srcdir
+        self._source_dir = source_dir
         self._output_directory = output_directory
 
     def build_dist(self) -> Path:
         dist_builder = build.ProjectBuilder(
-            source_dir=self._srcdir, python_executable=sys.executable
+            source_dir=self._source_dir, python_executable=sys.executable
         )
 
         dist_path_str = dist_builder.build(

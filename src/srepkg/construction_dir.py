@@ -280,7 +280,7 @@ class SdistToWheelConverter:
 
             wheel_path = db.DistBuilder(
                 distribution="wheel",
-                srcdir=unpack_root / self._unpacked_src_dir_name,
+                source_dir=unpack_root / self._unpacked_src_dir_name,
                 output_directory=self._construction_dir.orig_pkg_dists,
             ).build()
 

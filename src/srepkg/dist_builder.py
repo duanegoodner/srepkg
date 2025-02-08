@@ -13,13 +13,13 @@ class DistBuilder:
     def __init__(
         self,
         distribution: str,
-        srcdir: Path,
+        source_dir: Path,
         output_directory: Path,
         std_out_file: Path = tempfile.TemporaryFile(),
         std_err_file: Path = tempfile.TemporaryFile(),
     ):
         self._distribution = distribution
-        self._srcdir = srcdir
+        self._source_dir = source_dir
         self._output_directory = output_directory
         self._std_out_file = std_out_file
         self._std_err_file = std_err_file
@@ -50,7 +50,7 @@ class DistBuilder:
                 sys.executable,
                 dbs.__file__,
                 self._distribution,
-                str(self._srcdir),
+                str(self._source_dir),
                 str(self._output_directory),
             ],
             gen_logger_name=__name__,
