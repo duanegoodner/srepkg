@@ -30,8 +30,10 @@ class CmdClassInstaller(ipi.InnerPkgInstaller):
         install_cfg = InnerPkgCfgReader(srepkg_root / "inner_pkg_install.cfg")
         super().__init__(
             venv_path=srepkg_root / install_cfg.srepkg_name / "srepkg_venv",
-            orig_pkg_dist=srepkg_root / install_cfg.dist_dir /
-            install_cfg.sdist_src)
+            orig_pkg_dist=srepkg_root
+            / install_cfg.dist_dir
+            / install_cfg.sdist_src,
+        )
 
 
 class CustomInstallCommand(install):
@@ -61,7 +63,7 @@ class CustomEggInfoCommand(egg_info):
         ).iso_install_inner_pkg()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     CmdClassInstaller(
         srepkg_root=Path(__file__).parent.absolute()
     ).iso_install_inner_pkg()

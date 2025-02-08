@@ -23,15 +23,15 @@ DEFAULT_SREPKG_SUFFIX = "srepkg"
 
 class ConstructionDir(osp_int.ManageableConstructionDir):
 
-    def __init__(self,
-                 construction_dir_command: Path,
-                 srepkg_name_command: str = None):
+    def __init__(
+        self, construction_dir_command: Path, srepkg_name_command: str = None
+    ):
         self._root = construction_dir_command
         self._srepkg_root = construction_dir_command / uuid.uuid4().hex
         self._srepkg_inner = self._srepkg_root / uuid.uuid4().hex
         self._srepkg_root.mkdir()
         self._srepkg_inner.mkdir()
-        (self._srepkg_root / 'orig_dist').mkdir()
+        (self._srepkg_root / "orig_dist").mkdir()
         self._custom_srepkg_name = srepkg_name_command
         self._supported_dist_types = DEFAULT_DIST_CLASSES
         self._srepkg_name = None
@@ -51,7 +51,7 @@ class ConstructionDir(osp_int.ManageableConstructionDir):
 
     @property
     def orig_pkg_dists(self) -> Path:
-        return self._srepkg_root / 'orig_dist'
+        return self._srepkg_root / "orig_dist"
 
     @property
     def _orig_pkg_dists_contents(self) -> List[Path]:
@@ -67,8 +67,10 @@ class ConstructionDir(osp_int.ManageableConstructionDir):
 
     @property
     def dists(self):
-        return [self._get_dist_info(entry) for entry in
-                self._orig_pkg_dists_contents]
+        return [
+            self._get_dist_info(entry)
+            for entry in self._orig_pkg_dists_contents
+        ]
 
     @property
     def _unique_orig_pkgs(self):
@@ -76,8 +78,10 @@ class ConstructionDir(osp_int.ManageableConstructionDir):
             rp_ds.UniquePkg(
                 # DistInfo changes any "_" to "-" in pkg name. Undo that.
                 name=dist.dist_obj.name.replace("-", "_"),
-                version=dist.dist_obj.version)
-            for dist in self.dists}
+                version=dist.dist_obj.version,
+            )
+            for dist in self.dists
+        }
         if len(unique_pkgs) > 1:
             raise ce.MultiplePackagesPresent(self.dists)
         return unique_pkgs
@@ -94,19 +98,24 @@ class ConstructionDir(osp_int.ManageableConstructionDir):
 
     @property
     def has_wheel(self):
-        return any([type(dist.dist_obj) == pkginfo.Wheel for dist in
-                    self.dists])
+        return any(
+            [type(dist.dist_obj) == pkginfo.Wheel for dist in self.dists]
+        )
 
     @property
     def wheel_path(self):
         if self.has_wheel:
-            return [dist.path for dist in self.dists if type(dist.dist_obj) ==
-                    pkginfo.Wheel][0]
+            return [
+                dist.path
+                for dist in self.dists
+                if type(dist.dist_obj) == pkginfo.Wheel
+            ][0]
 
     @property
     def has_sdist(self):
-        return any([type(dist.dist_obj) == pkginfo.SDist for dist in
-                    self.dists])
+        return any(
+            [type(dist.dist_obj) == pkginfo.SDist for dist in self.dists]
+        )
 
     # @property
     # def srepkg_name(self) -> str:
@@ -127,12 +136,15 @@ class ConstructionDir(osp_int.ManageableConstructionDir):
     def _rename_sub_dirs(self, srepkg_root_new: str, srepkg_inner_new: str):
 
         self._srepkg_inner.replace(
-            self._srepkg_inner.parent.absolute() / srepkg_inner_new)
+            self._srepkg_inner.parent.absolute() / srepkg_inner_new
+        )
         self._srepkg_root.replace(
-            self._srepkg_root.parent.absolute() / srepkg_root_new)
+            self._srepkg_root.parent.absolute() / srepkg_root_new
+        )
 
-        self._srepkg_root = self._srepkg_root.parent.absolute() / \
-            srepkg_root_new
+        self._srepkg_root = (
+            self._srepkg_root.parent.absolute() / srepkg_root_new
+        )
         self._srepkg_inner = self._srepkg_root / srepkg_inner_new
 
     def _update_srepkg_and_dir_names(self, discovered_pkg_name: str):
@@ -143,13 +155,15 @@ class ConstructionDir(osp_int.ManageableConstructionDir):
 
         self._rename_sub_dirs(
             srepkg_root_new=f"{discovered_pkg_name}_as_{srepkg_name}",
-            srepkg_inner_new=srepkg_name)
+            srepkg_inner_new=srepkg_name,
+        )
 
         self._srepkg_name = srepkg_name
 
     def _extract_cs_entry_pts_from_wheel(self):
-        return we_pe.WheelEntryPointExtractor(self.wheel_path) \
-            .get_entry_points()
+        return we_pe.WheelEntryPointExtractor(
+            self.wheel_path
+        ).get_entry_points()
 
     def _set_summary(self):
         if not self.has_sdist and not self.has_wheel:
@@ -157,7 +171,8 @@ class ConstructionDir(osp_int.ManageableConstructionDir):
         if not self.has_wheel and self.has_sdist:
             SdistToWheelConverter(self).build_wheel()
         self._update_srepkg_and_dir_names(
-            discovered_pkg_name=self.orig_pkg_name)
+            discovered_pkg_name=self.orig_pkg_name
+        )
 
         self._summary = rp_ds.ConstructionDirSummary(
             pkg_name=self.orig_pkg_name,
@@ -167,7 +182,8 @@ class ConstructionDir(osp_int.ManageableConstructionDir):
             orig_pkg_dists=self.orig_pkg_dists,
             srepkg_inner=self._srepkg_inner,
             dists=self.dists,
-            entry_pts=self._extract_cs_entry_pts_from_wheel())
+            entry_pts=self._extract_cs_entry_pts_from_wheel(),
+        )
 
     def finalize(self):
         self._set_summary()
@@ -179,15 +195,16 @@ class ConstructionDir(osp_int.ManageableConstructionDir):
 
 
 class CustomConstructionDir(ConstructionDir):
-    def __init__(self,
-                 construction_dir_command: Path,
-                 srepkg_name_command: str = None):
+    def __init__(
+        self, construction_dir_command: Path, srepkg_name_command: str = None
+    ):
         super().__init__(construction_dir_command, srepkg_name_command)
 
     def settle(self):
         print(
             f"An uncompressed copy of {self._srepkg_inner.name} has been saved "
-            f"in {str(self._srepkg_root)}")
+            f"in {str(self._srepkg_root)}"
+        )
 
 
 class TempConstructionDir(ConstructionDir):
@@ -195,7 +212,8 @@ class TempConstructionDir(ConstructionDir):
         self._temp_dir_obj = tempfile.TemporaryDirectory()
         super().__init__(
             construction_dir_command=Path(self._temp_dir_obj.name),
-            srepkg_name_command=srepkg_name_command)
+            srepkg_name_command=srepkg_name_command,
+        )
 
     def _set_summary(self):
         super()._set_summary()
@@ -206,9 +224,7 @@ class TempConstructionDir(ConstructionDir):
 
 
 class SdistToWheelConverter:
-    def __init__(
-            self,
-            construction_dir: ConstructionDir):
+    def __init__(self, construction_dir: ConstructionDir):
         self._construction_dir = construction_dir
         self._compressed_file_extractor = cft.CompressedFileExtractor()
 
@@ -221,11 +237,14 @@ class SdistToWheelConverter:
     def _get_build_from_dist(self):
         try:
             build_from_dist = next(
-                dist for dist in self._construction_dir.dists if
-                isinstance(dist.dist_obj, pkginfo.sdist.SDist))
+                dist
+                for dist in self._construction_dir.dists
+                if isinstance(dist.dist_obj, pkginfo.sdist.SDist)
+            )
         except StopIteration:
             raise ce.NoSDistForWheelConstruction(
-                self._construction_dir.srepkg_root)
+                self._construction_dir.srepkg_root
+            )
 
         return build_from_dist
 
@@ -234,18 +253,20 @@ class SdistToWheelConverter:
         build_from_dist = self._get_build_from_dist()
 
         with yu.yaspin_log_updater(
-                msg=f"Converting {build_from_dist.path.name} to a wheel",
-                logger= logging.getLogger(__name__)) as updater:
+            msg=f"Converting {build_from_dist.path.name} to a wheel",
+            logger=logging.getLogger(__name__),
+        ) as updater:
             temp_unpack_dir_obj = tempfile.TemporaryDirectory()
             unpack_root = Path(temp_unpack_dir_obj.name)
 
             self._compressed_file_extractor.extract(
-                build_from_dist.path, unpack_root)
+                build_from_dist.path, unpack_root
+            )
 
             wheel_path = db.DistBuilder(
                 distribution="wheel",
                 srcdir=unpack_root / self._unpacked_src_dir_name,
-                output_directory=self._construction_dir.orig_pkg_dists
+                output_directory=self._construction_dir.orig_pkg_dists,
             ).build()
 
             temp_unpack_dir_obj.cleanup()

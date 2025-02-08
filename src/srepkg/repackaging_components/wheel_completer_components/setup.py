@@ -1,6 +1,7 @@
 """
 Minimal setup.py file.
 """
+
 import setuptools
 
 
@@ -11,7 +12,4 @@ class BinaryDistribution(setuptools.dist.Distribution):
         return True
 
 
-setuptools.setup(
-    distclass=BinaryDistribution
-)
-
+setuptools.setup(distclass=BinaryDistribution)
