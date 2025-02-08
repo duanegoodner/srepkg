@@ -9,9 +9,10 @@ import srepkg.dist_builder as db
 
 class SubprocessException(Exception):
     def __init__(
-            self,
-            sub_process: subprocess.CompletedProcess,
-            msg="Raised test exception requiring CompletedProcess as arg"):
+        self,
+        sub_process: subprocess.CompletedProcess,
+        msg="Raised test exception requiring CompletedProcess as arg",
+    ):
         self._sub_process = sub_process
         self._msg = msg
 
@@ -22,19 +23,20 @@ class SubprocessException(Exception):
 class TestLoggedErrorDetectingSubprocess:
 
     @pytest.mark.parametrize(
-        "command, exception", [
+        "command, exception",
+        [
             (["not_a_command"], FileNotFoundError),
-            (["git", "asdfas"], ce.BuildSubprocessError)
-        ])
+            (["git", "asdfas"], ce.BuildSubprocessError),
+        ],
+    )
     def test_bad_command(self, command, exception, app_logger):
         bad_sub_proc = leds.LoggedErrDetectingSubprocess(
             cmd=command,
             gen_logger_name=__name__,
             std_out_logger_name="std_out",
             std_err_logger_name="std_err",
-            default_exception=exception
+            default_exception=exception,
         )
 
         with pytest.raises(exception):
             bad_sub_proc.run()
-

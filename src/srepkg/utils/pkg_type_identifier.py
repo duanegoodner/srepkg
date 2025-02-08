@@ -30,48 +30,69 @@ class PkgRefIdentifier:
         # are OK if subprocess return code != 0
         logging.getLogger(__name__).debug(
             "Running git status as subprocess to check if original pkg is a "
-            "local git repo")
+            "local git repo"
+        )
         p = subprocess.run(
             ["git", "-C", self._orig_pkg_ref, "status"],
-            stderr=subprocess.PIPE, stdout=subprocess.PIPE,
-            universal_newlines=True)
+            stderr=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            universal_newlines=True,
+        )
 
         for line in p.stdout.strip().split("\n"):
             logging.getLogger(__name__).debug(line)
         for line in p.stderr.strip().split("\n"):
             logging.getLogger(__name__).debug(line)
 
-        return (p.returncode == 0) and Path(self._orig_pkg_ref).is_dir() and (
-                ".git" in [item.name for item in
-                           list(Path(self._orig_pkg_ref).iterdir())])
+        return (
+            (p.returncode == 0)
+            and Path(self._orig_pkg_ref).is_dir()
+            and (
+                ".git"
+                in [
+                    item.name
+                    for item in list(Path(self._orig_pkg_ref).iterdir())
+                ]
+            )
+        )
 
     def is_local_src_non_git(self):
         return Path(self._orig_pkg_ref).is_dir() and (
-            not self.is_local_git_repo())
+            not self.is_local_git_repo()
+        )
 
     def is_local_wheel(self):
-        return (not Path(self._orig_pkg_ref).is_dir()) and \
-               Path(self._orig_pkg_ref).exists() and \
-               (cdi.ArchiveIdentifier().id_file_type(Path(
-                   self._orig_pkg_ref)) == cdi.ArchiveFileType.WHL)
+        return (
+            (not Path(self._orig_pkg_ref).is_dir())
+            and Path(self._orig_pkg_ref).exists()
+            and (
+                cdi.ArchiveIdentifier().id_file_type(Path(self._orig_pkg_ref))
+                == cdi.ArchiveFileType.WHL
+            )
+        )
 
     def is_local_sdist(self):
-        return (not Path(self._orig_pkg_ref).is_dir()) and \
-               Path(self._orig_pkg_ref).exists() and \
-               (cdi.ArchiveIdentifier()
-                .id_file_type(Path(self._orig_pkg_ref)) !=
-                cdi.ArchiveFileType.UNKNOWN) and \
-               (Path(self._orig_pkg_ref).suffix != '.whl')
+        return (
+            (not Path(self._orig_pkg_ref).is_dir())
+            and Path(self._orig_pkg_ref).exists()
+            and (
+                cdi.ArchiveIdentifier().id_file_type(Path(self._orig_pkg_ref))
+                != cdi.ArchiveFileType.UNKNOWN
+            )
+            and (Path(self._orig_pkg_ref).suffix != ".whl")
+        )
 
     def is_pypi_pkg(self):
-        response = requests.get("https://pypi.python.org/pypi/{}/json"
-                                .format(self._orig_pkg_ref))
+        response = requests.get(
+            "https://pypi.python.org/pypi/{}/json".format(self._orig_pkg_ref)
+        )
         return response.status_code == 200
 
     def is_github_repo(self):
         url_parsed_ref = urlparse(self._orig_pkg_ref)
-        return url_parsed_ref.netloc == 'github.com' and \
-               (len(url_parsed_ref.path.split('/')) > 1)
+        return url_parsed_ref.netloc == "github.com" and (
+            len(url_parsed_ref.path.split("/")) > 1
+        )
 
     def is_git_repo(self):
         return self.is_local_git_repo() or self.is_github_repo()
@@ -83,7 +104,7 @@ class PkgRefIdentifier:
             PkgRefType.LOCAL_SDIST: self.is_local_sdist(),
             PkgRefType.LOCAL_WHEEL: self.is_local_wheel(),
             PkgRefType.PYPI_PKG: self.is_pypi_pkg(),
-            PkgRefType.GIT_REPO: self.is_git_repo()
+            PkgRefType.GIT_REPO: self.is_git_repo(),
         }
 
     def identify(self) -> PkgRefType:
@@ -106,7 +127,7 @@ class PkgRefIdentifier:
     def identify_for_osp_dispatch(self):
         gen_pkg_ref_id = self.identify()
         if (gen_pkg_ref_id == PkgRefType.LOCAL_SDIST) or (
-                gen_pkg_ref_id == PkgRefType.LOCAL_WHEEL):
+            gen_pkg_ref_id == PkgRefType.LOCAL_WHEEL
+        ):
             return PkgRefType.LOCAL_DIST
         return gen_pkg_ref_id
-

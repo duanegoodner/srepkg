@@ -7,13 +7,14 @@ import srepkg.repackager_data_structs as re_ds
 class EntryPointsBuilder:
 
     def __init__(
-            self,
-            orig_pkg_entry_pts: re_ds.PkgCSEntryPoints,
-            entry_pt_template: Path,
-            srepkg_entry_pt_dir: Path,
-            srepkg_name: str,
-            srepkg_config: configparser.ConfigParser(),
-            generic_entry_funct_name: str = 'entry_funct'):
+        self,
+        orig_pkg_entry_pts: re_ds.PkgCSEntryPoints,
+        entry_pt_template: Path,
+        srepkg_entry_pt_dir: Path,
+        srepkg_name: str,
+        srepkg_config: configparser.ConfigParser(),
+        generic_entry_funct_name: str = "entry_funct",
+    ):
         self._orig_pkg_entry_pts = orig_pkg_entry_pts
         self._entry_pt_template = entry_pt_template
         self._srepkg_entry_pt_dir = srepkg_entry_pt_dir
@@ -23,31 +24,35 @@ class EntryPointsBuilder:
 
     @property
     def _srepkg_entry_pts(self) -> re_ds.PkgCSEntryPoints:
-        srepkg_cse_list = [re_ds.CSEntryPoint(
-            command=orig_pkg_cse.command,
-            module=".".join(
-                [
-                    self._srepkg_name,
-                    self._srepkg_entry_pt_dir.name,
-                    orig_pkg_cse.command,
-                 ]),
-            attr=self._generic_entry_funct_name,
-        )
+        srepkg_cse_list = [
+            re_ds.CSEntryPoint(
+                command=orig_pkg_cse.command,
+                module=".".join(
+                    [
+                        self._srepkg_name,
+                        self._srepkg_entry_pt_dir.name,
+                        orig_pkg_cse.command,
+                    ]
+                ),
+                attr=self._generic_entry_funct_name,
+            )
             for orig_pkg_cse in self._orig_pkg_entry_pts.cs_entry_pts
         ]
         return re_ds.PkgCSEntryPoints(srepkg_cse_list)
 
     def _write_entry_point_files(self):
         for cse in self._srepkg_entry_pts.cs_entry_pts:
-            shutil.copy2(self._entry_pt_template,
-                         self._srepkg_entry_pt_dir / f"{cse.command}.py")
+            shutil.copy2(
+                self._entry_pt_template,
+                self._srepkg_entry_pt_dir / f"{cse.command}.py",
+            )
 
         return self
 
     def _write_entry_point_init(self):
         import_statements = [
-            f"import {self._srepkg_name}.srepkg_entry_points.{cse.command}" for
-            cse in self._srepkg_entry_pts.cs_entry_pts
+            f"import {self._srepkg_name}.srepkg_entry_points.{cse.command}"
+            for cse in self._srepkg_entry_pts.cs_entry_pts
         ]
 
         with (self._srepkg_entry_pt_dir / "__init__.py").open(mode="w") as ei:
@@ -58,11 +63,13 @@ class EntryPointsBuilder:
         return self
 
     def _update_srepkg_config(self):
-        self._srepkg_config.set("options.entry_points", "console_scripts",
-                                self._srepkg_entry_pts.as_cfg_string)
+        self._srepkg_config.set(
+            "options.entry_points",
+            "console_scripts",
+            self._srepkg_entry_pts.as_cfg_string,
+        )
 
         return self
 
     def build_entry_pts(self):
-        self._write_entry_point_files()._write_entry_point_init()\
-            ._update_srepkg_config()
+        self._write_entry_point_files()._write_entry_point_init()._update_srepkg_config()

@@ -52,7 +52,6 @@ class ServiceBuilderInterface(abc.ABC):
 
     @abc.abstractmethod
     def create_srepkg_builder(
-            self,
-            construction_dir_summary: rep_ds.ConstructionDirSummary)\
-            -> SrepkgBuilderInterface:
+        self, construction_dir_summary: rep_ds.ConstructionDirSummary
+    ) -> SrepkgBuilderInterface:
         pass

@@ -29,12 +29,13 @@ class _DistBuilder:
 
     def build_dist(self) -> Path:
         dist_builder = build.ProjectBuilder(
-            source_dir=self._srcdir,
-            python_executable=sys.executable)
+            source_dir=self._srcdir, python_executable=sys.executable
+        )
 
         dist_path_str = dist_builder.build(
             distribution=self._distribution,
-            output_directory=self._output_directory)
+            output_directory=self._output_directory,
+        )
 
         return Path(dist_path_str)
 

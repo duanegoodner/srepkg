@@ -7,11 +7,16 @@ import srepkg.orig_src_preparer_interfaces as osp_int
 
 class OrigSrcPreparer(re_int.OrigSrcPreparerInterface):
 
-    def __init__(self,
-                 retriever_provider: List[Union[
-                     osp_int.RemotePkgRetrieverInterface,
-                     osp_int.DistProviderInterface]],
-                 receiver: osp_int.ManageableConstructionDir):
+    def __init__(
+        self,
+        retriever_provider: List[
+            Union[
+                osp_int.RemotePkgRetrieverInterface,
+                osp_int.DistProviderInterface,
+            ]
+        ],
+        receiver: osp_int.ManageableConstructionDir,
+    ):
         self._retriever_provider = retriever_provider
         self._receiver = receiver
 

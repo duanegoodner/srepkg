@@ -16,8 +16,9 @@ import srepkg.utils.logged_err_detecting_subprocess as leds
 class PyPIPkgRetriever(osp_int.RemotePkgRetrieverInterface):
     _pypi_api_base = "https://pypi.org/pypi/{}/json"
 
-    def __init__(self, pkg_ref: str, copy_dest: Path,
-                 version_command: str = None):
+    def __init__(
+        self, pkg_ref: str, copy_dest: Path, version_command: str = None
+    ):
         self._pkg_ref = pkg_ref
         self._copy_dest = copy_dest
         self._version_command = version_command
@@ -40,8 +41,11 @@ class PyPIPkgRetriever(osp_int.RemotePkgRetrieverInterface):
 
     @property
     def _sdists(self) -> List[Dict[str, Any]]:
-        return [dist for dist in self._version_url_info if
-                dist["packagetype"] == "sdist"]
+        return [
+            dist
+            for dist in self._version_url_info
+            if dist["packagetype"] == "sdist"
+        ]
 
     @property
     def _has_sdist(self) -> bool:
@@ -49,8 +53,11 @@ class PyPIPkgRetriever(osp_int.RemotePkgRetrieverInterface):
 
     @property
     def _wheels(self) -> List[Dict[str, Any]]:
-        return [dist for dist in self._version_url_info if
-                dist["packagetype"] == "bdist_wheel"]
+        return [
+            dist
+            for dist in self._version_url_info
+            if dist["packagetype"] == "bdist_wheel"
+        ]
 
     @staticmethod
     def _get_tag(dist_entry: dict) -> Tag:
@@ -63,8 +70,11 @@ class PyPIPkgRetriever(osp_int.RemotePkgRetrieverInterface):
 
     @property
     def _platform_indep_wheels(self) -> List[Dict[str, Any]]:
-        return [dist for dist in self._wheels if
-                self._is_platform_indep_wheel(dist)]
+        return [
+            dist
+            for dist in self._wheels
+            if self._is_platform_indep_wheel(dist)
+        ]
 
     @property
     def _has_platform_indep_wheel(self) -> bool:
@@ -76,14 +86,18 @@ class PyPIPkgRetriever(osp_int.RemotePkgRetrieverInterface):
 
     @property
     def _platform_specific_wheels(self) -> List[Dict[str, Any]]:
-        return [dist for dist in self._wheels if
-                self._is_platform_specific_wheel(dist)]
+        return [
+            dist
+            for dist in self._wheels
+            if self._is_platform_specific_wheel(dist)
+        ]
 
     @property
     def _platform_specific_wheels_for_cur_sys(self) -> List[Dict[str, Any]]:
         return [
-            dist for dist in self._platform_specific_wheels if
-            self._get_tag(dist) in list(sys_tags())
+            dist
+            for dist in self._platform_specific_wheels
+            if self._get_tag(dist) in list(sys_tags())
         ]
 
     @property
@@ -101,7 +115,8 @@ class PyPIPkgRetriever(osp_int.RemotePkgRetrieverInterface):
             dists_to_download.append(self._sdists[0])
         if self._has_platform_specific_wheel_for_cur_sys:
             dists_to_download.append(
-                self._platform_specific_wheels_for_cur_sys[0])
+                self._platform_specific_wheels_for_cur_sys[0]
+            )
 
         return dists_to_download
 
@@ -113,13 +128,16 @@ class PyPIPkgRetriever(osp_int.RemotePkgRetrieverInterface):
     def run(self) -> None:
 
         with yu.yaspin_log_updater(
-                msg=f"Retrieving {self._pkg_ref} from Python Packaging Index",
-                logger=logging.getLogger(__name__)) as updater:
+            msg=f"Retrieving {self._pkg_ref} from Python Packaging Index",
+            logger=logging.getLogger(__name__),
+        ) as updater:
 
             for dist in self._dists_to_download:
                 self._download(dist)
 
-        downloaded_files = "\n".join([f"\t• {dist['filename']}" for dist in self._dists_to_download])
+        downloaded_files = "\n".join(
+            [f"\t• {dist['filename']}" for dist in self._dists_to_download]
+        )
         post_msg = f"\tDownloaded files:\n{downloaded_files}"
         logging.getLogger(f"std_out.{__name__}").info(post_msg)
 
@@ -136,12 +154,13 @@ class GithubPkgRetriever(osp_int.RemotePkgRetrieverInterface):
 
     def run(self):
         with yu.yaspin_log_updater(
-                msg=f"Cloning {self._pkg_ref} into temporary directory",
-                logger=logging.getLogger(__name__)) as updater:
+            msg=f"Cloning {self._pkg_ref} into temporary directory",
+            logger=logging.getLogger(__name__),
+        ) as updater:
             leds.LoggedErrDetectingSubprocess(
                 cmd=["git", "clone", self._pkg_ref, self.copy_dest],
                 gen_logger_name=__name__,
                 std_out_logger_name="std_out",
                 std_err_logger_name="std_err",
-                default_exception=ce.GitCheckoutError
+                default_exception=ce.GitCheckoutError,
             ).run()

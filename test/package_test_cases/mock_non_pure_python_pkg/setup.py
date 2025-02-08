@@ -7,6 +7,4 @@ class BinaryDistribution(setuptools.dist.Distribution):
         return True
 
 
-setuptools.setup(
-    distclass=BinaryDistribution
-)
+setuptools.setup(distclass=BinaryDistribution)

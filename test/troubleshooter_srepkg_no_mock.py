@@ -10,10 +10,11 @@ def test_srepkg(mocker, sample_pkgs):
     # main([sample_pkgs.testproj, "-d", "/Users/duane/srepkg_pkgs", "-n"
     #       "from_script"])
 
-    main(["black", "-r", "22.1.0"])
+    main(["black", "-r", "23.1.0"])
+
 
 def run_repkg():
-    main(["black", "-r", "22.1.0"])
+    main(["black", "-r", "23.1.0"])
 
 
 if __name__ == "__main__":
