@@ -26,27 +26,29 @@ class ArchiveDistType(Enum):
 class ArchiveIdentifier:
     file_signatures = {
         b"\x1f\x8b\x08": ArchiveFileType.TAR_GZ,
-        b"\x50\x4b\x03\x04": ArchiveFileType.ZIP
+        b"\x50\x4b\x03\x04": ArchiveFileType.ZIP,
     }
 
     dist_file_table = {
         ArchiveFileType.TAR_GZ: ArchiveDistType.SDIST,
         ArchiveFileType.ZIP: ArchiveDistType.SDIST,
         ArchiveFileType.WHL: ArchiveDistType.WHEEL,
-        ArchiveFileType.UNKNOWN: ArchiveDistType.UNKNOWN
+        ArchiveFileType.UNKNOWN: ArchiveDistType.UNKNOWN,
     }
 
     def id_file_type(self, possible_archive: Path):
         max_len = max(len(x) for x in self.file_signatures)
 
-        with possible_archive.open(mode='rb') as f:
+        with possible_archive.open(mode="rb") as f:
             file_start = f.read(max_len)
         for signature, filetype in self.file_signatures.items():
             if file_start.startswith(signature):
                 archive_filetype = filetype
                 # .whl files are special case of .zip
-                if filetype == archive_filetype.ZIP and possible_archive.suffix \
-                        == '.whl':
+                if (
+                    filetype == archive_filetype.ZIP
+                    and possible_archive.suffix == ".whl"
+                ):
                     archive_filetype = filetype.WHL
                 return archive_filetype
 
@@ -60,7 +62,7 @@ class CompressedFileExtractor:
 
     @staticmethod
     def _extract_zip(compressed_file: Path, output_dir: Path):
-        with zipfile.ZipFile(compressed_file, 'r') as zf:
+        with zipfile.ZipFile(compressed_file, "r") as zf:
             zf.extractall(output_dir)
 
     @staticmethod
@@ -76,12 +78,18 @@ class CompressedFileExtractor:
         #      str(output_dir)])
 
         leds.LoggedErrDetectingSubprocess(
-            cmd=['wheel', 'unpack', str(compressed_file), '--dest',
-                 str(output_dir)],
+            cmd=[
+                "wheel",
+                "unpack",
+                str(compressed_file),
+                "--dest",
+                str(output_dir),
+            ],
             gen_logger_name=__name__,
             std_out_logger_name="std_out",
             std_err_logger_name="std_err",
-            default_exception=ce.WheelUnpackError)
+            default_exception=ce.WheelUnpackError,
+        )
 
     @staticmethod
     def _extract_unknown(compressed_file: Path, output_dir: Path):
@@ -93,13 +101,14 @@ class CompressedFileExtractor:
             ArchiveFileType.ZIP: self._extract_zip,
             ArchiveFileType.TAR_GZ: self._extract_tar_gz,
             ArchiveFileType.WHL: self._extract_whl,
-            ArchiveFileType.UNKNOWN: self._extract_unknown
+            ArchiveFileType.UNKNOWN: self._extract_unknown,
         }
 
     def extract(self, compressed_file: Path, output_dir: Path):
         file_type = ArchiveIdentifier().id_file_type(compressed_file)
 
         self._dispatch_method[file_type](compressed_file, output_dir)
+
 
 # targz_file_type = ArchiveIdentifier().id_file_type(
 #     Path('/Users/duane/dproj/testproj/dist/testproj-0.0.0.tar.gz')

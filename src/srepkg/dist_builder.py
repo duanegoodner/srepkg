@@ -11,12 +11,13 @@ import srepkg.utils.pkg_type_identifier as pti
 class DistBuilder:
 
     def __init__(
-            self,
-            distribution: str,
-            srcdir: Path,
-            output_directory: Path,
-            std_out_file: Path = tempfile.TemporaryFile(),
-            std_err_file: Path = tempfile.TemporaryFile()):
+        self,
+        distribution: str,
+        srcdir: Path,
+        output_directory: Path,
+        std_out_file: Path = tempfile.TemporaryFile(),
+        std_err_file: Path = tempfile.TemporaryFile(),
+    ):
         self._distribution = distribution
         self._srcdir = srcdir
         self._output_directory = output_directory
@@ -34,8 +35,9 @@ class DistBuilder:
     @property
     def _files_in_dest_dir(self):
         return [
-            item for item in self._output_directory.iterdir() if not
-            item.is_dir()
+            item
+            for item in self._output_directory.iterdir()
+            if not item.is_dir()
         ]
 
     def build(self):
@@ -45,22 +47,29 @@ class DistBuilder:
 
         leds.LoggedErrDetectingSubprocess(
             cmd=[
-                sys.executable, dbs.__file__,
+                sys.executable,
+                dbs.__file__,
                 self._distribution,
                 str(self._srcdir),
-                str(self._output_directory)
+                str(self._output_directory),
             ],
             gen_logger_name=__name__,
             std_out_logger_name="std_out",
             std_err_logger_name="std_err",
-            default_exception=ce.BuildSubprocessError
+            default_exception=ce.BuildSubprocessError,
         ).run()
 
         new_dist_files = [
-            item for item in self._files_in_dest_dir if
-            (self._calc_md5(item) not in orig_dest_checksums and
-             (pti.PkgRefIdentifier(str(item)).identify_for_osp_dispatch() ==
-             pti.PkgRefType.LOCAL_DIST))]
+            item
+            for item in self._files_in_dest_dir
+            if (
+                self._calc_md5(item) not in orig_dest_checksums
+                and (
+                    pti.PkgRefIdentifier(str(item)).identify_for_osp_dispatch()
+                    == pti.PkgRefType.LOCAL_DIST
+                )
+            )
+        ]
         assert len(new_dist_files) == 1
 
         return new_dist_files[0]

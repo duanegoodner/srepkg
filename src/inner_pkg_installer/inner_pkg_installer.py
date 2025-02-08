@@ -19,7 +19,8 @@ from unittest.mock import Mock
 
 try:
     from .yaspin_updater import yaspin_log_updater as status_display
-except(ModuleNotFoundError, ImportError):
+except (ModuleNotFoundError, ImportError):
+
     @contextmanager
     def status_display(msg, logger: logging.Logger):
         logger.info(msg)
@@ -31,24 +32,30 @@ class IPILogging:
     @staticmethod
     def confirm_setup():
 
-        custom_logger_names = [logging.getLogger(ref).name for ref in
-                               logging.root.manager.loggerDict]
+        custom_logger_names = [
+            logging.getLogger(ref).name
+            for ref in logging.root.manager.loggerDict
+        ]
 
         console_logger_info = {
             "std_err": (logging.DEBUG, sys.stderr),
-            "std_out": (logging.DEBUG, sys.stdout)
+            "std_out": (logging.DEBUG, sys.stdout),
         }
 
-        if not all([key in custom_logger_names for key in console_logger_info]):
+        if not all(
+            [key in custom_logger_names for key in console_logger_info]
+        ):
 
             log_dir = tempfile.TemporaryDirectory()
-            filename = f"srepkg_log_" \
-                       f"{datetime.now().strftime('%Y-%m-%d_%H_%M_%S_%f')}.log"
+            filename = (
+                f"srepkg_log_"
+                f"{datetime.now().strftime('%Y-%m-%d_%H_%M_%S_%f')}.log"
+            )
             logging.basicConfig(
                 level=logging.DEBUG,
                 format="%(asctime)s:%(levelname)s:%(name)s:%(message)s",
                 filename=f"{str(log_dir.name)}/{filename}",
-                filemode="w"
+                filemode="w",
             )
 
             for logger_name, handler_info in console_logger_info.items():
@@ -68,7 +75,7 @@ class SitePackagesInspector:
     def _get_val_from_line(data_key: str, line: str):
         data_regex = r"^" + re.escape(data_key) + r": [\d.a-zA-Z-_]+\s*$"
         if re.search(data_regex, line, re.IGNORECASE):
-            return line[(len(data_key) + 2):].strip()
+            return line[(len(data_key) + 2) :].strip()
 
     def _get_val_from_file(self, data_key: str, metadata_file: Path):
         with metadata_file.open(mode="r") as f:
@@ -81,20 +88,24 @@ class SitePackagesInspector:
                     return value
 
     def _get_metadata_val_from_dist_info_dir(
-            self, data_key: str, dist_info_dir: Path):
+        self, data_key: str, dist_info_dir: Path
+    ):
         for item in dist_info_dir.iterdir():
             if item.name == "METADATA":
                 return self._get_val_from_file(
-                    data_key=data_key, metadata_file=item)
+                    data_key=data_key, metadata_file=item
+                )
 
     def get_pkg_version(self, pkg_name: str):
         for item in self._site_pkgs.iterdir():
             if item.suffix == ".dist-info":
                 found_pkg_name = self._get_metadata_val_from_dist_info_dir(
-                    data_key="Name", dist_info_dir=item)
+                    data_key="Name", dist_info_dir=item
+                )
                 if found_pkg_name == pkg_name:
                     return self._get_metadata_val_from_dist_info_dir(
-                        data_key="Version", dist_info_dir=item)
+                        data_key="Version", dist_info_dir=item
+                    )
 
 
 class PyVersion:
@@ -138,15 +149,39 @@ class CustomVenvBuilder(venv.EnvBuilder):
         return self._site_pkgs
 
     def post_setup(self, context) -> None:
-        subprocess.call([
-            context.env_exe, "-m", "pip", "install", "--upgrade", "pip",
-            "--quiet"])
-        subprocess.call([
-            context.env_exe, "-m", "pip", "install", "--upgrade", "setuptools",
-            "--quiet"])
         subprocess.call(
-            [context.env_exe, "-m", "pip", "install", "--upgrade", "wheel",
-             "--quiet"])
+            [
+                context.env_exe,
+                "-m",
+                "pip",
+                "install",
+                "--upgrade",
+                "pip",
+                "--quiet",
+            ]
+        )
+        subprocess.call(
+            [
+                context.env_exe,
+                "-m",
+                "pip",
+                "install",
+                "--upgrade",
+                "setuptools",
+                "--quiet",
+            ]
+        )
+        subprocess.call(
+            [
+                context.env_exe,
+                "-m",
+                "pip",
+                "install",
+                "--upgrade",
+                "wheel",
+                "--quiet",
+            ]
+        )
 
         # self._site_pkgs = Path(
         #     f"{context.env_dir}/lib/python{sys.version_info.major}."
@@ -158,7 +193,7 @@ class VenvManager:
     def __init__(self, context):
         self._context = context
         self._pyvenv_cfg = configparser.ConfigParser()
-        with self._cfg_path.open(mode='r') as cfg_file:
+        with self._cfg_path.open(mode="r") as cfg_file:
             self._pyvenv_cfg.read_string("[pyvenv_cfg]\n" + cfg_file.read())
         self._console_scripts = []
 
@@ -181,24 +216,25 @@ class VenvManager:
     @property
     def _site_packages(self):
 
-        return self._env_dir / f"lib/python{str(self._version.major)}." \
-                               f"{str(self._version.minor)}" / "site-packages"
+        return (
+            self._env_dir / f"lib/python{str(self._version.major)}."
+            f"{str(self._version.minor)}" / "site-packages"
+        )
 
     @property
     def pypa_pkg_versions(self) -> Dict[str, str]:
         pypa_pkgs = ["pip", "setuptools", "wheel"]
         site_pkgs_inspector = SitePackagesInspector(self._site_packages)
-        return {pkg: site_pkgs_inspector.get_pkg_version(pkg) for pkg in
-                pypa_pkgs}
+        return {
+            pkg: site_pkgs_inspector.get_pkg_version(pkg) for pkg in pypa_pkgs
+        }
 
     @property
     def _relative_shebang(self):
         return '#!/bin/sh\n"exec" "`dirname $0`/python" "$0" "$@"\n'
 
     def pip_install(self, *args):
-        subprocess.call(
-            [self._env_exe, "-m", "pip", "install"] + [*args]
-        )
+        subprocess.call([self._env_exe, "-m", "pip", "install"] + [*args])
 
         return self
 
@@ -214,8 +250,8 @@ class VenvManager:
         self._console_scripts = []
         for path in self._site_packages.iterdir():
             if path.is_dir() and (
-                    path.name.endswith(".dist-info")
-                    or path.name.endswith(".egg-info")
+                path.name.endswith(".dist-info")
+                or path.name.endswith(".egg-info")
             ):
                 if (path / "entry_points.txt").exists():
                     self._get_console_scripts(path / "entry_points.txt")
@@ -239,8 +275,11 @@ class VenvManager:
             self._update_cs_shebang(self._env_dir / "bin" / console_script)
 
     def _update_rogue_pip_cs_shebang(self):
-        pip_cs_without_dist_info = self._env_dir / "bin" / \
-                                   f"pip{str(self._version.major)}.{str(self._version.minor)}"
+        pip_cs_without_dist_info = (
+            self._env_dir
+            / "bin"
+            / f"pip{str(self._version.major)}.{str(self._version.minor)}"
+        )
         if pip_cs_without_dist_info.exists():
             self._update_cs_shebang(pip_cs_without_dist_info)
 
@@ -270,10 +309,7 @@ class InnerPkgCfgReader:
 
 
 class InnerPkgInstaller:
-    def __init__(
-            self,
-            venv_path: Path,
-            orig_pkg_dist: Path):
+    def __init__(self, venv_path: Path, orig_pkg_dist: Path):
         self._venv_path = venv_path
         self._orig_pkg_dist = orig_pkg_dist
         self._venv_manager = None
@@ -281,9 +317,10 @@ class InnerPkgInstaller:
     # @show_status(
     #     base_logger=logging.getLogger(__name__),
     #     std_out_logger=logging.getLogger(f"std_out.{__name__}"))
-    def build_venv(self,
-                   # status_msg_kwarg
-                   ):
+    def build_venv(
+        self,
+        # status_msg_kwarg
+    ):
         env_builder = CustomVenvBuilder()
         env_builder.create(self._venv_path)
 
@@ -292,27 +329,32 @@ class InnerPkgInstaller:
     # @show_status(
     #     base_logger=logging.getLogger(__name__),
     #     std_out_logger=logging.getLogger(f"std_out.{__name__}"))
-    def install_orig_pkg_in_venv(self,
-                                 # status_msg_kwarg
-                                 ):
+    def install_orig_pkg_in_venv(
+        self,
+        # status_msg_kwarg
+    ):
         self._venv_manager.pip_install(
             self._orig_pkg_dist, "--quiet"
         ).rewire_shebangs()
 
     def show_post_venv_creation_summary(self):
         pkg_versions = "\n".join(
-            [f"\t• {pkg}=={version}" for pkg, version in
-             self._venv_manager.pypa_pkg_versions.items()])
-        msg = f"\tVirtual env created with the following pypa " \
-              f"packages installed:\n{pkg_versions}"
+            [
+                f"\t• {pkg}=={version}"
+                for pkg, version in self._venv_manager.pypa_pkg_versions.items()
+            ]
+        )
+        msg = (
+            f"\tVirtual env created with the following pypa "
+            f"packages installed:\n{pkg_versions}"
+        )
         logging.getLogger(f"std_out.{__name__}").info(msg)
 
     def iso_install_inner_pkg(self):
         IPILogging.confirm_setup()
 
         with status_display(
-                msg="Creating virtual env",
-                logger=logging.getLogger(__name__)
+            msg="Creating virtual env", logger=logging.getLogger(__name__)
         ) as updater:
             # spinner.text = "Creating virtual env"
             venv_context = self.build_venv()
@@ -323,7 +365,7 @@ class InnerPkgInstaller:
 
         with status_display(
             msg=f"Installing {self._orig_pkg_dist.name} in virtual env",
-            logger=logging.getLogger(__name__)
+            logger=logging.getLogger(__name__),
         ) as updater:
             # spinner.text = f"Installing {self._orig_pkg_dist.name} in virtual env"
             self.install_orig_pkg_in_venv()

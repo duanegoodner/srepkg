@@ -14,8 +14,9 @@ class LoggingInitializer:
         else:
             self._logfile_dir_temp_obj = None
         self._logfile_dir = logfile_dir
-        self._log_filename = \
+        self._log_filename = (
             f"srepkg_log_{datetime.now().strftime('%Y-%m-%d_%H_%M_%S_%f')}.log"
+        )
 
     @staticmethod
     def log_unhandled_exception(exc_type, exc_value, exc_traceback):
@@ -23,21 +24,21 @@ class LoggingInitializer:
             sys.__excepthook__(exc_type, exc_value, exc_traceback)
             return
 
-        logging.getLogger("std_err").critical("Uncaught exception", exc_info=(
-            exc_type, exc_value, exc_traceback))
+        logging.getLogger("std_err").critical(
+            "Uncaught exception", exc_info=(exc_type, exc_value, exc_traceback)
+        )
 
     def setup(self):
         logging.basicConfig(
             level=logging.DEBUG,
-            format='%(asctime)s:%(levelname)s:%(name)s:%(message)s',
+            format="%(asctime)s:%(levelname)s:%(name)s:%(message)s",
             filename=f"{str(self._logfile_dir)}/{self._log_filename}",
-            filemode='w')
-
-
+            filemode="w",
+        )
 
         console_log_handler_info = {
             "std_err": (logging.DEBUG, sys.stderr),
-            "std_out": (logging.DEBUG, sys.stdout)
+            "std_out": (logging.DEBUG, sys.stdout),
         }
 
         for handler_name, handler_info in console_log_handler_info.items():
