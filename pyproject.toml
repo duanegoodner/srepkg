@@ -45,3 +45,13 @@ norecursedirs = ["test/package_test_cases"]
 
 [tool.setuptools.package-data]
 graft = ["src/srepkg/repackaging_components"]
+
+[tool.coverage.run]
+omit = ["*/test/*"]
+branch = true
+
+[tool.coverage.report]
+exclude_lines = [
+    "if __name__ == \"__main__\":",
+    "@(abc\\.)?abstractmethod"
+]
