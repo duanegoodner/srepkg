@@ -4,7 +4,7 @@ from pathlib import Path
 from zipfile import ZipFile
 import srepkg.error_handling.custom_exceptions as ce
 import srepkg.utils.wheel_entry_point_extractor as we_pe
-from srepkg.test.shared_fixtures import sample_pkgs
+from shared_fixtures import sample_pkgs
 
 
 @pytest.fixture

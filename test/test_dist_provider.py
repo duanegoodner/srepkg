@@ -1,7 +1,7 @@
 import pytest
 import srepkg.dist_provider as d_prov
 from pathlib import Path
-from srepkg.test.shared_fixtures import sample_pkgs, tmp_construction_dir
+from shared_fixtures import sample_pkgs, tmp_construction_dir
 
 
 class TestDistProvider:

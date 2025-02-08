@@ -2,7 +2,7 @@ import pytest
 import srepkg.error_handling.custom_exceptions as ce
 import srepkg.repackager_interfaces as rep_int
 import srepkg.service_builder as sb
-from srepkg.test.shared_fixtures import sample_pkgs
+from shared_fixtures import sample_pkgs
 import srepkg.utils.dist_archive_file_tools as daft
 
 

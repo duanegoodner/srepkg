@@ -2,7 +2,7 @@ import pkginfo
 from pathlib import Path
 from typing import Callable
 import srepkg.repackager_data_structs as re_ds
-from srepkg.test.shared_fixtures import dummy_cdir_args
+from shared_fixtures import dummy_cdir_args
 
 
 # These tests are not exhaustive. Just run conditions missed by other tests.
