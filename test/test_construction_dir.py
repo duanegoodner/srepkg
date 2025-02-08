@@ -18,19 +18,28 @@ class TestConstructionDirInit:
         assert construction_dir.srepkg_root.parent == construction_dir._root
         assert construction_dir.srepkg_inner.exists()
         assert len(construction_dir.srepkg_inner.name) == 32
-        assert construction_dir.srepkg_inner.parent == construction_dir \
-            .srepkg_root
-        assert construction_dir.supported_dist_types == cdn.DEFAULT_DIST_CLASSES
-        assert construction_dir._root_contents == [construction_dir.srepkg_root]
-        assert set(construction_dir._srepkg_root_contents) == \
-               {construction_dir.srepkg_inner, construction_dir.orig_pkg_dists}
+        assert (
+            construction_dir.srepkg_inner.parent
+            == construction_dir.srepkg_root
+        )
+        assert (
+            construction_dir.supported_dist_types == cdn.DEFAULT_DIST_CLASSES
+        )
+        assert construction_dir._root_contents == [
+            construction_dir.srepkg_root
+        ]
+        assert set(construction_dir._srepkg_root_contents) == {
+            construction_dir.srepkg_inner,
+            construction_dir.orig_pkg_dists,
+        }
         assert construction_dir.srepkg_inner_contents == []
         assert construction_dir.pypi_version is None
         assert construction_dir.wheel_path is None
 
     def test_init_custom_construction_dir(self, tmp_path):
         construction_dir = cdn.CustomConstructionDir(
-            construction_dir_command=tmp_path)
+            construction_dir_command=tmp_path
+        )
         self.standard_init_tests(construction_dir)
         assert construction_dir._root == tmp_path
 
@@ -39,7 +48,8 @@ class TestConstructionDirInit:
         self.standard_init_tests(construction_dir)
         assert construction_dir._temp_dir_obj is not None
         assert construction_dir._root == Path(
-            construction_dir._temp_dir_obj.name)
+            construction_dir._temp_dir_obj.name
+        )
 
 
 class TestConstructionDirFinalize:
@@ -49,16 +59,20 @@ class TestConstructionDirFinalize:
         self._pkg_refs = sample_pkgs
 
     @pytest.mark.parametrize(
-        "orig_pkg, srepkg_name, orig_pkg_name, num_dists", [
+        "orig_pkg, srepkg_name, orig_pkg_name, num_dists",
+        [
             ("testproj", None, "testproj", 1),
             ("testproj", "custom_name", "testproj", 1),
-            ("testproj_targz", None, "testproj", 2)
-        ])
+            ("testproj_targz", None, "testproj", 2),
+        ],
+    )
     def test_good_construction_dir_conditions(
-            self, orig_pkg, srepkg_name, orig_pkg_name, num_dists):
+        self, orig_pkg, srepkg_name, orig_pkg_name, num_dists
+    ):
         srepkg_command = rep_int.SrepkgCommand(
             orig_pkg_ref=getattr(self._pkg_refs, orig_pkg),
-            srepkg_name=srepkg_name)
+            srepkg_name=srepkg_name,
+        )
         service_builder = sb.ServiceBuilder(srepkg_command)
         osp = service_builder.create_orig_src_preparer()
         construction_dir_summary = osp.prepare()
@@ -73,13 +87,14 @@ class TestConstructionDirFinalize:
 
     def test_multiple_packages(self, sample_pkgs):
         service_builder = sb.ServiceBuilder(
-            rep_int.SrepkgCommand(
-                orig_pkg_ref=self._pkg_refs.testproj))
+            rep_int.SrepkgCommand(orig_pkg_ref=self._pkg_refs.testproj)
+        )
         osp = service_builder.create_orig_src_preparer()
         construction_dir_summary = osp.prepare()
         shutil.copy2(
             src=sample_pkgs.wheel_inspect_whl,
-            dst=construction_dir_summary.orig_pkg_dists)
+            dst=construction_dir_summary.orig_pkg_dists,
+        )
 
         with pytest.raises(ce.MultiplePackagesPresent):
             osp._receiver.finalize()
@@ -89,7 +104,8 @@ class TestConstructionDirFinalize:
             tmp_construction_dir.finalize()
 
     def test_sdist_to_wheel_converter_with_no_sdist(
-            self, tmp_construction_dir):
+        self, tmp_construction_dir
+    ):
         converter = cdn.SdistToWheelConverter(tmp_construction_dir)
         with pytest.raises(ce.NoSDistForWheelConstruction):
             converter.build_wheel()

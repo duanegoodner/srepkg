@@ -12,6 +12,7 @@ def test_srepkg(mocker, sample_pkgs):
 
     main(["black", "-r", "23.1.0"])
 
+
 def run_repkg():
     main(["black", "-r", "23.1.0"])
 

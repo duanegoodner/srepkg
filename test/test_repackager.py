@@ -14,14 +14,17 @@ def test_repackager(tmp_path_factory, sample_pkgs):
     srepkg_command = rep_int.SrepkgCommand(
         orig_pkg_ref=sample_pkgs.wheel_inspect_whl,
         dist_out_dir=str(dist_out_dir),
-        construction_dir=str(construction_dir))
+        construction_dir=str(construction_dir),
+    )
 
     service_class_builder = sb.ServiceBuilder(srepkg_command)
     repackager = rep.Repackager(
         srepkg_command=srepkg_command,
-        service_class_builder=service_class_builder)
+        service_class_builder=service_class_builder,
+    )
 
-    with mock.patch.object(s_bldr.SrepkgBuilder, "build", return_value=None)\
-            as mock_build:
+    with mock.patch.object(
+        s_bldr.SrepkgBuilder, "build", return_value=None
+    ) as mock_build:
         repackager.repackage()
         mock_build.assert_called_once_with()

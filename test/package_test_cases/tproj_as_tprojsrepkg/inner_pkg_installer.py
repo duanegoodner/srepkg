@@ -31,15 +31,13 @@ class CustomVenvBuilder(venv.EnvBuilder):
 
 
 class VenvManager:
-    def __init__(
-        self, env_dir: Path, env_exe: Path, cfg_path: Path
-    ):
+    def __init__(self, env_dir: Path, env_exe: Path, cfg_path: Path):
         # self._context = venv_context
         self._env_dir = env_dir
         self._env_exe = env_exe
         self._cfg_path = cfg_path
         self._pyvenv_cfg = configparser.ConfigParser()
-        with self._cfg_path.open(mode='r') as cfg_file:
+        with self._cfg_path.open(mode="r") as cfg_file:
             self._pyvenv_cfg.read_string("[pyvenv_cfg]\n" + cfg_file.read())
         # self._version_info = version_info
         self._console_scripts = []
@@ -74,9 +72,7 @@ class VenvManager:
         return '#!/bin/sh\n"exec" "`dirname $0`/python" "$0" "$@"\n'
 
     def pip_install(self, *args):
-        subprocess.call(
-            [self._env_exe, "-m", "pip", "install"] + [*args]
-        )
+        subprocess.call([self._env_exe, "-m", "pip", "install"] + [*args])
 
         return self
 
@@ -164,8 +160,7 @@ class InnerPkgCfgReader:
 
 
 class InnerPkgInstaller:
-    def __init__(
-            self, venv_path: Path, inner_pkg_install_ref: Path):
+    def __init__(self, venv_path: Path, inner_pkg_install_ref: Path):
         self._venv_path = venv_path
         self._inner_pkg_install_ref = inner_pkg_install_ref
 
@@ -184,7 +179,8 @@ class InnerPkgInstaller:
         venv_manager = VenvManager(
             env_dir=Path(venv_context.env_dir),
             env_exe=Path(venv_context.env_exe),
-            cfg_path=Path(venv_context.cfg_path))
+            cfg_path=Path(venv_context.cfg_path),
+        )
         venv_manager.pip_install(
             self._inner_pkg_install_ref, "--quiet"
         ).rewire_shebangs()
@@ -192,8 +188,9 @@ class InnerPkgInstaller:
 
 def custom_command():
 
-    inner_pkg_cfg_reader = InnerPkgCfgReader(Path(__file__).parent /
-                                             'inner_pkg_install.cfg')
+    inner_pkg_cfg_reader = InnerPkgCfgReader(
+        Path(__file__).parent / "inner_pkg_install.cfg"
+    )
     srepkg_name = inner_pkg_cfg_reader.srepkg_name
 
     inner_pkg_installer = InnerPkgInstaller(
