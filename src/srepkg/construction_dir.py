@@ -22,6 +22,9 @@ DEFAULT_SREPKG_SUFFIX = "srepkg"
 
 
 class ConstructionDir(osp_int.ManageableConstructionDir):
+    """
+    Class for managing directory where SRE package is built.
+    """
 
     def __init__(
         self, construction_dir_command: Path, srepkg_name_command: str = None
@@ -195,6 +198,10 @@ class ConstructionDir(osp_int.ManageableConstructionDir):
 
 
 class CustomConstructionDir(ConstructionDir):
+    """
+    Sublcass of ConstructionDir used when SrepkgCommand specifies a build
+    location.
+    """
     def __init__(
         self, construction_dir_command: Path, srepkg_name_command: str = None
     ):
@@ -208,6 +215,10 @@ class CustomConstructionDir(ConstructionDir):
 
 
 class TempConstructionDir(ConstructionDir):
+    """
+    Sublcass of ConstructionDir used when SrepkgCommand does not specify a
+    build location (and temp dir is used).
+    """
     def __init__(self, srepkg_name_command: str = None):
         self._temp_dir_obj = tempfile.TemporaryDirectory()
         super().__init__(
@@ -224,6 +235,10 @@ class TempConstructionDir(ConstructionDir):
 
 
 class SdistToWheelConverter:
+    """
+    Converts a SDist to Wheel. Use this when original package is only in
+    SDist form, so we can install with wheel into venv.
+    """
     def __init__(self, construction_dir: ConstructionDir):
         self._construction_dir = construction_dir
         self._compressed_file_extractor = cft.CompressedFileExtractor()

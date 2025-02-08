@@ -1,3 +1,7 @@
+"""
+Contains classes for retrieving packages from remote locations.
+"""
+
 import functools
 import logging
 import requests
@@ -14,6 +18,9 @@ import srepkg.utils.logged_err_detecting_subprocess as leds
 
 
 class PyPIPkgRetriever(osp_int.RemotePkgRetrieverInterface):
+    """
+    Retrieves packages from Python Package Index.
+    """
     _pypi_api_base = "https://pypi.org/pypi/{}/json"
 
     def __init__(
@@ -143,6 +150,9 @@ class PyPIPkgRetriever(osp_int.RemotePkgRetrieverInterface):
 
 
 class GithubPkgRetriever(osp_int.RemotePkgRetrieverInterface):
+    """
+    Retrieves packages from Github.
+    """
 
     def __init__(self, pkg_ref: str):
         self._pkg_ref = pkg_ref
