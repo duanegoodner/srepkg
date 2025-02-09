@@ -7,14 +7,14 @@ from shared_fixtures import sample_pkgs
 def test_srepkg(mocker, sample_pkgs):
     # mocker.patch.object(rep.Repackager, "repackage", return_value=None)
 
-    # main([sample_pkgs.testproj, "-d", "/Users/duane/srepkg_pkgs", "-n"
+    # main([sample_pkgs.oldmath, "-d", "/Users/duane/srepkg_pkgs", "-n"
     #       "from_script"])
 
     main(["black", "-r", "23.1.0"])
 
 
 def run_repkg():
-    main(["numpy", "-r", "2.2.2"])
+    main(["numpy", "-r", "2.0.0"])
 
 
 if __name__ == "__main__":

@@ -207,7 +207,7 @@ class CustomVenvBuilder(venv.EnvBuilder):
 
 class VenvManager:
     """
-    Proovides methods for obtaining info abou packages in venv and, most
+    Proovides methods for obtaining info abou tpackages in venv and, most
     importantly, modifying shebangs of console script entry point files so
     they are accessible from environment srepkg was run from (outside of venv).
     """

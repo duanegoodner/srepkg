@@ -17,3 +17,11 @@ logo_concept.svg
 dual_build_notes.txtgit
 
 *.whl
+!test/package_test_cases/testproj-0.0.0-py3-none-any.whl
+!test/package_test_cases/wheel_inspect-1.7.1-py3-none-any.whl
+
+demo/oldmath
+
+build/
+
+dist/
