@@ -17,3 +17,9 @@ logo_concept.svg
 dual_build_notes.txtgit
 
 *.whl
+
+demo/oldmath
+
+build/
+
+dist/
