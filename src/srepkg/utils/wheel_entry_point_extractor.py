@@ -1,3 +1,4 @@
+import configparser
 import entry_points_txt
 import tempfile
 from pathlib import Path
@@ -34,6 +35,9 @@ class WheelEntryPointExtractor:
     def _convert_to_srepkg_builder_format(
         entry_point: entry_points_txt.EntryPoint,
     ):
+        # if "-" in entry_point.name:
+        #     entry_point.name = entry_point.name.replace("-", "")
+        
         return re_ds.CSEntryPoint(
             command=entry_point.name,
             module=entry_point.module,
@@ -41,8 +45,15 @@ class WheelEntryPointExtractor:
             attr=entry_point.attr,
         )
 
-    def get_entry_points(self):
+    # @staticmethod
+    # def remove_dashed_from_entry_point_name(entry_pts_file: Path):
+    #     config = configparser.ConfigParser()
+    #     config.read(entry_pts_file)
+    #     sections = config.sections()
+    #     num_sections = len(sections)
 
+    
+    def get_entry_points(self):
         temp_dir = tempfile.TemporaryDirectory()
         output_file = self._extract_entry_pts_txt(Path(temp_dir.name))
 

@@ -13,6 +13,10 @@ class CSEntryPoint:
     module: str
     attr: str
 
+    # def __post_init__(self):
+    #     if "-" in self.command:
+    #         self.command = self.command.replace("-", "")
+
     @property
     def as_string(self):
         return f"{self.command} = {self.module}:{self.attr}"
