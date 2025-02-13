@@ -369,7 +369,10 @@ class SrepkgBuilder(re_int.SrepkgBuilderInterface):
         return self
 
     def _build_srepkg_base(self):
-        self._simple_construction_tasks()._build_entry_points()._write_srepkg_cfg_non_entry_data()._build_base_setup_cfg()
+        self._simple_construction_tasks()
+        self._build_entry_points()
+        self._write_srepkg_cfg_non_entry_data()
+        self._build_base_setup_cfg()
 
     def _complete_dists(self):
         dist_paths = []
