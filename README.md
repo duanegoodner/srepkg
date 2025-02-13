@@ -1,27 +1,52 @@
 # Srepkg (Solo Repackage)
 
-Add a safeguard to a dependency-laden Python command line  interface (CLI) app to ensure users can only install it in an isolated virtual environment but can run it from outside that environment.
+Add a safeguard to a Python command line (CL) app to ensure users can only install it in an isolated virtual environment but can access it from another environment.
 
 ## Description
 
-**srepkg** is a Python package that wraps an isolation layer around other Python packages. A package that has been "re-packaged" is referred to as an "S-package."
+**Srepkg** is a Python package that wraps an isolation layer around other Python packages.
 
-When an S-package is installed in an active, pre-existing Python environment, the original package plus its dependencies are installed in a new, automatically created virtual environment. A dependency-free "access" package installed in the pre-existing environment contains a controller module cabable of making calls to the Python interpreter in the newly created environment. This package structure prevents dependency conflicts but still exposes the original package’s CLI to the pre-existing environment. 
+When a package wrapped in this isolation layer is installed in an active, pre-existing Python environment, the original package plus its dependencies are installed in a new, automatically created virtual environment. A dependency-free "access" package installed in the pre-existing environment contains a controller module capable of making calls to the Python interpreter in the newly created environment. This package structure ensures that none of the original package's dependencies conflict with packages in the pre-existing environment but still exposes the original package’s CL to the pre-existing environment. 
+
+## Use Cases
+
+### For Package Distributors
+\Wrapping a CL package with **Srepkg** prior to sharing the package with other users will ensure that wherever the package is installed, it does not "break" a user's existing Python environment &mdash; even if the user knows nothing about managing Python environments.
+
+### For Package Users
+Any existing CL package obtained from sources such as the Python Packaging Index (PyPI) , GitHub, or directly from another user can be wrapped with **Srepkg** prior to installation.
 
 ## Getting Started
 
 ### Requirements
 
-- Python version 3.6 or higher
-- [pip](https://pip.pypa.io/en/stable/installation/#)
-- To be compatible with srepkg, a package must:
-  * Be installable via pip
-  * Have command line entry point(s) specifiied in a setup.py or setup.cfg file.
+- Python version 3.10 or higher
+- For compatibility with **Srepkg**, and existing package must:
+  * Be installable via [pip](https://pip.pypa.io/en/stable/installation/#)
+  * Have command line entry point(s) specified in either one the `[project.scripts]` section of a `pyproject.toml` (preferred), the `[options.entry_points]` section of a  `setup.cfg`, or the `entry_points` arguments passed to `setup()` in a `setupy.py` file.
 
-### Installing srepkg
+### Installing
+
+> [!CAUTION]
+> It is highly recommended to install srepkg in a virtual environment created using a tool such as `conda` or Python's built-in `venv` module. In the example below, we use `conda`.
 
 ```
-$ pip install git+https://github.com/duanegoodner/srepkg
+conda create -n srepkg_test python=3.10
+conda activate srepkt_test
+git clone https://github.com/duanegoodner/srepkg
+cd srepkg
+pip install .
+```
+
+### Demos
+
+#### Local package `oldmath` that depends on old version of `numpy`
+
+ `oldmath`
+
+```
+
+
 ```
 
 ### Usage
