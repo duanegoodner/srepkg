@@ -27,3 +27,5 @@ demo/oldmath
 build/
 
 dist/
+
+srepkg_dists/

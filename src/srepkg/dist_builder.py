@@ -21,6 +21,7 @@ class DistBuilder:
         self._distribution = distribution
         self._source_dir = source_dir
         self._output_directory = output_directory
+        self._output_directory.mkdir(parents=True, exist_ok=True)
         self._std_out_file = std_out_file
         self._std_err_file = std_err_file
 

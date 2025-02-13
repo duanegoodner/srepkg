@@ -14,7 +14,7 @@ def test_srepkg(mocker, sample_pkgs):
 
 
 def run_repkg():
-    main(["numpy", "-r", "2.2.2"])
+    main(["black", "-r", "23.1.0"])
 
 
 if __name__ == "__main__":
