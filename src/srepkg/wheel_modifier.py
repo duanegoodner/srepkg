@@ -1,4 +1,6 @@
 import configparser
+import contextlib
+import os
 import shutil
 import tempfile
 import zipfile
@@ -8,6 +10,18 @@ from typing import Callable
 from wheel.cli.pack import pack
 from wheel.cli.unpack import unpack
 
+
+def silent_unpack(path: str, dest: str):
+    """Unpack a .whl file silently."""
+    with open(os.devnull, 'w') as devnull:
+        with contextlib.redirect_stdout(devnull), contextlib.redirect_stderr(devnull):
+            unpack(path, dest)
+
+def silent_pack(directory: str, dest_dir: str, build_number: str | None):
+    """Pack a directory into a .whl file silently."""
+    with open(os.devnull, 'w') as devnull:
+        with contextlib.redirect_stdout(devnull), contextlib.redirect_stderr(devnull):
+            pack(directory, dest_dir, build_number)
 
 class WheelDistInfo:
     def __init__(self, wheel_path: Path):
@@ -72,6 +86,10 @@ class WheelDistInfo:
         else:
             return list(dict(entry_points_config["console_scripts"]).keys())
 
+    @property
+    def has_console_script_name_with_dash(self) -> bool:
+        return any(["-" in item for item in self.console_script_names])
+
 
 class WheelEntryPointsModifier:
     def __init__(self, wheel_path: Path):
@@ -109,9 +127,11 @@ class WheelEntryPointsModifier:
             entry_points_config.write(entry_points_txt_file)
 
     def modify_and_rebuild(self):
+
+
         # unpack wheel
         unpack_dir = tempfile.TemporaryDirectory()
-        unpack(path=str(self.wheel_dist_info.wheel_path), dest=unpack_dir.name)
+        silent_unpack(path=str(self.wheel_dist_info.wheel_path), dest=unpack_dir.name)
         unpacked_wheel = list(Path(unpack_dir.name).iterdir())[0]
 
         # modify entry_points.txt in unpacked wheel
@@ -122,7 +142,7 @@ class WheelEntryPointsModifier:
 
         # repack wheel
         rebuild_dir = tempfile.TemporaryDirectory()
-        pack(
+        silent_pack(
             directory=str(unpacked_wheel),
             dest_dir=str(rebuild_dir.name),
             build_number=None,
@@ -138,18 +158,18 @@ class WheelEntryPointsModifier:
         shutil.rmtree(rebuild_dir.name)
 
 
-if __name__ == "__main__":
-
-    my_wheel_path = (
-        (Path(__file__)).parent.parent.parent
-        / "numpy-2.2.2-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64-copy.whl"
-    )
-    my_wheel_dist_info = WheelDistInfo(wheel_path=my_wheel_path)
-    my_dist_entry_points_config = my_wheel_dist_info.get_entry_points_config()
-    my_console_script_names = my_wheel_dist_info.console_script_names
-    print(my_console_script_names)
-
-    wheel_modifier = WheelEntryPointsModifier(my_wheel_path)
-    wheel_modifier.modify_and_rebuild()
-    updated_console_script_names = my_wheel_dist_info.console_script_names
-    print(updated_console_script_names)
+# if __name__ == "__main__":
+#
+#     my_wheel_path = (
+#         (Path(__file__)).parent.parent.parent
+#         / "numpy-2.2.2-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl"
+#     )
+#     my_wheel_dist_info = WheelDistInfo(wheel_path=my_wheel_path)
+#     my_dist_entry_points_config = my_wheel_dist_info.get_entry_points_config()
+#     my_console_script_names = my_wheel_dist_info.console_script_names
+#     print(my_console_script_names)
+#
+#     wheel_modifier = WheelEntryPointsModifier(my_wheel_path)
+#     wheel_modifier.modify_and_rebuild()
+#     updated_console_script_names = my_wheel_dist_info.console_script_names
+#     print(updated_console_script_names)

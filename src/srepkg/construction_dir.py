@@ -164,24 +164,25 @@ class ConstructionDir(osp_int.ManageableConstructionDir):
 
         self._srepkg_name = srepkg_name
 
-    def _modify_wheel_entry_points(self):
-        wm.WheelEntryPointsModifier(wheel_path=self.wheel_path).modify_and_rebuild()
+    def _ensure_valid_console_script_names(self):
+        wheel_dist_info = wm.WheelDistInfo(wheel_path=self.wheel_path)
+        if wheel_dist_info.has_console_script_name_with_dash:
+            wm.WheelEntryPointsModifier(
+                wheel_path=self.wheel_path
+            ).modify_and_rebuild()
 
     def _extract_cs_entry_pts_from_wheel(self):
         return we_pe.WheelEntryPointExtractor(
             self.wheel_path
         ).get_entry_points()
 
-    def _set_summary(self):
+    def _ensure_have_wheel(self):
         if not self.has_sdist and not self.has_wheel:
             raise ce.MissingOrigPkgContent(str(self.orig_pkg_dists))
         if not self.has_wheel and self.has_sdist:
             SdistToWheelConverter(self).build_wheel()
-        self._update_srepkg_and_dir_names(
-            discovered_pkg_name=self.orig_pkg_name
-        )
 
-        self._modify_wheel_entry_points()
+    def _set_summary(self):
 
         self._summary = rp_ds.ConstructionDirSummary(
             pkg_name=self.orig_pkg_name,
@@ -195,6 +196,12 @@ class ConstructionDir(osp_int.ManageableConstructionDir):
         )
 
     def finalize(self):
+        self._ensure_have_wheel()
+        self._update_srepkg_and_dir_names(
+            discovered_pkg_name=self.orig_pkg_name
+        )
+
+        self._ensure_valid_console_script_names()
         self._set_summary()
         return self._summary
 
@@ -208,6 +215,7 @@ class CustomConstructionDir(ConstructionDir):
     Sublcass of ConstructionDir used when SrepkgCommand specifies a build
     location.
     """
+
     def __init__(
         self, construction_dir_command: Path, srepkg_name_command: str = None
     ):
@@ -225,6 +233,7 @@ class TempConstructionDir(ConstructionDir):
     Sublcass of ConstructionDir used when SrepkgCommand does not specify a
     build location (and temp dir is used).
     """
+
     def __init__(self, srepkg_name_command: str = None):
         self._temp_dir_obj = tempfile.TemporaryDirectory()
         super().__init__(
@@ -245,6 +254,7 @@ class SdistToWheelConverter:
     Converts a SDist to Wheel. Use this when original package is only in
     SDist form, so we can install with wheel into venv.
     """
+
     def __init__(self, construction_dir: ConstructionDir):
         self._construction_dir = construction_dir
         self._compressed_file_extractor = cft.CompressedFileExtractor()
