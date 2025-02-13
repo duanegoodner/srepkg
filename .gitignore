@@ -29,3 +29,5 @@ build/
 dist/
 
 srepkg_dists/
+
+.coverage
