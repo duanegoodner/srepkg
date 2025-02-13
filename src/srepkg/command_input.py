@@ -3,6 +3,7 @@ Contains class for retrieving arguments from command line.
 """
 
 import argparse
+from pathlib import Path
 import srepkg.error_handling.custom_exceptions as ce
 import srepkg.repackager_interfaces as rep_int
 
@@ -96,6 +97,13 @@ class SrepkgCommandLine(rep_int.SrepkgCommandInterface):
             "automatically deleted at end of execution.",
         )
 
+    @staticmethod
+    def _set_defaults(args_namespace):
+                
+        if args_namespace.dist_out_dir is None:
+            args_namespace.dist_out_dir = Path.cwd() / "srepkg_dists"
+        
+    
     def get_args(self, *args) -> rep_int.SrepkgCommand:
         """
 
@@ -108,9 +116,11 @@ class SrepkgCommandLine(rep_int.SrepkgCommandInterface):
         """
         self._attach_args()
         args_namespace = self._parser.parse_args(*args)
+        self._set_defaults(args_namespace=args_namespace)
         if args_namespace.git_ref and args_namespace.pypi_version:
             raise ce.PkgVersionWithCommitRef(
                 commit_ref=args_namespace.git_ref,
                 pkg_version=args_namespace.pypi_version,
             )
+
         return rep_int.SrepkgCommand(**vars(args_namespace))
