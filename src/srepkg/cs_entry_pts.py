@@ -16,7 +16,7 @@ class EntryPointsBuilder:
         entry_pt_template: Path,
         srepkg_entry_pt_dir: Path,
         srepkg_name: str,
-        srepkg_config: configparser.ConfigParser(),
+        srepkg_config: configparser.ConfigParser,
         generic_entry_funct_name: str = "entry_funct",
     ):
         self._orig_pkg_entry_pts = orig_pkg_entry_pts
@@ -81,4 +81,6 @@ class EntryPointsBuilder:
         Returns:
             None
         """
-        self._write_entry_point_files()._write_entry_point_init()._update_srepkg_config()
+        self._write_entry_point_files()
+        self._write_entry_point_init()
+        self._update_srepkg_config()
