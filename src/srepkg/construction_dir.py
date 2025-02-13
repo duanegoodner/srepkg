@@ -13,6 +13,7 @@ import srepkg.error_handling.custom_exceptions as ce
 import srepkg.utils.dist_archive_file_tools as cft
 import srepkg.orig_src_preparer_interfaces as osp_int
 import srepkg.repackager_data_structs as rp_ds
+import srepkg.wheel_modifier as wm
 import srepkg.utils.wheel_entry_point_extractor as we_pe
 
 from inner_pkg_installer import yaspin_updater as yu
@@ -163,6 +164,9 @@ class ConstructionDir(osp_int.ManageableConstructionDir):
 
         self._srepkg_name = srepkg_name
 
+    def _modify_wheel_entry_points(self):
+        wm.WheelEntryPointsModifier(wheel_path=self.wheel_path).modify_and_rebuild()
+
     def _extract_cs_entry_pts_from_wheel(self):
         return we_pe.WheelEntryPointExtractor(
             self.wheel_path
@@ -176,6 +180,8 @@ class ConstructionDir(osp_int.ManageableConstructionDir):
         self._update_srepkg_and_dir_names(
             discovered_pkg_name=self.orig_pkg_name
         )
+
+        self._modify_wheel_entry_points()
 
         self._summary = rp_ds.ConstructionDirSummary(
             pkg_name=self.orig_pkg_name,

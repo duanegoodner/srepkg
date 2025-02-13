@@ -13,9 +13,9 @@ class CSEntryPoint:
     module: str
     attr: str
 
-    def __post_init__(self):
-        if "-" in self.command:
-            self.command = self.command.replace("-", "_")
+    # def __post_init__(self):
+    #     if "-" in self.command:
+    #         self.command = self.command.replace("-", "_")
 
     @property
     def as_string(self):

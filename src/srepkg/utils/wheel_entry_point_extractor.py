@@ -13,6 +13,8 @@ class WheelEntryPointExtractor:
     def __init__(self, whl_path: Path):
         self._whl_path = whl_path
 
+    
+    
     def _extract_entry_pts_txt(self, output_path: Path) -> Path:
 
         with ZipFile(self._whl_path, "r") as zip_obj:
@@ -31,6 +33,8 @@ class WheelEntryPointExtractor:
 
             return output_path / entry_pts_txt[0]
 
+    
+    
     @staticmethod
     def _convert_to_srepkg_builder_format(
         entry_point: entry_points_txt.EntryPoint,
