@@ -10,7 +10,7 @@ authors = [
     { name = "Duane Goodner", email = "dmgoodner@gmail.com" }
 ]
 readme = "README.md"
-requires-python = ">=3.7"
+requires-python = ">=3.10"
 license = { file = "LICENSE" }
 keywords = []
 classifiers = [
@@ -19,14 +19,17 @@ classifiers = [
     "Operating System :: OS Independent"
 ]
 dependencies = [
-    "build",
-    "Cython",
-    "entry_points_txt",
-    "packaging",
-    "pkginfo",
-    "requests",
-    "yaspin"
+    "build>=1.0.0",
+#    "Cython",
+    "entry_points_txt>=0.2.1",
+    "packaging>=22.0",
+    "pkginfo>=1.9.0",
+    "requests>=2.28.0",
+    "yaspin>=2.2.0"
 ]
+
+[project.optional-dependencies]
+test = ["pytest>=7.0", "pytest-mock>=3.0", "coverage>=7.0"]
 
 [tool.setuptools]
 package-dir = {"" = "src"}
