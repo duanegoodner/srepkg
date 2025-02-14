@@ -49,12 +49,37 @@ class SrepkgSdistWriter(SrepkgDistWriter):
     Creates a source distribution of SRE package.
     """
 
-    @staticmethod
-    def zip_dir(zip_name: str, src_path: Path, exclude_paths: List[Path]):
+    @property
+    def src_path(self) -> Path:
+        return self._orig_pkg_summary.srepkg_root
+
+    @property
+    def exclude_paths(self) -> List[Path]:
+        return [
+            item
+            for item in list((self.src_path / "orig_dist").iterdir())
+            if item != self._orig_pkg_summary.src_for_srepkg_sdist
+        ]
+
+    @property
+    def files_to_copy(self) -> List[Path]:
+        return [
+            path
+            for path in list(self.src_path.rglob("*"))
+            if path not in self.exclude_paths
+        ]
+
+    # @staticmethod
+    # def write_to_zip(zip_name: str, src_path: Path, exclude_paths: List[Path]):
+    #     with ZipFile(zip_name, "w", ZIP_DEFLATED) as zf:
+    #         for file in list(src_path.rglob("*")):
+    #             if file not in exclude_paths:
+    #                 zf.write(file, file.relative_to(src_path.parent))
+
+    def write_to_zip(self, zip_name: str):
         with ZipFile(zip_name, "w", ZIP_DEFLATED) as zf:
-            for file in list(src_path.rglob("*")):
-                if file not in exclude_paths:
-                    zf.write(file, file.relative_to(src_path.parent))
+            for file in self.files_to_copy:
+                zf.write(file, file.relative_to(self.src_path.parent))
 
     def write_dist(self):
         with yu.yaspin_log_updater(
@@ -77,11 +102,13 @@ class SrepkgSdistWriter(SrepkgDistWriter):
 
             sdist_path = self._dist_out_dir / output_filename
 
-            self.zip_dir(
-                zip_name=str(sdist_path),
-                src_path=self._orig_pkg_summary.srepkg_root,
-                exclude_paths=exclude_paths,
-            )
+            self.write_to_zip(zip_name=str(sdist_path))
+
+            # self.write_to_zip(
+            #     zip_name=str(sdist_path),
+            #     src_path=self._orig_pkg_summary.srepkg_root,
+            #     exclude_paths=exclude_paths,
+            # )
 
         logging.getLogger(f"std_out.{__name__}").info(
             f"\t{self._orig_pkg_summary.srepkg_name} sdist saved as: "
@@ -246,6 +273,7 @@ class SrepkgWheelCompleter(SrepkgCompleter):
     """
     Completes construction of a wheel distribution.
     """
+
     @property
     def _props(self) -> CompleterProperties:
         return CompleterProperties(
@@ -306,6 +334,7 @@ class SrepkgBuilder(re_int.SrepkgBuilderInterface):
     Builds sdist and wheel distribution of SRE package and output file and entry-point
     info to terminal.
     """
+
     def __init__(
         self,
         construction_dir_summary: re_ds.ConstructionDirSummary,
