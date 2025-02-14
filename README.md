@@ -87,16 +87,22 @@ options:
 
 The following demo shows how we take an original package that has a dependency conflict what's already installed in an active Python environment, re-package with *srepkg*, install the re-packaged version, and access the original package's CLI from the active environment, without experiencing any dependency conflict.
 
+#### Environment Setup
+
 First, confirm we are using a conda environment dedicated to our tests. From the *srepkg* repo root, run:
 ```
 $ conda create -n srepkg_oldmath_test python=3.10
 $ conda activate srepkg_oldmath_test
 $ pip install .
 ```
+
 Then, let's install a version of numpy that is relatively new (as of Feb. 2025).
 ```
 $ pip install numpy==2.2.2
 ```
+Later on, we will use the presence of this current numpy version to help illustrate the absence of dependency conflicts.
+
+#### Repackage `oldmath`into `oldmathsrepkg`
 
 Next, we will re-package a simple local Python package `oldmath` with its source files located `./test/demos/oldmath/`. `oldmath` depends on `numpy 1.26.4`.
 
@@ -124,6 +130,11 @@ Upon installation, oldmathsrepkg will provide access to the following command li
 ```
 The repackaged version of `oldmath` is called `oldmathsrepkg`, and it has been built into both `wheel` and `sdist` distributions.
 
+> [!NOTE]
+> The `-n` option can be used to assign a custom name to the repackaged package and distributions.
+
+#### Install and test `oldmathsrepkg`
+
 Next, install `oldmathsrepkg` from the newly created wheel:
 ```
 $ pip install ./srepkg_dists/oldmathsrepkg-0.1.0-cp310-abi3-linux_x86_64.whl
@@ -149,6 +160,9 @@ $ oldmath 2025
 2025 * [1 2 3] = [2025 4050 6075]
 numpy version used by this program = 1.26.4
 ```
+
+#### Confirm absence of dependency conflicts
+
 Double-check the version of `numpy` that's installed in our active Python environment:
 ```
 $ pip freeze | grep numpy
@@ -164,6 +178,11 @@ No broken requirements found.
 ```
 
 The key thing to note is that oldmath, which we can access from the active Python environment uses `numpy 1.26.4`, but we still have `numpy 2.2.2` installed the active environment.
+
+
+#### Distribute `oldmathsrepkg` with confidence that it will not break environments
+
+We can now send the `oldmathsrepkg` *wheel* and/or *sdist* (saved under `./srepkg_dists`) to colleagues, knowing that install it will not cause problems in their Python environment, even if they are using a current version of `numpy` and do not know much / anything about Python dependencies and environments.
 
 ### Demo #2: Re-package a distribution obtained from PyPI
 
