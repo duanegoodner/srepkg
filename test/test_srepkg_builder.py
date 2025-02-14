@@ -72,17 +72,21 @@ class TestSrepkgBuilder:
             output_dir=Path("dummy"),
         )
 
-    # def test_zip_dir_file_exclusion(self, tmp_path_factory):
-    #     src_path = tmp_path_factory.mktemp("src_path")
-    #     (src_path / "file_to_exclude.txt").touch()
-    #     dest_dir = tmp_path_factory.mktemp("dest_dir")
-    #
-    #     zip_name = str(dest_dir / "dest_zip.zip")
-    #     s_bldr.SrepkgSdistWriter.write_to_zip(
-    #         zip_name=zip_name,
-    #         # src_path=src_path,
-    #         # exclude_paths=[src_path / "file_to_exclude.txt"],
-    #     )
+    def test_zip_dir_file_exclusion(
+        self, tmp_path_factory, dummy_cdir_summary
+    ):
+        src_path = tmp_path_factory.mktemp("src_path")
+        (src_path / "file_to_exclude.txt").touch()
+        dest_dir = tmp_path_factory.mktemp("dest_dir")
+
+        zip_name = str(dest_dir / "dest_zip.zip")
+        s_bldr.SrepkgSdistWriter(
+            orig_pkg_summary=dummy_cdir_summary, dist_out_dir=dest_dir
+        ).write_to_zip(
+            zip_name=zip_name,
+            # src_path=src_path,
+            # exclude_paths=[src_path / "file_to_exclude.txt"],
+        )
 
     def test_copy_ready_comps_with_dir_as_content(
         self, dummy_cdir_summary, tmp_path_factory
