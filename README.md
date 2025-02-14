@@ -87,15 +87,11 @@ options:
 
 The following demo shows how we take an original package that has a dependency conflict what's already installed in an active Python environment, re-package with **srepkg**, install the re-packaged version, and access the original package's CLI from the active environment, without experiencing any dependency conflict.
 
-First, confirm we are using a conda environment dedicated to our tests.
-
+First, confirm we are using a conda environment dedicated to our tests. From the **srepkg** repo root, run:
 ```
-$ conda env list
-
-# conda environments:
-#
-base                   /home/duane/miniconda3
-srepkg_test          * /home/duane/miniconda3/envs/srepkg_test
+$ conda create -n srepkg_oldmath_test python=3.10
+$ conda activate srepkg_oldmath_test
+$ pip install .
 ```
 Then, let's install a version of numpy that is relatively new (as of Feb. 2025).
 ```
