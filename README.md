@@ -4,24 +4,24 @@ Add a safeguard to a Python command line (CL) app to ensure users can only insta
 
 ## Description
 
-**srepkg** is a Python package that wraps an isolation layer around other Python packages.
+*srepkg* is a Python package that wraps an isolation layer around other Python packages.
 
 When a package wrapped in this isolation layer is installed in an active, pre-existing Python environment, the original package plus its dependencies are installed in a new, automatically created virtual environment. A dependency-free "access" package installed in the pre-existing environment contains a controller module capable of making calls to the Python interpreter in the newly created environment. This package structure ensures that none of the original package's dependencies conflict with packages in the pre-existing environment but still exposes the original package’s CL to the pre-existing environment. 
 
 ## Use Cases
 
 ### For Package Distributors
-\Wrapping a CL package with **srepkg** prior to sharing the package with other users will ensure that wherever the package is installed, it does not "break" a user's existing Python environment &mdash; even if the user knows nothing about managing Python environments.
+\Wrapping a CL package with *srepkg* prior to sharing the package with other users will ensure that wherever the package is installed, it does not "break" a user's existing Python environment &mdash; even if the user knows nothing about managing Python environments.
 
 ### For Package Users
-Any existing CL package obtained from Python Packaging Index (PyPI) or GitHub can be wrapped with **srepkg** prior to installation to ensure that none of the original package's dependencies will conflict with any packages in an existing environment. If you want the original package commands to be accessible from a single environment (that is distinct from the isolated environment where the original package is installed), then **srepkg** is likely a good option. However, if you want the isolated package's command interface to be available globally and/or want a much more mature isolation tool, then [pipx]("https://github.com/pypa/pipx") is likely a better choice.
+Any existing CL package obtained from Python Packaging Index (PyPI) or GitHub can be wrapped with *srepkg* prior to installation to ensure that none of the original package's dependencies will conflict with any packages in an existing environment. If you want the original package commands to be accessible from a single environment (that is distinct from the isolated environment where the original package is installed), then *srepkg* is likely a good option. However, if you want the isolated package's command interface to be available globally and/or want a much more mature isolation tool, then [pipx]("https://github.com/pypa/pipx") is likely a better choice.
 
 ## Getting Started
 
 ### Requirements
 
 - Python version 3.10 or higher
-- For compatibility with **srepkg**, and existing package must:
+- For compatibility with *srepkg*, and existing package must:
   * Be installable via [pip](https://pip.pypa.io/en/stable/installation/#)
   * Have command line entry point(s) specified in either one the `[project.scripts]` section of a `pyproject.toml` (preferred), the `[options.entry_points]` section of a  `setup.cfg`, or the `entry_points` arguments passed to `setup()` in a `setupy.py` file.
 - Optional: `miniconda` or `conda` if you want to exactly follow the examples below
@@ -85,9 +85,9 @@ options:
 
 ### Demo #1: Repackaging a local package that depends on old version of `numpy`
 
-The following demo shows how we take an original package that has a dependency conflict what's already installed in an active Python environment, re-package with **srepkg**, install the re-packaged version, and access the original package's CLI from the active environment, without experiencing any dependency conflict.
+The following demo shows how we take an original package that has a dependency conflict what's already installed in an active Python environment, re-package with *srepkg*, install the re-packaged version, and access the original package's CLI from the active environment, without experiencing any dependency conflict.
 
-First, confirm we are using a conda environment dedicated to our tests. From the **srepkg** repo root, run:
+First, confirm we are using a conda environment dedicated to our tests. From the *srepkg* repo root, run:
 ```
 $ conda create -n srepkg_oldmath_test python=3.10
 $ conda activate srepkg_oldmath_test
@@ -248,16 +248,16 @@ $ srepkg https://github.com/huntrar/scrape -g 0.11.2
 
 ## Comparing with a similar tool: [pipx](https://github.com/pypa/pipx)
 
-**srepkg** is in many ways similar to the widely used tool [pipx](https://github.com/pypa/pipx) which also allows users to install a Python package in an isolated environment and then access its command line tool(s) from another environment. Key differences between **srepkg** and **pipx** include:
+*srepkg* is in many ways similar to the widely used tool [pipx](https://github.com/pypa/pipx) which also allows users to install a Python package in an isolated environment and then access its command line tool(s) from another environment. Key differences between *srepkg* and *pipx* include:
 
-* The actions that ensure isolation via **pipx** are taken by the user at the time of package installation. With **srepkg**, source code is wrapped in an isolating layer prior to installation, and the re-packaged application is automatically placed in its own environment during installation. 
-* The CLI of a package that has been re-packaged by **srepkg** accessible from an environment containing its access package. pipx allows global access to isolated command line applications. 
-* **pipx** is more mature and feature-rich than srepkg. If you have control of the package installation process, **pipx** will likely be more useful than **srepkg**. However, if you are distributing but not installing a Python CLI app and want to be certain the app is always installed into an isolated environment regardless what happens at install time, consider using **srepkg**.
+* The actions that ensure isolation via *pipx* are taken by the user at the time of package installation. With *srepkg*, source code is wrapped in an isolating layer prior to installation, and the re-packaged application is automatically placed in its own environment during installation. 
+* The CLI of a package that has been re-packaged by *srepkg* accessible from an environment containing its access package. pipx allows global access to isolated command line applications. 
+* *pipx* is more mature and feature-rich than srepkg. If you have control of the package installation process, *pipx* will likely be more useful than *srepkg*. However, if you are distributing but not installing a Python CLI app and want to be certain the app is always installed into an isolated environment regardless what happens at install time, consider using *srepkg*.
 
 
 ## Testing
 
-The following series of commands will install **srepkg** in editable mode, run the project's tests, and report branch coverage.
+The following series of commands will install *srepkg* in editable mode, run the project's tests, and report branch coverage.
 
 ```
 $ pip install -e '.[test]'
