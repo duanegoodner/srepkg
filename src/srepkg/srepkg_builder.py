@@ -10,14 +10,17 @@ import shutil
 import string
 from dataclasses import dataclass
 from pathlib import Path
-from typing import List, NamedTuple, Callable
+import tarfile
+import tempfile
+from typing import Callable, List, NamedTuple
 from zipfile import ZIP_DEFLATED, ZipFile
+
 import inner_pkg_installer.inner_pkg_installer as ipi
+import inner_pkg_installer.yaspin_updater as yu
 import srepkg.cs_entry_pts as cse
 import srepkg.dist_builder as db
-import srepkg.repackager_interfaces as re_int
 import srepkg.repackager_data_structs as re_ds
-import inner_pkg_installer.yaspin_updater as yu
+import srepkg.repackager_interfaces as re_int
 
 
 class TemplateWriteOp(NamedTuple):
@@ -49,46 +52,54 @@ class SrepkgSdistWriter(SrepkgDistWriter):
     Creates a source distribution of SRE package.
     """
 
-    @staticmethod
-    def zip_dir(zip_name: str, src_path: Path, exclude_paths: List[Path]):
+    @property
+    def src_path(self) -> Path:
+        return self._orig_pkg_summary.srepkg_root
+
+    @property
+    def exclude_paths(self) -> List[Path]:
+        return [
+            item
+            for item in list((self.src_path / "orig_dist").iterdir())
+            if item != self._orig_pkg_summary.src_for_srepkg_sdist
+        ]
+
+    @property
+    def files_to_copy(self) -> List[Path]:
+        return [
+            path
+            for path in list(self.src_path.rglob("*"))
+            if path not in self.exclude_paths
+        ]
+
+    def write_to_zip(self, zip_name: str):
         with ZipFile(zip_name, "w", ZIP_DEFLATED) as zf:
-            for file in list(src_path.rglob("*")):
-                if file not in exclude_paths:
-                    zf.write(file, file.relative_to(src_path.parent))
+            for file in self.files_to_copy:
+                zf.write(file, file.relative_to(self.src_path.parent))
+
+    def write_to_tar_gz(self, tar_gz_path: Path):
+        with tarfile.open(tar_gz_path, "w:gz") as tar:
+            for file in self.files_to_copy:
+                tar.add(file, arcname=file.relative_to(self.src_path.parent))
 
     def write_dist(self):
         with yu.yaspin_log_updater(
             msg="Building srepkg sdist", logger=logging.getLogger(__name__)
         ):
-            exclude_paths = [
-                item
-                for item in list(
-                    (
-                        self._orig_pkg_summary.srepkg_root / "orig_dist"
-                    ).iterdir()
-                )
-                if item != self._orig_pkg_summary.src_for_srepkg_sdist
-            ]
 
-            output_filename = (
+            tar_filename = (
                 f"{self._orig_pkg_summary.srepkg_name}-"
-                f"{self._orig_pkg_summary.pkg_version}.zip"
+                f"{self._orig_pkg_summary.pkg_version}.tar.gz"
             )
 
-            sdist_path = self._dist_out_dir / output_filename
-
-            self.zip_dir(
-                zip_name=str(sdist_path),
-                src_path=self._orig_pkg_summary.srepkg_root,
-                exclude_paths=exclude_paths,
-            )
+            tar_sdist_path = self._dist_out_dir / tar_filename
+            self.write_to_tar_gz(tar_gz_path=tar_sdist_path)
 
         logging.getLogger(f"std_out.{__name__}").info(
             f"\t{self._orig_pkg_summary.srepkg_name} sdist saved as: "
-            f"{str(sdist_path)}"
+            f"{str(tar_sdist_path)}"
         )
-
-        return str(sdist_path)
+        return str(tar_sdist_path)
 
 
 class SrepkgWheelWriter(SrepkgDistWriter):
@@ -246,6 +257,7 @@ class SrepkgWheelCompleter(SrepkgCompleter):
     """
     Completes construction of a wheel distribution.
     """
+
     @property
     def _props(self) -> CompleterProperties:
         return CompleterProperties(
@@ -306,6 +318,7 @@ class SrepkgBuilder(re_int.SrepkgBuilderInterface):
     Builds sdist and wheel distribution of SRE package and output file and entry-point
     info to terminal.
     """
+
     def __init__(
         self,
         construction_dir_summary: re_ds.ConstructionDirSummary,
