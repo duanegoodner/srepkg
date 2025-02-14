@@ -1,246 +1,270 @@
 # Srepkg (Solo Repackage)
 
-Add a safeguard to a dependency-laden Python command line  interface (CLI) app to ensure users can only install it in an isolated virtual environment but can run it from outside that environment.
+Add a safeguard to a Python command line (CL) app to ensure users can only install it in an isolated virtual environment but can access it from another environment.
 
 ## Description
 
-**srepkg** is a Python package that wraps an isolation layer around other Python packages. A package that has been "re-packaged" is referred to as an "S-package."
+**srepkg** is a Python package that wraps an isolation layer around other Python packages.
 
-When an S-package is installed in an active, pre-existing Python environment, the original package plus its dependencies are installed in a new, automatically created virtual environment. A dependency-free "access" package installed in the pre-existing environment contains a controller module cabable of making calls to the Python interpreter in the newly created environment. This package structure prevents dependency conflicts but still exposes the original package’s CLI to the pre-existing environment. 
+When a package wrapped in this isolation layer is installed in an active, pre-existing Python environment, the original package plus its dependencies are installed in a new, automatically created virtual environment. A dependency-free "access" package installed in the pre-existing environment contains a controller module capable of making calls to the Python interpreter in the newly created environment. This package structure ensures that none of the original package's dependencies conflict with packages in the pre-existing environment but still exposes the original package’s CL to the pre-existing environment. 
+
+## Use Cases
+
+### For Package Distributors
+\Wrapping a CL package with **srepkg** prior to sharing the package with other users will ensure that wherever the package is installed, it does not "break" a user's existing Python environment &mdash; even if the user knows nothing about managing Python environments.
+
+### For Package Users
+Any existing CL package obtained from Python Packaging Index (PyPI) or GitHub can be wrapped with **srepkg** prior to installation to ensure that none of the original package's dependencies will conflict with any packages in an existing environment. If you want the original package commands to be accessible from a single environment (that is distinct from the isolated environment where the original package is installed), then **srepkg** is likely a good option. However, if you want the isolated package's command interface to be available globally and/or want a much more mature isolation tool, then [pipx]("https://github.com/pypa/pipx") is likely a better choice.
 
 ## Getting Started
 
 ### Requirements
 
-- Python version 3.6 or higher
-- [pip](https://pip.pypa.io/en/stable/installation/#)
-- To be compatible with srepkg, a package must:
-  * Be installable via pip
-  * Have command line entry point(s) specifiied in a setup.py or setup.cfg file.
+- Python version 3.10 or higher
+- For compatibility with **srepkg**, and existing package must:
+  * Be installable via [pip](https://pip.pypa.io/en/stable/installation/#)
+  * Have command line entry point(s) specified in either one the `[project.scripts]` section of a `pyproject.toml` (preferred), the `[options.entry_points]` section of a  `setup.cfg`, or the `entry_points` arguments passed to `setup()` in a `setupy.py` file.
+- Optional: `miniconda` or `conda` if you want to exactly follow the examples below
 
-### Installing srepkg
+
+### Installing
+
+> [!CAUTION]
+> It is highly recommended to install srepkg in a virtual environment created using a tool such as `conda` or Python's built-in `venv` module. In the example below, we use `conda`.
 
 ```
-$ pip install git+https://github.com/duanegoodner/srepkg
+conda create -n srepkg_test python=3.10
+conda activate srepkt_test
+git clone https://github.com/duanegoodner/srepkg
+cd srepkg
+pip install .
 ```
 
 ### Usage
 
 ```
-usage: srepkg [-h] [-g [GIT_REF]] [-r [PYPI_VERSION]] [-n [SREPKG_NAME]] [-c [CONSTRUCTION_DIR]] [-d [DIST_OUT_DIR]]
-              [-f [LOGFILE_DIR]]
+usage: srepkg [-h] [-g [GIT_REF]] [-r [PYPI_VERSION]] [-n [SREPKG_NAME]]
+              [-c [CONSTRUCTION_DIR]] [-d [DIST_OUT_DIR]] [-f [LOGFILE_DIR]]
               orig_pkg_ref
 
 positional arguments:
-  orig_pkg_ref          A reference to the original package to be repackaged. Can be a local path to the directory where a
-                        package's setup.py or pyproject.toml resides, a PyPI package name, or a Github repo url.
+  orig_pkg_ref          A reference to the original package to be repackaged. Can be a
+                        local path to the directory where a package'spyproject.toml or
+                        setup.py resides, a PyPI package name, or a Github repo url.
 
 options:
   -h, --help            show this help message and exit
   -g [GIT_REF], --git_ref [GIT_REF]
-                        A git branch name, tag name, or commit SHA that determines the original package commit to use (if
-                        ORIG_PKG_REF is a git repo). Defaults to: HEAD of the default branch for a remote Github repo, and
-                        the currently checked out branch for a local repo.
+                        A git branch name, tag name, or commit SHA that determines the
+                        original package commit to use (if ORIG_PKG_REF is a git repo).
+                        Defaults to: HEAD of the default branch for a remote Github repo,
+                        and the currently checked out branch for a local repo.
   -r [PYPI_VERSION], --pypi_version [PYPI_VERSION]
-                        Original package version to use (if ORIG_PKG_REF is a PyPI package). Defaults to the latest PyPI
-                        package.
+                        Original package version to use (if ORIG_PKG_REF is a PyPI
+                        package). Defaults to the latest PyPI package.
   -n [SREPKG_NAME], --srepkg_name [SREPKG_NAME]
-                        Name to be used for repackaged package. Default is <{ORIGINAL_PACKAGE_NAME}srepkg>
+                        Name to be used for repackaged package. Default is
+                        <ORIGINAL_PACKAGE_NAME>srepkg
   -c [CONSTRUCTION_DIR], --construction_dir [CONSTRUCTION_DIR]
-                        Directory where non-compressed repackage will be built and saved. If not specified, srepkg is
-                        built in a temp directory that gets deleted after wheel and or sdist archiveshave been created.
+                        Directory where non-compressed repackage will be built and saved.
+                        If not specified, srepkg is built in a temp directory that gets
+                        deleted after wheel and or sdist archiveshave been created.
   -d [DIST_OUT_DIR], --dist_out_dir [DIST_OUT_DIR]
-                        Directory where srepkg wheel and or sdist archives are saved. Default is the current working
-                        directory.
+                        Directory where srepkg wheel and or sdist archives are saved.
+                        Default is ./srepkg_dists.
   -f [LOGFILE_DIR], --logfile_dir [LOGFILE_DIR]
-                        Directory to write srepkg log file to. Default behavior is to write log to file in temporary
-                        directory that is automatically deleted at end of execution.
-
+                        Directory where srepkg log file is saved. Default is to use
+                        temporary directory that is automatically deleted at end of
+                        execution.
 ```
 
-### Output
 
-If the user-provided command just takes the form `$ srepkg orig_pkg_ref`  (i. e. no optional arguments are used), srepkg saves the re-packaged 'S-package' as a .zip file named `ORIGINAL_NAMEsrepkg-ORIGINAL_VERSION.zip` in the directory from which srepkg is called. ORIGINAL_NAME and ORIGINAL_VERSION are the respective name and version of the original package as specified in its setup.py or setup.cfg file.
 
-### Installing an S-package
 
-A distribution archive produced by srepkg can be installed using pip. If we are in the directory where we have used srepkg to create `ORIGINAL_NAMEsrepkg-ORIGINAL_VERSION.zip`, we can install it with the command:
+## Demos
 
+### Demo #1: Repackaging a local package that depends on old version of `numpy`
+
+The following demo shows how we take an original package that has a dependency conflict what's already installed in an active Python environment, re-package with **srepkg**, install the re-packaged version, and access the original package's CLI from the active environment, without experiencing any dependency conflict.
+
+First, confirm we are using a conda environment dedicated to our tests. From the **srepkg** repo root, run:
 ```
-$ pip install ORIGINAL_NAMEsrepkg-ORIGINAL_VERSION.zip
+$ conda create -n srepkg_oldmath_test python=3.10
+$ conda activate srepkg_oldmath_test
+$ pip install .
 ```
-
-### Using an S-package
-
-Once an S-package has been installed in a user's global Python environment, or (preferably) a virtual environment, all command line entry points of the original CLI application are available in that environment. The syntax of these commands is identical to that of the original application.
-
-## Examples
-
-#### 1. Repackaging a local package
-
-The srepkg Github repo has a small example CLI package named testproj saved in `srepkg/src/test/package_test_cases/testproj/`. In testproj's setup.cfg file, we can see that it depends on non-standard library package numpy.
-
-From the root of the srepkg repo, we can re-package testproj and save the S-package distribution archive to our home directory using:
-
+Then, let's install a version of numpy that is relatively new (as of Feb. 2025).
 ```
-$ srepkg src/srepkg/test/package_test_cases/testproj -d ~ 
+$ pip install numpy==2.2.2
 ```
 
-When the re-packaging process is complete, we have the following output:
+Next, we will re-package a simple local Python package `oldmath` with its source files located `./test/demos/oldmath/`. `oldmath` depends on `numpy 1.26.4`.
 
 ```
-Repackaging testproj
-Building source distribution of repackaged package
-Original package 'testproj' has been re-packaged as 'testprojsrepkg'
+$ srepkg test/demos/oldmath/
 
-The re-packaged version has been saved as source distribution archive file: /Users/duane/testprojsrepkg-0.0.0.zip
-'testprojsrepkg' can be installed using:  pip install /Users/duane/testprojsrepkg-0.0.0.zip
+srepkg test/demos/oldmath/
+✅ Building original package wheel from source code
+✅ Creating virtual env
+	Virtual env created with the following pypa packages installed:
+	• pip==25.0.1
+	• setuptools==75.8.0
+	• wheel==0.45.1
+✅ Installing oldmath-0.1.0-py3-none-any.whl in virtual env
+✅ Building srepkg wheel
+	oldmathsrepkg wheel saved as: /home/duane/dproj/srepkg/srepkg_dists/oldmathsrepkg-0.1.0-cp310-abi3-linux_x86_64.whl
+✅ Building srepkg sdist
+	oldmathsrepkg sdist saved as: /home/duane/dproj/srepkg/srepkg_dists/oldmathsrepkg-0.1.0.zip
 
-After installation, 'testprojsrepkg' will provide command line access to the following commands:
-my_test
+oldmathsrepkg can be installed using either of the following commands:
+	• pip install /home/duane/dproj/srepkg/srepkg_dists/oldmathsrepkg-0.1.0-cp310-abi3-linux_x86_64.whl
+	• pip install /home/duane/dproj/srepkg/srepkg_dists/oldmathsrepkg-0.1.0.zip
+Upon installation, oldmathsrepkg will provide access to the following command line entry points: 
+	• oldmath
 ```
+The repackaged version of `oldmath` is called `oldmathsrepkg`, and it has been built into both `wheel` and `sdist` distributions.
 
-Before proceeding, let's create and activate a new virtual environment so we can clearly see what package(s) do / don't get added to the environment when we install testprojsrepkg.
-
+Next, install `oldmathsrepkg` from the newly created wheel:
 ```
-$ python -m venv my_venv
-$ source my_venv/bin/activate
+$ pip install ./srepkg_dists/oldmathsrepkg-0.1.0-cp310-abi3-linux_x86_64.whl
 ```
-
-Now we are ready to install our S-package with pip:
-
+Now, we can get some info about `oldmath`:
 ```
-(my_venv) $ pip install ~/testprojsrepkg-0.0.0.zip -q 
-```
+$ oldmath --help
 
-We can use pip freeze to confirm that howdoisrepkg is the only non-standard library package installed in the environment.
+usage: oldmath [-h] factor
 
-```
-(my_venv) $ pip freeze
-testprojsrepkg @ file:///Users/duane/testprojsrepkg-0.0.0.zip
-```
-
-Neither original package testproj nor its dependency numpy is installed in the active environment, but we can still access the testproj CLI in the same way we would if it were installed in the active environment
-
-```
-(my_venv) $ my_123_multiplier -h
-usage: my_123_multiplier [-h] factor
-
-Multiplies the numpy array [1 2 3] by a user-provided integer. Displays the resulting array as well as the version
-of numpy used.
+Multiplies the numpy array [1 2 3] by a user-provided integer. Displays the resulting array as well as the version of numpy used.
 
 positional arguments:
   factor      An integer that numpy array [1 2 3] will be multiplied by
 
-optional arguments:
+options:
   -h, --help  show this help message and exit
+```
+Next, we run:
+```
+$ oldmath 2025
 
-(my_venv) $ my_123_multiplier 2
-2 * [1 2 3] = [2 4 6]
-numpy version used by this program = 1.22.4
+2025 * [1 2 3] = [2025 4050 6075]
+numpy version used by this program = 1.26.4
+```
+Double-check the version of `numpy` that's installed in our active Python environment:
+```
+$ pip freeze | grep numpy
+
+numpy==2.2.2
 ```
 
-#### 2. Repackaging a PyPI package
-
-An S-package can also be built by providing a PyPI package name as the package_reference argument. Here, we repackage the [PyPI package *howdoi*](https://pypi.org/project/howdoi/). Let's continue working in the virtual environment created in the previous example.
-
+Finally, confirm that we do not have any dependency conflicts:
 ```
-(my_venv) $ srepkg howdoi -d ~
-Original package howdoi has been repackaged as howdoisrepkg
-howdoisrepkg has been saved as source distribution /Users/duane/howdoisrepkg-2.0.19.zip
-'howdoisrepkg' can be installed using: pip install /Users/duane/howdoisrepkg-2.0.19.zip
-After installation, 'howdoisrepkg' will provide command line access to the following commands:
-howdoi
+$ pip check
+
+No broken requirements found.
 ```
 
-We can then install the S-package, confirm that we have access to the original package's CLI, and run `pip freeze` to list the non-standard packages installed in the current environment.
+The key thing to note is that oldmath, which we can access from the active Python environment uses `numpy 1.26.4`, but we still have `numpy 2.2.2` installed the active environment.
 
+### Demo #2: Re-package a distribution obtained from PyPI
+
+We can re-package the latest version of `scrape` available on the PyPI using the following:
 ```
-(my_venv) $ pip install ~/howdoisrepkg-2.0.19.zip -q
-(my_venv) $ howdoi redirect standard out
-yourcommand &> filename
-(my_venv) $ pip freeze
-	testprojsrepkg @ file:///Users/duane/testprojsrepkg-0.0.0.zip
-	howdoisrepkg @ file:///Users/duane/dproj/howdoisrepkg-2.0.19.zip
-```
+$ srepkg scrape
 
-Note that *howdoi* has a number dependencies (Pygments, cssselect, lxml, pyquery, requests, cachelib, appdirs, keep, rich, and colorama), but none of these packages are installed in my_venv.
+✅ Retrieving scrape from Python Packaging Index
+	Downloaded files:
+	• scrape-0.11.3-py3-none-any.whl
+✅ Creating virtual env
+	Virtual env created with the following pypa packages installed:
+	• pip==25.0.1
+	• setuptools==75.8.0
+	• wheel==0.45.1
+✅ Installing scrape-0.11.3-py3-none-any.whl in virtual env
+✅ Building srepkg wheel
+	scrapesrepkg wheel saved as: /home/duane/dproj/srepkg/srepkg_dists/scrapesrepkg-0.11.3-cp310-abi3-linux_x86_64.whl
+✅ Building srepkg sdist
+	scrapesrepkg sdist saved as: /home/duane/dproj/srepkg/srepkg_dists/scrapesrepkg-0.11.3.zip
 
-#### 3. Repackaging a package from a Github repo
-
-When the package reference argument is a Github repository, it takes the same form that pip uses when installing a package from Github. Below are examples of how to build S-packages based on code from the [*howdoi* Github repository](https://github.com/gleitz/howdoi).
-
-##### Head of the default branch
-
-```
-$ srepkg git+https://github.com/gleitz/howdoi.git
-```
-
-##### Head of a specific branch
-
-Re-package the head of branch *bugfix/remove-pathlib* using:
-
-```
-$ srepkg git+https://github.com/gleitz/howdoi@bugfix/remove-pathlib
+scrapesrepkg can be installed using either of the following commands:
+	• pip install /home/duane/dproj/srepkg/srepkg_dists/scrapesrepkg-0.11.3-cp310-abi3-linux_x86_64.whl
+	• pip install /home/duane/dproj/srepkg/srepkg_dists/scrapesrepkg-0.11.3.zip
+Upon installation, scrapesrepkg will provide access to the following command line entry points: 
+	• scrape
 ```
 
-##### Specific commit
+We can then install `scrapesrepkg`, and try using it on a file located under `test/demos/`:
+```
+$ pip install pip install srepkg_dists/scrapesrepkg-0.11.3-cp310-abi3-linux_x86_64.whl
 
-Re-package commit *ac146f5aaaf33d8630f6b616727e5b000965863*:
+Processing ./srepkg_dists/scrapesrepkg-0.11.3-cp310-abi3-linux_x86_64.whl
+Installing collected packages: scrapesrepkg
+Successfully installed scrapesrepkg-0.11.3
+
+$ scrape test/demos/scrape/explorers_club.html -pt
+
+Failed to enable cache: No module named 'requests_cache'
+DISCOVER THE GRAND EXPLORERS' CLUB!
+The Grand Explorers' Club is a prestigious society dedicated to adventurers and thrill-seekers. More than 250,000 members participate in daring expeditions and exploration missions across the globe.
+```
+
+If we wanted to re-package a specific version (e.g.`0.11.0`) from PyPI we could do this:
+```
+$ srepkg scrape -r 0.11.0
+```
+
+### Demo #3: Re-package a distribution obtained from Github
+
+We can also re-package using a GitHub repo as the original source:
+```
+srepkg https://github.com/huntrar/scrape      
+✅ Cloning https://github.com/huntrar/scrape into temporary directory
+✅ Building original package wheel from source code
+✅ Creating virtual env
+	Virtual env created with the following pypa packages installed:
+	• pip==25.0.1
+	• setuptools==75.8.0
+	• wheel==0.45.1
+✅ Installing scrape-0.11.3-py3-none-any.whl in virtual env
+✅ Building srepkg wheel
+	scrapesrepkg wheel saved as: /home/duane/dproj/srepkg/srepkg_dists/scrapesrepkg-0.11.3-cp310-abi3-linux_x86_64.whl
+✅ Building srepkg sdist
+	scrapesrepkg sdist saved as: /home/duane/dproj/srepkg/srepkg_dists/scrapesrepkg-0.11.3.zip
+
+scrapesrepkg can be installed using either of the following commands:
+	• pip install /home/duane/dproj/srepkg/srepkg_dists/scrapesrepkg-0.11.3-cp310-abi3-linux_x86_64.whl
+	• pip install /home/duane/dproj/srepkg/srepkg_dists/scrapesrepkg-0.11.3.zip
+Upon installation, scrapesrepkg will provide access to the following command line entry points: 
+	• scrape
+```
+
+If we want to re-package a specific commit from the `scrape` GitHub repo, we can do this:
+```
+$ srepkg https://github.com/huntrar/scrape -g 1dfd98bb0a308ef2a45b1e5dd136c38b17c27bc7
+```
+If we want to re-package a specific release or tag, we would do this:
+```
+$ srepkg https://github.com/huntrar/scrape -g 0.11.2 
+```
+
+## Comparing with a similar tool: [pipx](https://github.com/pypa/pipx)
+
+**srepkg** is in many ways similar to the widely used tool [pipx](https://github.com/pypa/pipx) which also allows users to install a Python package in an isolated environment and then access its command line tool(s) from another environment. Key differences between **srepkg** and **pipx** include:
+
+* The actions that ensure isolation via **pipx** are taken by the user at the time of package installation. With **srepkg**, source code is wrapped in an isolating layer prior to installation, and the re-packaged application is automatically placed in its own environment during installation. 
+* The CLI of a package that has been re-packaged by **srepkg** accessible from an environment containing its access package. pipx allows global access to isolated command line applications. 
+* **pipx** is more mature and feature-rich than srepkg. If you have control of the package installation process, **pipx** will likely be more useful than **srepkg**. However, if you are distributing but not installing a Python CLI app and want to be certain the app is always installed into an isolated environment regardless what happens at install time, consider using **srepkg**.
+
+
+## Testing
+
+The following series of commands will install **srepkg** in editable mode, run the project's tests, and report branch coverage.
 
 ```
-$ srepkg git+https://github.com/gleitz/howdoi.git@4ac146f5aaaf33d8630f6b616727e5b000965863
+$ pip install -e '.[test]'
+$ coverage run -m pytest
+$ coverage report -m
 ```
-
-##### Specific release
-
-Re-package release *2.0.17*:
-
-```
-$ srepkg git+https://github.com/gleitz/howdoi.git@v2.0.17
-```
-
-
-
-## Comparing srepkg with a similar tool: [pipx](https://github.com/pypa/pipx)
-
-srepkg is in many ways similar to the widely used tool [pipx](https://github.com/pypa/pipx) which also allows users to install a Python package in an isolated environment and then access its command line tool(s) from another environment. Key differences between srepkg and pipx include:
-
-* The actions that ensure isolation via pipx are taken by the user at the time of package installation. With srepkg, source code is wrapped in an isolating layer prior to installation, and the re-packaged application is automatically placed in its own environment during installation. 
-* The CLI of a srepkg S-package is only accessible from an environment containing its access package. pipx allows global access to isolated command line applications. 
-* pipx is more mature and feature-rich than srepkg. If you have control of the package installation process, pipx will likely be more useful than srepkg. However, if you are distributing but not installing a Python CLI app and want to be certain the app is always installed into an isolated environment regardless what happens at install time, consider using srepkg.
-
-
-
-## Roadmap
-
-### Functionality
-
-* Option to add prefix before CLI command. This would allow multiple re-packaged versions of the same original package to be accessed from single environment.
-* Change behavior in cases where srepkg does not find console entry points or package name from from setup.cfg or setup.py. Instead of exiting, give re-packaging user the option to proceed and have inner_pkg_installer module look for these items during S-package install process.
-
-### Performance
-
-* Use [fastentrypoints](https://github.com/ninjaaron/fast-entry_points) to prevent delay that occurs the first time an S-package's CLI is accessed
-* Reduce install time via .whl support for
-
-
 
 ## Contributing
 
 Issues, Pull Requests and/or Discussions are welcome and appreciated!
-
-
-
-Anyone interacting with this project is expected to follow the [Code of Conduct](https://github.com/duanegoodner/srepkg/blob/main/CODE_OF_CONDUCT.md).
-
-
-
-
-
-
-
-
-
-
-
