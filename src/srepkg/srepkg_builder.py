@@ -86,23 +86,6 @@ class SrepkgSdistWriter(SrepkgDistWriter):
         with yu.yaspin_log_updater(
             msg="Building srepkg sdist", logger=logging.getLogger(__name__)
         ):
-            # exclude_paths = [
-            #     item
-            #     for item in list(
-            #         (
-            #             self._orig_pkg_summary.srepkg_root / "orig_dist"
-            #         ).iterdir()
-            #     )
-            #     if item != self._orig_pkg_summary.src_for_srepkg_sdist
-            # ]
-
-            # zip_filename = (
-            #     f"{self._orig_pkg_summary.srepkg_name}-"
-            #     f"{self._orig_pkg_summary.pkg_version}.zip"
-            # )
-            #
-            # sdist_path = self._dist_out_dir / zip_filename
-            # self.write_to_zip(zip_name=str(sdist_path))
 
             tar_filename = (
                 f"{self._orig_pkg_summary.srepkg_name}-"
@@ -111,11 +94,6 @@ class SrepkgSdistWriter(SrepkgDistWriter):
 
             tar_sdist_path = self._dist_out_dir / tar_filename
             self.write_to_tar_gz(tar_gz_path=tar_sdist_path)
-
-        # logging.getLogger(f"std_out.{__name__}").info(
-        #     f"\t{self._orig_pkg_summary.srepkg_name} sdist saved as: "
-        #     f"{str(sdist_path)}"
-        # )
 
         logging.getLogger(f"std_out.{__name__}").info(
             f"\t{self._orig_pkg_summary.srepkg_name} sdist saved as: "
