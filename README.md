@@ -1,4 +1,4 @@
-# srepkg (Solo Repackage)
+# Srepkg (Solo Repackage)
 
 Add a safeguard to a Python command line (CL) app to ensure users can only install it in an isolated virtual environment but can access it from another environment.
 

@@ -26,8 +26,8 @@ class SrepkgCommandLine(rep_int.SrepkgCommandInterface):
             "orig_pkg_ref",
             type=str,
             help="A reference to the original package to be repackaged. Can "
-            "be a local path to the directory where a package's"
-            "pyproject.toml or setup.py resides, a  PyPI package name, or a Github"
+            "be a local path to the directory where a package's setup.py "
+            "or pyproject.toml resides, a  PyPI package name, or a Github"
             " repo url.",
         )
 
@@ -82,8 +82,7 @@ class SrepkgCommandLine(rep_int.SrepkgCommandInterface):
             type=str,
             nargs="?",
             action="store",
-            help="Directory where srepkg wheel and or sdist archives are "
-            "saved. Default is ./srepkg_dists.",
+            help="Directory whe            "saved. Default is ./srepkg_dists.",
         )
 
         self._parser.add_argument(
