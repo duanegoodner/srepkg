@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "srepkg"
-version = "0.1.0"
+version = "0.1.1"
 description = "Repackages apps to restrict installation into isolated env"
 authors = [
     { name = "Duane Goodner", email = "dmgoodner@gmail.com" }
