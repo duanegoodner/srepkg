@@ -83,7 +83,8 @@ class SrepkgCommandLine(rep_int.SrepkgCommandInterface):
             nargs="?",
             action="store",
             help="Directory where srepkg wheel and or sdist archives are "
-            "saved. Default is the current working directory.",
+            "saved. Default is under relative path ./srepkg_dist which "
+                 "gets created if it does not already exist.",
         )
 
         self._parser.add_argument(

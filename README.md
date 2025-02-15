@@ -1,18 +1,23 @@
 # srepkg (Solo Repackage)
-
-
-## Description
 *srepkg* is a Python package that wraps an isolation layer around other Python packages.
 
-When a package wrapped in this isolation layer is installed in an active, pre-existing Python environment, the original package plus its dependencies are installed in a new, automatically created virtual environment. A dependency-free "access" package installed in the pre-existing environment contains a controller module capable of making calls to the Python interpreter in the newly created environment. This package structure ensures that none of the original package's dependencies conflict with packages in the pre-existing environment but still exposes the original package’s CL to the pre-existing environment. 
+## Description
+
+When a package wrapped in an isolation layer by *srepkg* is installed in an active, pre-existing Python environment:
+- The original package plus its dependencies are installed in a new, automatically created virtual environment.
+- A dependency-free "access" package installed in the pre-existing environment contains a controller module capable of making calls to the Python interpreter in the newly created environment.
+- This package structure ensures that none of the original package's dependencies conflict with packages in the pre-existing environment but still exposes the original package’s CL to the pre-existing environment. 
 
 ## Use Cases
 
 ### For Package Distributors
-*srepkg* can be useful if you are sharing a Python command line application, and you want to be certain that users can install and run it without worrying about dependency conflicts. You might be sharing application **X** that depends on package **Y** version 1.0.  Users may want to run **X** from an environment where they require **Y** version 2.0.  Wrapping a CL package with *srepkg* prior to sharing the package with other users will ensure that wherever the package is installed, it does not introduce dependency conflicts into a user's existing Python environment &mdash; even if the user knows nothing about managing Python environments.
+- *srepkg* can be useful if you are sharing a Python command line application, and you want to be certain that users can install and run it without worrying about dependency conflicts. 
+- Wrapping a CL package with *srepkg* prior to sharing the package with other users will ensure that wherever the package is installed, it does not introduce dependency conflicts into a user's existing Python environment &mdash; even if the user knows nothing about managing Python environments.
 
 ### For Package Users
-Any existing CL package obtained from Python Packaging Index (PyPI) or GitHub can be wrapped with *srepkg* prior to installation to ensure that none of the original package's dependencies will conflict with any packages in an existing environment. If you want the original package commands to be accessible from a single environment (that is distinct from the isolated environment where the original package is installed), then *srepkg* is likely a good option. However, if you want the isolated package's command interface to be available globally and/or want a much more mature isolation tool, then [pipx]("https://github.com/pypa/pipx") is likely a better choice.
+- Any existing CL package obtained from Python Packaging Index (PyPI) or GitHub can be wrapped with *srepkg* prior to installation.
+- If you want the original package commands to be accessible from a single environment (that is distinct from the isolated environment where the original package is installed), then *srepkg* is likely a good option.
+- However, if you want the isolated package's command interface to be available globally and/or want a much more mature isolation tool, then [pipx]("https://github.com/pypa/pipx") is likely a better choice.
 
 ## Getting Started
 
@@ -28,14 +33,11 @@ Any existing CL package obtained from Python Packaging Index (PyPI) or GitHub ca
 ### Installing
 
 > [!CAUTION]
-> It is highly recommended to install srepkg in a virtual environment created using a tool such as `conda` or Python's built-in `venv` module. In the example below, we use `conda`.
+> It is recommended to install srepkg in a virtual environment created using a tool such as `conda` or Python's built-in `venv` module. In the example below, we use `conda`.
 
 ```
 conda create -n srepkg_test python=3.10
-conda activate srepkt_test
-git clone https://github.com/duanegoodner/srepkg
-cd srepkg
-pip install .
+pip install srepkg
 ```
 
 ### Usage
@@ -88,7 +90,7 @@ First, confirm we are using a conda environment dedicated to our tests. From the
 ```
 $ conda create -n srepkg_oldmath_test python=3.10
 $ conda activate srepkg_oldmath_test
-$ pip install .
+$ pip install srepkg
 ```
 
 Then, let's install a version of numpy that is relatively new (as of Feb. 2025).
@@ -270,9 +272,10 @@ $ srepkg https://github.com/huntrar/scrape -g 0.11.2
 
 ## Testing
 
-The following series of commands will install *srepkg* in editable mode, run the project's tests, and report branch coverage.
+To run the project tests, we can run the following:
 
 ```
+$ git 
 $ pip install -e '.[test]'
 $ coverage run -m pytest
 $ coverage report -m
