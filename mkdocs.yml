@@ -1,12 +1,11 @@
 site_name: srepkg
+site_url: https://duanegoodner.github.io/srepkg/
+repo_url: https://github.com/duanegoodner/srepkg
+repo_name: duanegoodner/srepkg
 theme:
     name: material
 markdown_extensions:
   - admonition
-  - pymdownx.details
-  - pymdownx.superfences
-site_url: https://duanegoodner.github.io/srepkg/
-repo_url: https://github.com/duanegoodner/srepkg
 nav:
     - Home: index.md
     - Getting Started: getting_started.md

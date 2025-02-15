@@ -1,7 +1,7 @@
 
 # Examples
 
-## Demo #1: Repackaging a local package that depends on old version of *numpy*
+## Demo #1: Repackaging a local package that depends on old version of ***numpy***
 
 The following demo shows how we take an original package that has a dependency conflict what's already installed in an active Python environment, re-package with *srepkg*, install the re-packaged version, and access the original package's CLI from the active environment, without experiencing any dependency conflict.
 
@@ -21,7 +21,7 @@ $ pip install numpy==2.2.2
 ```
 Later on, we will use the presence of this current numpy version to help illustrate the absence of dependency conflicts.
 
-### Repackage ***oldmath*** as *oldmathsrepkg*
+### Repackage ***oldmath*** as ***oldmathsrepkg***
 
 Next, we will re-package a simple local Python package ***oldmath*** with its source files located `./test/demos/oldmath/`. ***oldmath*** depends on ***numpy 1.26.4***.
 

@@ -1,10 +1,11 @@
-# Welcome to the srepkg documentation
+# Welcome to the ***srepkg*** Documentation Site
 
 *srepkg* is a Python package that wraps an isolation layer around other Python packages.
 
 ## Description
 
 When a package wrapped in an isolation layer by *srepkg* is installed in an active, pre-existing Python environment:
+
 - The original package plus its dependencies are installed in a new, automatically created virtual environment.
 - A dependency-free "access" package installed in the pre-existing environment contains a controller module capable of making calls to the Python interpreter in the newly created environment.
 - This package structure ensures that none of the original package's dependencies conflict with packages in the pre-existing environment but still exposes the original package’s CL to the pre-existing environment. 
