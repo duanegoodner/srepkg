@@ -104,7 +104,6 @@ Next, we will re-package a simple local Python package `oldmath` with its source
 ```
 $ srepkg test/demos/oldmath/
 
-srepkg test/demos/oldmath/
 ✅ Building original package wheel from source code
 ✅ Creating virtual env
 	Virtual env created with the following pypa packages installed:
@@ -113,13 +112,13 @@ srepkg test/demos/oldmath/
 	• wheel==0.45.1
 ✅ Installing oldmath-0.1.0-py3-none-any.whl in virtual env
 ✅ Building srepkg wheel
-	oldmathsrepkg wheel saved as: /home/duane/dproj/srepkg/srepkg_dists/oldmathsrepkg-0.1.0-cp310-abi3-linux_x86_64.whl
+	oldmathsrepkg wheel saved as: /home/duane/dproj/srepkg/srepkg_dists/oldmathsrepkg-0.1.0-py3-none-any.whl
 ✅ Building srepkg sdist
-	oldmathsrepkg sdist saved as: /home/duane/dproj/srepkg/srepkg_dists/oldmathsrepkg-0.1.0.zip
+	oldmathsrepkg sdist saved as: /home/duane/dproj/srepkg/srepkg_dists/oldmathsrepkg-0.1.0.tar.gz
 
 oldmathsrepkg can be installed using either of the following commands:
-	• pip install /home/duane/dproj/srepkg/srepkg_dists/oldmathsrepkg-0.1.0-cp310-abi3-linux_x86_64.whl
-	• pip install /home/duane/dproj/srepkg/srepkg_dists/oldmathsrepkg-0.1.0.zip
+	• pip install /home/duane/dproj/srepkg/srepkg_dists/oldmathsrepkg-0.1.0-py3-none-any.whl
+	• pip install /home/duane/dproj/srepkg/srepkg_dists/oldmathsrepkg-0.1.0.tar.gz
 Upon installation, oldmathsrepkg will provide access to the following command line entry points: 
 	• oldmath
 ```
@@ -132,7 +131,7 @@ The repackaged version of `oldmath` is called `oldmathsrepkg`, and it has been b
 
 Next, install `oldmathsrepkg` from the newly created wheel:
 ```
-$ pip install ./srepkg_dists/oldmathsrepkg-0.1.0-cp310-abi3-linux_x86_64.whl
+$ pip install ./srepkg_dists/oldmathsrepkg-0.1.0-py3-none-any.whl
 ```
 Now, we can get some info about `oldmath`:
 ```
@@ -195,13 +194,13 @@ $ srepkg scrape
 	• wheel==0.45.1
 ✅ Installing scrape-0.11.3-py3-none-any.whl in virtual env
 ✅ Building srepkg wheel
-	scrapesrepkg wheel saved as: /home/duane/dproj/srepkg/srepkg_dists/scrapesrepkg-0.11.3-cp310-abi3-linux_x86_64.whl
+	scrapesrepkg wheel saved as: /home/duane/dproj/srepkg/srepkg_dists/scrapesrepkg-0.11.3-py3-none-any.whl
 ✅ Building srepkg sdist
-	scrapesrepkg sdist saved as: /home/duane/dproj/srepkg/srepkg_dists/scrapesrepkg-0.11.3.zip
+	scrapesrepkg sdist saved as: /home/duane/dproj/srepkg/srepkg_dists/scrapesrepkg-0.11.3.tar.gz
 
 scrapesrepkg can be installed using either of the following commands:
-	• pip install /home/duane/dproj/srepkg/srepkg_dists/scrapesrepkg-0.11.3-cp310-abi3-linux_x86_64.whl
-	• pip install /home/duane/dproj/srepkg/srepkg_dists/scrapesrepkg-0.11.3.zip
+	• pip install /home/duane/dproj/srepkg/srepkg_dists/scrapesrepkg-0.11.3-py3-none-any.whl
+	• pip install /home/duane/dproj/srepkg/srepkg_dists/scrapesrepkg-0.11.3.tar.gz
 Upon installation, scrapesrepkg will provide access to the following command line entry points: 
 	• scrape
 ```
@@ -210,7 +209,7 @@ We can then install `scrapesrepkg`, and try using it on a file located under `te
 ```
 $ pip install pip install srepkg_dists/scrapesrepkg-0.11.3-cp310-abi3-linux_x86_64.whl
 
-Processing ./srepkg_dists/scrapesrepkg-0.11.3-cp310-abi3-linux_x86_64.whl
+Processing ./srepkg_dists/scrapesrepkg-0.11.3-py3-none-any.whl
 Installing collected packages: scrapesrepkg
 Successfully installed scrapesrepkg-0.11.3
 
@@ -240,13 +239,13 @@ srepkg https://github.com/huntrar/scrape
 	• wheel==0.45.1
 ✅ Installing scrape-0.11.3-py3-none-any.whl in virtual env
 ✅ Building srepkg wheel
-	scrapesrepkg wheel saved as: /home/duane/dproj/srepkg/srepkg_dists/scrapesrepkg-0.11.3-cp310-abi3-linux_x86_64.whl
+	scrapesrepkg wheel saved as: /home/duane/dproj/srepkg/srepkg_dists/scrapesrepkg-0.11.3-py3-none-any.whl
 ✅ Building srepkg sdist
-	scrapesrepkg sdist saved as: /home/duane/dproj/srepkg/srepkg_dists/scrapesrepkg-0.11.3.zip
+	scrapesrepkg sdist saved as: /home/duane/dproj/srepkg/srepkg_dists/scrapesrepkg-0.11.3.tar.gz
 
 scrapesrepkg can be installed using either of the following commands:
-	• pip install /home/duane/dproj/srepkg/srepkg_dists/scrapesrepkg-0.11.3-cp310-abi3-linux_x86_64.whl
-	• pip install /home/duane/dproj/srepkg/srepkg_dists/scrapesrepkg-0.11.3.zip
+	• pip install /home/duane/dproj/srepkg/srepkg_dists/scrapesrepkg-0.11.3-py3-none-any.whl
+	• pip install /home/duane/dproj/srepkg/srepkg_dists/scrapesrepkg-0.11.3.tar.gz
 Upon installation, scrapesrepkg will provide access to the following command line entry points: 
 	• scrape
 ```
