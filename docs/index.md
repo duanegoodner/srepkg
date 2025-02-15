@@ -1,18 +1,25 @@
 # Welcome to the srepkg documentation
 
-## Description
-
 *srepkg* is a Python package that wraps an isolation layer around other Python packages.
 
-When a package wrapped in this isolation layer is installed in an active, pre-existing Python environment, the original package plus its dependencies are installed in a new, automatically created virtual environment. A dependency-free "access" package installed in the pre-existing environment contains a controller module capable of making calls to the Python interpreter in the newly created environment. This package structure ensures that none of the original package's dependencies conflict with packages in the pre-existing environment but still exposes the original package’s CL to the pre-existing environment. 
+## Description
 
-## Typical Use Case
+When a package wrapped in an isolation layer by *srepkg* is installed in an active, pre-existing Python environment:
+- The original package plus its dependencies are installed in a new, automatically created virtual environment.
+- A dependency-free "access" package installed in the pre-existing environment contains a controller module capable of making calls to the Python interpreter in the newly created environment.
+- This package structure ensures that none of the original package's dependencies conflict with packages in the pre-existing environment but still exposes the original package’s CL to the pre-existing environment. 
+
+## Typical Use Cases
 
 ### For Package Distributors
-srepkg can be useful if you are sharing a Python command line application, and you want to be certain that users can install and run it without worrying about dependency conflicts. You might be sharing application **X** that depends on package **Y** version 1.0.  Users may want to run **X** from an environment where they require **Y** version 2.0.  Wrapping a CL package with *srepkg* prior to sharing the package with other users will ensure that wherever the package is installed, it does not introduce dependency conflicts into a user's existing Python environment &mdash; even if the user knows nothing about managing Python environments.
+- *srepkg* can be useful if you are sharing a Python command line application, and you want to be certain that users can install and run it without worrying about dependency conflicts. 
+- Wrapping a CL package with *srepkg* prior to sharing the package with other users will ensure that wherever the package is installed, it does not introduce dependency conflicts into a user's existing Python environment &mdash; even if the user knows nothing about managing Python environments.
 
 ### For Package Users
-Any existing CL package obtained from Python Packaging Index (PyPI) or GitHub can be wrapped with *srepkg* prior to installation to ensure that none of the original package's dependencies will conflict with any packages in an existing environment. If you want the original package commands to be accessible from a single environment (that is distinct from the isolated environment where the original package is installed), then *srepkg* is likely a good option. However, if you want the isolated package's command interface to be available globally and/or want a much more mature isolation tool, then [pipx]("https://github.com/pypa/pipx") is likely a better choice.
+- Any existing CL package obtained from Python Packaging Index (PyPI) or GitHub can be wrapped with *srepkg* prior to installation.
+- If you want the original package commands to be accessible from a single environment (that is distinct from the isolated environment where the original package is installed), then *srepkg* is likely a good option.
+- However, if you want the isolated package's command interface to be available globally and/or want a much more mature isolation tool, then [pipx]("https://github.com/pypa/pipx") is likely a better choice.
+
 
 
 

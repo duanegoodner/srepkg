@@ -1,11 +1,15 @@
 site_name: srepkg
 theme:
     name: material
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
 site_url: https://duanegoodner.github.io/srepkg/
 repo_url: https://github.com/duanegoodner/srepkg
 nav:
     - Home: index.md
     - Getting Started: getting_started.md
     - Examples: examples.md
-    - Comparing srepkg with pipx: comparison_with_pipx.md
+    - Comparing srepkg with pipx: compare_with_pipx.md
 
