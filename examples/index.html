@@ -537,7 +537,7 @@
 
 
 <h1 id="examples">Examples</h1>
-<h2 id="demo-1-repackaging-a-local-package-that-depends-on-old-version-of-numpy">Demo #1: Repackaging a local package that depends on old version of <em>numpy</em></h2>
+<h2 id="demo-1-repackaging-a-local-package-that-depends-on-old-version-of-numpy">Demo #1: Repackaging a local package that depends on old version of <strong><em>numpy</em></strong></h2>
 <p>The following demo shows how we take an original package that has a dependency conflict what's already installed in an active Python environment, re-package with <em>srepkg</em>, install the re-packaged version, and access the original package's CLI from the active environment, without experiencing any dependency conflict.</p>
 <h3 id="environment-setup">Environment Setup</h3>
 <p>We will be using some test files from the <strong><em>srepkg</em></strong> repository, so instead of installing from PyPI, we will just clone the <strong><em>srepkg</em></strong> repo and install from there</p>
@@ -551,7 +551,7 @@ $ pip install .
 <pre><code>$ pip install numpy==2.2.2
 </code></pre>
 <p>Later on, we will use the presence of this current numpy version to help illustrate the absence of dependency conflicts.</p>
-<h3 id="repackage-oldmath-as-oldmathsrepkg">Repackage <strong><em>oldmath</em></strong> as <em>oldmathsrepkg</em></h3>
+<h3 id="repackage-oldmath-as-oldmathsrepkg">Repackage <strong><em>oldmath</em></strong> as <strong><em>oldmathsrepkg</em></strong></h3>
 <p>Next, we will re-package a simple local Python package <strong><em>oldmath</em></strong> with its source files located <code>./test/demos/oldmath/</code>. <strong><em>oldmath</em></strong> depends on <strong><em>numpy 1.26.4</em></strong>.</p>
 <pre><code>$ srepkg test/demos/oldmath/
 
