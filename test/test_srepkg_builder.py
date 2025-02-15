@@ -57,7 +57,7 @@ class TestSrepkgBuilder:
             dist_out_contents = list(dist_out_dir.iterdir())
             dist_out_filetypes = [item.suffix for item in dist_out_contents]
             assert (
-                ".zip" in dist_out_filetypes
+                ".gz" in dist_out_filetypes
             ) == condition.srepkg_zip_exists
             assert (
                 ".whl" in dist_out_filetypes
