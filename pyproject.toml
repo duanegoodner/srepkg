@@ -14,13 +14,22 @@ requires-python = ">=3.10"
 license = { file = "LICENSE" }
 keywords = []
 classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Intended Audience :: End Users/Desktop",
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: MIT License",
-    "Operating System :: OS Independent"
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
 ]
 dependencies = [
     "build>=1.0.0",
-#    "Cython",
     "entry_points_txt>=0.2.1",
     "packaging>=22.0",
     "pkginfo>=1.9.0",
@@ -31,13 +40,15 @@ dependencies = [
 [project.optional-dependencies]
 test = ["pytest>=7.0", "pytest-mock>=3.0", "coverage>=7.0"]
 
+[project.urls]
+Repository = "https://github.com/duanegoodner/srepkg"
+
 [tool.setuptools]
 package-dir = {"" = "src"}
 include-package-data = true
 
 [tool.setuptools.packages.find]
 where = ["src"]
-#exclude = ["srepkg.test*"]
 
 [project.scripts]
 srepkg = "srepkg.srepkg:main"
