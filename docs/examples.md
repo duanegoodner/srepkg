@@ -1,3 +1,4 @@
+
 # Examples
 
 ## Demo #1: Repackaging a local package that depends on old version of *numpy*
@@ -47,8 +48,9 @@ Upon installation, oldmathsrepkg will provide access to the following command li
 ```
 The repackaged version of ***oldmath*** is called ***oldmathsrepkg***, and it has been built into both `wheel` and `sdist` distributions.
 
-> [!NOTE]
-> The `-n` option can be used to assign a custom name to the repackaged package and distributions.
+!!! note
+    The `-n` option can be used to assign a custom name to the repackaged package and distributions.
+
 
 ### Install and test ***oldmathsrepkg***
 
