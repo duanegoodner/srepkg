@@ -272,14 +272,19 @@ $ srepkg https://github.com/huntrar/scrape -g 0.11.2
 
 ## Testing
 
-To run the project tests, we can run the following:
+To run the project tests, we can clone a copy of the repo locally, and install in editable mode with:
 
 ```
-$ git 
+$ git clone https://github.com/duanegoodner/srepkg
+$ cd srepkg
 $ pip install -e '.[test]'
+```
+Then run the test suite and generate a coverage report:
+```
 $ coverage run -m pytest
 $ coverage report -m
 ```
+
 
 ## Contributing
 
