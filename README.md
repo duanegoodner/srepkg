@@ -19,7 +19,7 @@ When a package wrapped in an isolation layer by *srepkg* is installed in an acti
 - If you want the original package commands to be accessible from a single environment (that is distinct from the isolated environment where the original package is installed), then *srepkg* is likely a good option.
 - However, if you want the isolated package's command interface to be available globally and/or want a much more mature isolation tool, then [pipx]("https://github.com/pypa/pipx") is likely a better choice.
 
-## Getting Started
+## Quick Start
 
 ### Requirements
 
@@ -30,7 +30,7 @@ When a package wrapped in an isolation layer by *srepkg* is installed in an acti
 - Optional: `miniconda` or `conda` if you want to exactly follow the examples below
 
 
-### Quick Demo
+### Simple Demo
 
 ```shell
 # Create and activate a new conda environment for testing
@@ -71,7 +71,12 @@ black -c "def foo():print('hello,world')"
 # Output:
 # def foo():
 #    print("hello,world")
+```
 
+### Command Line Help
+For details on all `srepkg` command options, run:
+```shell
+srepkg --help
 ```
 
 
