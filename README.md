@@ -28,9 +28,10 @@ Full project documentation, including detailed examples, is available at: [duane
 
 ### Requirements
 
-- Python version 3.10 or higher
+- Python version 3.9 or higher
 - For compatibility with *srepkg*, and existing package must:
   * Be installable via [pip](https://pip.pypa.io/en/stable/installation/#)
+  * Be compatible with the Python interpreter version that is running *srepkg*.
   * Have command line entry point(s) specified in either one the `[project.scripts]` section of a `pyproject.toml` (preferred), the `[options.entry_points]` section of a  `setup.cfg`, or the `entry_points` arguments passed to `setup()` in a `setupy.py` file.
 - Optional: `miniconda` or `conda` if you want to exactly follow the examples below
 
