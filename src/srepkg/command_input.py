@@ -98,8 +98,22 @@ class SrepkgCommandLine(rep_int.SrepkgCommandInterface):
             "automatically deleted at end of execution.",
         )
 
+    # TODO: Place / call as much downstream logic as possible for setting
+    #  defaults to this method. Some can't go here b/c determination can
+    #  only be made downstream.
     @staticmethod
-    def _set_defaults(args_namespace):
+    def _set_defaults(args_namespace: argparse.Namespace):
+        """
+        Sets default values for command line arguments.
+
+        Args:
+            args_namespace (): key-value pairs collected from the command
+            line args.
+
+        Returns:
+            None
+
+        """
                 
         if args_namespace.dist_out_dir is None:
             args_namespace.dist_out_dir = Path.cwd() / "srepkg_dists"
@@ -107,7 +121,8 @@ class SrepkgCommandLine(rep_int.SrepkgCommandInterface):
     
     def get_args(self, *args) -> rep_int.SrepkgCommand:
         """
-
+        Collects command line arguments and converts to SrepkgCommand used
+        by downstream classes.
         Args:
             *args (): Entry point arguments, typically from command line.
 
