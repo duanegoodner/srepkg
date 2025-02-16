@@ -1,7 +1,8 @@
 
 
 
-# 📦 srepkg (Solo Repackage)
+# 📦 Solo Repackage (`srepkg`)
+
 ![Python Versions](https://img.shields.io/pypi/pyversions/srepkg)
 ![PyPI](https://img.shields.io/pypi/v/srepkg)
 [![codecov](https://codecov.io/gh/duanegoodner/srepkg/graph/badge.svg?token=EM1ESYCU4C)](https://codecov.io/gh/duanegoodner/srepkg)
@@ -12,11 +13,11 @@
 
 
 
-*srepkg* is a Python package that wraps an isolation layer around other Python packages.
+Wraps a Python package with an isolation layer that enforces installation in an isolated virtual environment while still providing access to the original package's command-line interface in an external environment.
 
 ## 📖 Description
 
-When a package wrapped in an isolation layer by *srepkg* is installed in an active, pre-existing Python environment:
+When a Python package that has been wrapped in a *srepkg* isolation is installed in an active, pre-existing Python environment:
 - The original package plus its dependencies are installed in a new, automatically created virtual environment.
 - A dependency-free "access" package installed in the pre-existing environment contains a controller module capable of making calls to the Python interpreter in the newly created environment.
 - This package structure ensures that none of the original package's dependencies conflict with packages in the pre-existing environment but still exposes the original package’s CL to the pre-existing environment. 
