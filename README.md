@@ -4,6 +4,7 @@
 # 📦 srepkg (Solo Repackage)
 ![Python Versions](https://img.shields.io/pypi/pyversions/srepkg)
 ![PyPI](https://img.shields.io/pypi/v/srepkg)
+[![codecov](https://codecov.io/gh/duanegoodner/srepkg/graph/badge.svg?token=EM1ESYCU4C)](https://codecov.io/gh/duanegoodner/srepkg)
 ![PyPI - Dependencies](https://img.shields.io/badge/dependencies-up%20to%20date-brightgreen)
 [![Docs](https://img.shields.io/badge/docs-online-blue)](https://duanegoodner.github.io/srepkg/)
 ![License](https://img.shields.io/github/license/duanegoodner/srepkg)

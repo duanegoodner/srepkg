@@ -2,7 +2,7 @@ import pytest
 from unittest import mock
 from packaging.utils import parse_wheel_filename
 import srepkg.remote_pkg_retriever as rpr
-from shared_fixtures import sample_pkgs, tmp_construction_dir
+from test.shared_fixtures import sample_pkgs, tmp_construction_dir
 
 
 class TestRemotePackageRetriever:
@@ -11,7 +11,10 @@ class TestRemotePackageRetriever:
         "pkg_retriever, t_pkg_ref, num_whl_download, num_sdist_download",
         [
             ("PyPIPkgRetriever", "scrape_py_pi", 1, 0),
-            ("PyPIPkgRetriever", "numpy_py_pi", 1, 1),
+            # numpy file availability on PyPI inconsistent so remove test
+            # depends on Python version and also can be unpredictable when
+            # pakage maintainer is updating something
+            # ("PyPIPkgRetriever", "numpy_py_pi", 1, 1),
             ("GithubPkgRetriever", "howdoi_github", 0, 0),
         ],
     )

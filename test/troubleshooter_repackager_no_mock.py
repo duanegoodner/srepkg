@@ -2,7 +2,7 @@ from pathlib import Path
 import srepkg.repackager as rep
 import srepkg.repackager_interfaces as rep_int
 import srepkg.service_builder as sb
-from shared_fixtures import sample_pkgs
+from test.shared_fixtures import sample_pkgs
 
 
 def test_repackager(tmp_path_factory, sample_pkgs):
