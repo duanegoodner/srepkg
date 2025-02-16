@@ -26,6 +26,15 @@ from srepkg.utils.pkg_type_identifier import PkgRefType, PkgRefIdentifier
 def create_construction_dir(
     construction_dir_command, srepkg_name_command: str = None
 ) -> cdn.ConstructionDir:
+    """
+    Enables function overloading based on type(construction_dir_command) and
+    Args:
+        construction_dir_command:
+        srepkg_name_command: optional command passed when using custom name
+        for a re-packaged package.
+    Returns:
+
+    """
     raise NotImplementedError
 
 
@@ -234,9 +243,24 @@ class ServiceBuilder(rep_int.ServiceBuilderInterface):
     """
 
     def __init__(self, srepkg_command: rep_int.SrepkgCommand):
+        """
+
+        Args:
+            srepkg_command (): a SrepkgCommand object, typically built from
+            command line arguments (but can be built my args passed to
+            srepkg.main() during testing).
+        """
         self._srepkg_command = srepkg_command
 
     def create_orig_src_preparer(self) -> rep_int.OrigSrcPreparerInterface:
+        """
+        Creates instance of class that implements OrigSrcPreparerInterface.
+        Specific concrete class used depends on attributes of SrepkgCommand.
+
+        Returns:
+            Instance of a class that implements OrigSrcPreparerInterface.
+
+        """
         osp_builder = OrigSrcPreparerBuilder(
             construction_dir_command=self._srepkg_command.construction_dir,
             orig_pkg_ref_command=self._srepkg_command.orig_pkg_ref,
@@ -249,6 +273,14 @@ class ServiceBuilder(rep_int.ServiceBuilderInterface):
     def create_srepkg_builder(
         self, construction_dir_summary: rep_ds.ConstructionDirSummary
     ) -> rep_int.SrepkgBuilderInterface:
+        """
+        Creates instance of class that implements SrepkgBuilderInterface.
+        Args:
+            construction_dir_summary ():
+
+        Returns:
+
+        """
         srepkg_builder_builder = SrepkgBuilderBuilder(
             output_dir_command=self._srepkg_command.dist_out_dir,
             construction_dir_summary=construction_dir_summary,
