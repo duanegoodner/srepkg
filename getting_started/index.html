@@ -288,7 +288,7 @@
         <li class="md-nav__item">
   <a href="#requirements" class="md-nav__link">
     <span class="md-ellipsis">
-      Requirements
+      📋 Requirements
     </span>
   </a>
   
@@ -297,7 +297,7 @@
         <li class="md-nav__item">
   <a href="#installing" class="md-nav__link">
     <span class="md-ellipsis">
-      Installing
+      📦 Installing
     </span>
   </a>
   
@@ -306,7 +306,7 @@
         <li class="md-nav__item">
   <a href="#command-line-help" class="md-nav__link">
     <span class="md-ellipsis">
-      Command Line Help
+      ❓ Command Line Help
     </span>
   </a>
   
@@ -315,7 +315,7 @@
         <li class="md-nav__item">
   <a href="#simple-demo-with-srepkg-in-a-fresh-conda-environment" class="md-nav__link">
     <span class="md-ellipsis">
-      Simple Demo with srepkg in a fresh conda environment
+      ▶️ Simple Demo with srepkg in a fresh conda environment
     </span>
   </a>
   
@@ -400,7 +400,7 @@
         <li class="md-nav__item">
   <a href="#requirements" class="md-nav__link">
     <span class="md-ellipsis">
-      Requirements
+      📋 Requirements
     </span>
   </a>
   
@@ -409,7 +409,7 @@
         <li class="md-nav__item">
   <a href="#installing" class="md-nav__link">
     <span class="md-ellipsis">
-      Installing
+      📦 Installing
     </span>
   </a>
   
@@ -418,7 +418,7 @@
         <li class="md-nav__item">
   <a href="#command-line-help" class="md-nav__link">
     <span class="md-ellipsis">
-      Command Line Help
+      ❓ Command Line Help
     </span>
   </a>
   
@@ -427,7 +427,7 @@
         <li class="md-nav__item">
   <a href="#simple-demo-with-srepkg-in-a-fresh-conda-environment" class="md-nav__link">
     <span class="md-ellipsis">
-      Simple Demo with srepkg in a fresh conda environment
+      ▶️ Simple Demo with srepkg in a fresh conda environment
     </span>
   </a>
   
@@ -453,7 +453,7 @@
 
 
 <h1 id="getting-started">Getting Started</h1>
-<h2 id="requirements">Requirements</h2>
+<h2 id="requirements">📋 Requirements</h2>
 <ul>
 <li>Python version 3.9 or higher</li>
 <li>For compatibility with <em>srepkg</em>, and existing package must:</li>
@@ -462,52 +462,52 @@
 <li>Have command line entry point(s) specified in either one the <code>[project.scripts]</code> section of a <code>pyproject.toml</code> (preferred), the <code>[options.entry_points]</code> section of a  <code>setup.cfg</code>, or the <code>entry_points</code> arguments passed to <code>setup()</code> in a <code>setupy.py</code> file.</li>
 <li>Optional: <code>miniconda</code> or <code>conda</code> if you want to exactly follow the examples in the documentation.</li>
 </ul>
-<h2 id="installing">Installing</h2>
-<pre><code class="language-shell">pip install srepkg
-</code></pre>
-<h2 id="command-line-help">Command Line Help</h2>
-<pre><code class="language-shell">srepkg --help
-</code></pre>
-<h2 id="simple-demo-with-srepkg-in-a-fresh-conda-environment">Simple Demo with <em>srepkg</em> in a fresh conda environment</h2>
-<pre><code class="language-shell"># Create and activate a new conda environment for testing
-conda create -n srepkg_test python=3.11
-conda activate srepkg_test
+<h2 id="installing">📦 Installing</h2>
+<div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>srepkg
+</code></pre></div>
+<h2 id="command-line-help">❓ Command Line Help</h2>
+<div class="highlight"><pre><span></span><code>srepkg<span class="w"> </span>--help
+</code></pre></div>
+<h2 id="simple-demo-with-srepkg-in-a-fresh-conda-environment">▶️ Simple Demo with <em>srepkg</em> in a fresh conda environment</h2>
+<div class="highlight"><pre><span></span><code><span class="c1"># Create and activate a new conda environment for testing</span>
+conda<span class="w"> </span>create<span class="w"> </span>-n<span class="w"> </span>srepkg_test<span class="w"> </span><span class="nv">python</span><span class="o">=</span><span class="m">3</span>.11
+conda<span class="w"> </span>activate<span class="w"> </span>srepkg_test
 
-# Install srepkg from PyPI
-pip install srepkg
+<span class="c1"># Install srepkg from PyPI</span>
+pip<span class="w"> </span>install<span class="w"> </span>srepkg
 
-# Re-package a version of black, obtained from PyPI
-srepkg black -r 25.1.0  # creates re-package wheel and sdist under ./srepkg_dists
+<span class="c1"># Re-package a version of black, obtained from PyPI</span>
+srepkg<span class="w"> </span>black<span class="w"> </span>-r<span class="w"> </span><span class="m">25</span>.1.0<span class="w">  </span><span class="c1"># creates re-package wheel and sdist under ./srepkg_dists</span>
 
-# install our re-packaged wheel
-pip install ./srepkg_dists/blacksrepkg-25.1.0-py3-none-any.whl
+<span class="c1"># install our re-packaged wheel</span>
+pip<span class="w"> </span>install<span class="w"> </span>./srepkg_dists/blacksrepkg-25.1.0-py3-none-any.whl
 
-# Confirm blacksrepkg is installed and that black is NOT installed in our conda env
-conda list | grep black
-# Output:
-# blacksrepkg               25.1.0                   pypi_0    pypi
+<span class="c1"># Confirm blacksrepkg is installed and that black is NOT installed in our conda env</span>
+conda<span class="w"> </span>list<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>black
+<span class="c1"># Output:</span>
+<span class="c1"># blacksrepkg               25.1.0                   pypi_0    pypi</span>
 
-# Check if any of black's dependencies are installed in our conda environment
-onda list | grep &quot;click\|\
-mypy_extensions\|\
-packaging\|\
-pathspec\|\
-platformdirs\|\
-tomli\|\
-typing_extensions&quot;
+<span class="c1"># Check if any of black&#39;s dependencies are installed in our conda environment</span>
+onda<span class="w"> </span>list<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span><span class="s2">&quot;click\|\</span>
+<span class="s2">mypy_extensions\|\</span>
+<span class="s2">packaging\|\</span>
+<span class="s2">pathspec\|\</span>
+<span class="s2">platformdirs\|\</span>
+<span class="s2">tomli\|\</span>
+<span class="s2">typing_extensions&quot;</span>
 
-# Output:
-# packaging                 24.2                     pypi_0    pypi
+<span class="c1"># Output:</span>
+<span class="c1"># packaging                 24.2                     pypi_0    pypi</span>
 
-# Note: 'packaging' is installed because it is a dependency of 'srepkg'.
-# No other package that black depends on is in our environment.
+<span class="c1"># Note: &#39;packaging&#39; is installed because it is a dependency of &#39;srepkg&#39;.</span>
+<span class="c1"># No other package that black depends on is in our environment.</span>
 
-# Confirm that we have access to the black CLI
-black -c &quot;def foo():print('hello,world')&quot;
-# Output:
-# def foo():
-#    print(&quot;hello,world&quot;)
-</code></pre>
+<span class="c1"># Confirm that we have access to the black CLI</span>
+black<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;def foo():print(&#39;hello,world&#39;)&quot;</span>
+<span class="c1"># Output:</span>
+<span class="c1"># def foo():</span>
+<span class="c1">#    print(&quot;hello,world&quot;)</span>
+</code></pre></div>
 
 
 
@@ -554,7 +554,7 @@ black -c &quot;def foo():print('hello,world')&quot;
     </div>
     
     
-    <script id="__config" type="application/json">{"base": "..", "features": [], "search": "../assets/javascripts/workers/search.f8cc74c7.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    <script id="__config" type="application/json">{"base": "..", "features": ["content.code.copy", "content.code.annotate"], "search": "../assets/javascripts/workers/search.f8cc74c7.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
       <script src="../assets/javascripts/bundle.f1b6f286.min.js"></script>
