@@ -41,7 +41,9 @@ class _DistBuilder:
 
 
 def main(*args):
-    dist_builder = _DistBuilderArgParser().get_args(*args)
+    arg_parser = _DistBuilderArgParser()
+    dist_builder = arg_parser.get_args(*args)
+    # dist_builder = _DistBuilderArgParser().get_args(*args)
     dist_path = dist_builder.build_dist()
 
 

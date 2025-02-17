@@ -1,7 +1,12 @@
+import sys
 from pathlib import Path
+
+sys.path.append(str(Path(__file__).parent.parent))    
+
+from shared_fixtures import sample_pkgs
+
 import srepkg.repackager as rep
 from srepkg.srepkg import main
-from test.shared_fixtures import sample_pkgs
 
 
 def test_srepkg(mocker, sample_pkgs):
@@ -17,5 +22,5 @@ def run_repkg():
     main(["black", "-r", "23.1.0"])
 
 
-if __name__ == "__main__":
+if __name__ == "__main__": 
     run_repkg()
