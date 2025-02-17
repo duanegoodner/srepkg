@@ -1,6 +1,6 @@
 # Getting Started
 
-## Requirements
+## 📋 Requirements
 
 - Python version 3.9 or higher
 - For compatibility with *srepkg*, and existing package must:
@@ -9,18 +9,18 @@
   * Have command line entry point(s) specified in either one the `[project.scripts]` section of a `pyproject.toml` (preferred), the `[options.entry_points]` section of a  `setup.cfg`, or the `entry_points` arguments passed to `setup()` in a `setupy.py` file.
 - Optional: `miniconda` or `conda` if you want to exactly follow the examples in the documentation.
 
-## Installing
+## 📦 Installing
 
 ```shell
 pip install srepkg
 ```
 
-## Command Line Help
+## ❓ Command Line Help
 ```shell
 srepkg --help
 ```
 
-## Simple Demo with *srepkg* in a fresh conda environment
+## ▶️ Simple Demo with *srepkg* in a fresh conda environment
 
 ```shell
 # Create and activate a new conda environment for testing

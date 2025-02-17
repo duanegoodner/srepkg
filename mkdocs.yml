@@ -4,8 +4,17 @@ repo_url: https://github.com/duanegoodner/srepkg
 repo_name: duanegoodner/srepkg
 theme:
     name: material
+    features:
+      - content.code.copy  # Adds a copy button to code blocks
+      - content.code.annotate  # Enables inline annotations for code blocks
+
 markdown_extensions:
   - admonition
+  - pymdownx.highlight  # Enables syntax highlighting
+  - pymdownx.superfences  # Enhances code block handling
+  - pymdownx.inlinehilite  # Allows inline code highlighting
+  - pymdownx.snippets  # Enables including external snippets
+  - pymdownx.extra  # Adds extra markdown features
 nav:
     - Home: index.md
     - Getting Started: getting_started.md

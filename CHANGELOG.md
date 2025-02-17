@@ -10,13 +10,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - "solo repackage" to keywords in pyproject.toml
-- this CHANGELOG.md file
+- This CHANGELOG.md file
+- Example package ***newmath*** under ./test/demos/newmath/
 
 ### Fixed
 
 ### Changed
 
 - README.md: format of top level header
+- Docs **Example #1** to use ***newmath*** for better illustration of dependency-conflict avoidance
+- Docs formatting in all sections
 
 ### Removed
 
