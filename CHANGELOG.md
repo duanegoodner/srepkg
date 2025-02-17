@@ -9,6 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+### Fixed
+
+### Changed
+
+### Removed
+
+## [0.1.6] - 2024-02-16
+
+### Added
 - "solo repackage" to keywords in pyproject.toml
 - This CHANGELOG.md file
 - Example package ***newmath*** under ./test/demos/newmath/
@@ -16,8 +25,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 ### Changed
-
-- README.md: format of top level header
+- README.md: Re-format of top level header
+- README.md: Put Docs link closer to top for better visibility
 - Docs **Example #1** to use ***newmath*** for better illustration of dependency-conflict avoidance
 - Docs formatting in all sections
 
@@ -113,8 +122,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
-[unreleased]: https://github.com/duanegoodner/srepkg/compare/0.1.5...HEAD
-[0.1.5]: https://github.com/duanegoodner/srepkg/compare/0.1.5...0.1.5
+[unreleased]: https://github.com/duanegoodner/srepkg/compare/0.1.6...HEAD
+[0.1.6]: https://github.com/duanegoodner/srepkg/compare/0.1.5...0.1.6
+[0.1.5]: https://github.com/duanegoodner/srepkg/compare/0.1.4...0.1.5
 [0.1.4]: https://github.com/duanegoodner/srepkg/compare/0.1.3...0.1.4
 [0.1.3]: https://github.com/duanegoodner/srepkg/compare/0.1.2...0.1.3
 [0.1.2]: https://github.com/duanegoodner/srepkg/compare/0.1.0...0.1.2
