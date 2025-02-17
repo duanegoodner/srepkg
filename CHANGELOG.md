@@ -15,6 +15,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+## [0.1.7] - 2024-02-16
+
+### Added
+
+### Fixed
+- README to get clean rendering on PyPI (mismatch from GitHub rendering)
+
+### Changed
+
+### Removed
+
 ## [0.1.6] - 2024-02-16
 
 ### Added

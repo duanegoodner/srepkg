@@ -1,16 +1,14 @@
 
 
 
-# 📦 Solo Repackage (`srepkg`)
+# 📦 Solo Repackage (srepkg)
 
 ![Python Versions](https://img.shields.io/pypi/pyversions/srepkg)
 ![PyPI](https://img.shields.io/pypi/v/srepkg)
 [![codecov](https://codecov.io/gh/duanegoodner/srepkg/graph/badge.svg?token=EM1ESYCU4C)](https://codecov.io/gh/duanegoodner/srepkg)
 ![PyPI - Dependencies](https://img.shields.io/badge/dependencies-up%20to%20date-brightgreen)
 [![Docs](https://img.shields.io/badge/docs-online-blue)](https://duanegoodner.github.io/srepkg/)
-![License](https://img.shields.io/github/license/duanegoodner/srepkg)
-
-
+![License: MIT](https://badgen.net/badge/license/MIT/blue)
 
 
 Wraps a Python package with an isolation layer that enforces installation in an isolated virtual environment while still providing access to the original package's command-line interface in an external environment.
