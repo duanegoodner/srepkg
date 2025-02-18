@@ -28,6 +28,8 @@ class AllExamplePackages:
     wheel_inspect_whl: str = str(
         src_dir / "wheel_inspect-1.7.1-py3-none-any.whl"
     )
+    wheel_missing_dist_info: str = str(src_dir / "packagemissingdistinfo-0.1-py3-none-any.whl")
+    wheel_multi_dist_info: str = str(src_dir / "packagemultidistinfo-0.1-py3-none-any.whl")
     cowsay_py_pi: str = "cowsay"
 
 

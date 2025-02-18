@@ -48,9 +48,9 @@ class WheelDistInfo:
         }
 
         if len(dist_info_dirs) == 0:
-            raise ValueError("No dist-info directory")
+            raise FileNotFoundError("No dist-info directory")
         if len(dist_info_dirs) > 1:
-            raise ValueError("Multiple dist-info directories found")
+            raise FileExistsError("Multiple dist-info directories found")
 
         return next(iter(dist_info_dirs))
 
