@@ -33,8 +33,8 @@ class ConstructionDir(osp_int.ManageableConstructionDir):
         self._root = construction_dir_command
         self._srepkg_root = construction_dir_command / uuid.uuid4().hex
         self._srepkg_inner = self._srepkg_root / uuid.uuid4().hex
-        self._srepkg_root.mkdir()
-        self._srepkg_inner.mkdir()
+        self._srepkg_root.mkdir(exist_ok=True, parents=True)
+        self._srepkg_inner.mkdir(exist_ok=True, parents=True)
         (self._srepkg_root / "orig_dist").mkdir()
         self._custom_srepkg_name = srepkg_name_command
         self._supported_dist_types = DEFAULT_DIST_CLASSES
