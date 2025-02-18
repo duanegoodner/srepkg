@@ -41,7 +41,15 @@ jobs:
       - name: Run tests with pytest
         run: |
           export PYTHONPATH=$PYTHONPATH:$(pwd)/src
-          pytest --cov=srepkg --cov-report=xml --cov-branch -vv || (cat pytest.log && exit 1)
+          pytest --cov=srepkg --cov-report=xml --cov-branch -vv 2>&1 | tee pytest.log || exit 1
+      
+      - name: Upload pytest logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pytest-log
+          path: pytest.log
+        
 
       - name: Upload coverage report  # ✅ Correct indentation
         uses: actions/upload-artifact@v4
