@@ -32,3 +32,4 @@ def test_log_unhandled_exception_logging(logging_initializer, caplog):
 def test_non_default_init():
     logfile_dir = Path(tempfile.TemporaryDirectory().name)
     logging_initializer = LoggingInitializer(logfile_dir=logfile_dir)
+    assert logging_initializer._logfile_dir == logfile_dir

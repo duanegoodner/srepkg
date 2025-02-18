@@ -17,6 +17,9 @@ def test_ipi_logging():
 
     ipi_logging = ipi.IPILogging()
     ipi_logging.confirm_setup()
+    assert logging.getLogger("std_err") is not None
+    assert logging.getLogger("std_out") is not None
+
 
 
 def test_add_missing_loggers():
@@ -41,6 +44,8 @@ def test_add_missing_loggers():
         console_logger_info=console_logger_info,
     )
 
+    assert logging.getLogger("dev_null") is not None
+
 
 def test_py_version():
     py_version = ipi.PyVersion(version_str="3.11.2")
@@ -52,7 +57,9 @@ def test_py_version():
 def test_custom_venv_builder():
     custom_venv_builder = ipi.CustomVenvBuilder()
     version_info = custom_venv_builder.version_info
+    assert version_info == sys.version_info
     site_packages = custom_venv_builder.site_pkgs
+    assert site_packages is None
 
 
 def test_inner_pkg_cfg_reader(sample_pkgs):
@@ -60,5 +67,8 @@ def test_inner_pkg_cfg_reader(sample_pkgs):
         inner_pkg_cfg=Path(sample_pkgs.innder_pkg_testproj_setup_cfg)
     )
     srepkg_name = cfg_reader.srepkg_name
+    assert srepkg_name == "testprojsrepkg"
     dist_dir = cfg_reader.dist_dir
+    assert dist_dir == "test_dist_dir"
     sdist_src = cfg_reader.sdist_src
+    assert sdist_src == "test_sdist_src"

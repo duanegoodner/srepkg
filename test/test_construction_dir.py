@@ -1,13 +1,15 @@
-import pytest
 import shutil
+import tempfile
 from pathlib import Path
+from test.shared_fixtures import sample_pkgs, tmp_construction_dir
+
+import pytest
 
 import srepkg.construction_dir as cdn
 import srepkg.error_handling.custom_exceptions as ce
 import srepkg.repackager_interfaces as rep_int
 import srepkg.service_builder as sb
-import tempfile
-from test.shared_fixtures import sample_pkgs, tmp_construction_dir
+import srepkg.wheel_modifier as wm
 
 
 class TestConstructionDirInit:
@@ -116,10 +118,12 @@ class TestConstructionDirSettle:
 
     def test_temp_cd_settle(self, tmp_construction_dir):
         tmp_construction_dir.settle()
+        assert len(tmp_construction_dir.supported_dist_types) == 2
 
     def test_custom_cd_settle(self, tmp_path):
         custom_construction_dir = cdn.CustomConstructionDir(tmp_path)
         custom_construction_dir.settle()
+        assert custom_construction_dir.srepkg_root.exists()
 
 
 def test_with_hyphen_in_entry_point_name(tmp_construction_dir, sample_pkgs):
@@ -128,12 +132,21 @@ def test_with_hyphen_in_entry_point_name(tmp_construction_dir, sample_pkgs):
         construction_dir_command=construction_dir_command,
         srepkg_name_command=sample_pkgs.testprojhyphenentry_whl,
     )
-    rebuild_dir = tempfile.TemporaryDirectory()
+
+    orig_wheel_path = Path(sample_pkgs.testprojhyphenentry_whl)
+    wheel_name = orig_wheel_path.name
+
+    test_wheel_path = construction_dir.orig_pkg_dists / wheel_name
+
     shutil.copy(
-        src=Path(sample_pkgs.testprojhyphenentry_whl),
-        dst=construction_dir.orig_pkg_dists / Path(sample_pkgs.testprojhyphenentry_whl).name
+        src=orig_wheel_path,
+        dst=test_wheel_path,
     )
+
+    orig_dist_info = wm.WheelDistInfo(wheel_path=test_wheel_path)
+    assert orig_dist_info.has_console_script_name_with_dash
     construction_dir._ensure_valid_console_script_names()
+    assert not orig_dist_info.has_console_script_name_with_dash
 
 
 # This test has long runtime but may be good edge-case check
