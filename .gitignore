@@ -19,6 +19,11 @@ dual_build_notes.txtgit
 *.whl
 !test/package_test_cases/testproj-0.0.0-py3-none-any.whl
 !test/package_test_cases/wheel_inspect-1.7.1-py3-none-any.whl
+!test/package_test_cases/packagemissingdistinfo-0.1-py3-none-any.whl
+!test/package_test_cases/packagemultidistinfo-0.1-py3-none-any.whl
+!test/package_test_cases/testprojhyphenentry-0.0.0-py3-none-any.whl
+!test/package_test_cases/testprojnoconsolescripts-0.0.0-py3-none-any.whl
+!test/package_test_cases/testprojnoentry-0.0.0-py3-none-any.whl
 !black_as_blacksrepkg_pyproject_toml/orig_dist/black-23.1.0-py3-none-any.whl
 !black_as_blacksrepkg_pyproject_toml/*
 
