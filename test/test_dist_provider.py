@@ -1,5 +1,6 @@
 import pytest
 import srepkg.dist_provider as d_prov
+import tempfile
 from pathlib import Path
 from test.shared_fixtures import sample_pkgs, tmp_construction_dir
 
@@ -34,3 +35,9 @@ class TestDistProvider:
             len(list(tmp_construction_dir.orig_pkg_dists.iterdir()))
             == num_orig_pkgs
         )
+
+    def test_null_github_repo(self):
+        src_path = Path(tempfile.TemporaryDirectory().name)
+        dest_path = Path(tempfile.TemporaryDirectory().name)
+        null_git_dist_provider = d_prov.DistProviderFromGitRepo(src_path, dest_path)
+        null_git_dist_provider.checkout_commit_ref()
