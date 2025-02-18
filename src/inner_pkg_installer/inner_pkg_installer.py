@@ -14,7 +14,7 @@ from contextlib import contextmanager
 from datetime import datetime
 from types import SimpleNamespace
 from pathlib import Path
-from typing import Dict
+from typing import Dict, List
 from unittest.mock import Mock
 
 # try:
@@ -30,6 +30,28 @@ except (ModuleNotFoundError, ImportError):
     def status_display(msg, logger: logging.Logger):
         logger.info(msg)
         yield
+
+
+def add_logger_streams(
+    console_logger_info: Dict[str, tuple], custom_logger_names: List[str]
+):
+    log_dir = tempfile.TemporaryDirectory()
+    filename = (
+        f"srepkg_log_" f"{datetime.now().strftime('%Y-%m-%d_%H_%M_%S_%f')}.log"
+    )
+    logging.basicConfig(
+        level=logging.DEBUG,
+        format="%(asctime)s:%(levelname)s:%(name)s:%(message)s",
+        filename=f"{str(log_dir.name)}/{filename}",
+        filemode="w",
+    )
+
+    for logger_name, handler_info in console_logger_info.items():
+        if logger_name not in custom_logger_names:
+            logger = logging.getLogger(logger_name)
+            handler = logging.StreamHandler(stream=handler_info[1])
+            handler.setLevel(level=handler_info[0])
+            logger.addHandler(handler)
 
 
 class IPILogging:
@@ -54,25 +76,10 @@ class IPILogging:
         if not all(
             [key in custom_logger_names for key in console_logger_info]
         ):
-
-            log_dir = tempfile.TemporaryDirectory()
-            filename = (
-                f"srepkg_log_"
-                f"{datetime.now().strftime('%Y-%m-%d_%H_%M_%S_%f')}.log"
+            add_logger_streams(
+                console_logger_info=console_logger_info,
+                custom_logger_names=custom_logger_names,
             )
-            logging.basicConfig(
-                level=logging.DEBUG,
-                format="%(asctime)s:%(levelname)s:%(name)s:%(message)s",
-                filename=f"{str(log_dir.name)}/{filename}",
-                filemode="w",
-            )
-
-            for logger_name, handler_info in console_logger_info.items():
-                if logger_name not in custom_logger_names:
-                    logger = logging.getLogger(logger_name)
-                    handler = logging.StreamHandler(stream=handler_info[1])
-                    handler.setLevel(level=handler_info[0])
-                    logger.addHandler(handler)
 
 
 class SitePackagesInspector:
@@ -146,6 +153,7 @@ class CustomVenvBuilder(venv.EnvBuilder):
     Sublcass of standard library EnvBuilder with extra methods used to
     install and/or upgrade pip, setuptools, and wheel in the venv.
     """
+
     def __init__(self):
         super().__init__(with_pip=True)
         self._context = SimpleNamespace()
@@ -211,6 +219,7 @@ class VenvManager:
     importantly, modifying shebangs of console script entry point files so
     they are accessible from environment srepkg was run from (outside of venv).
     """
+
     def __init__(self, context):
         self._context = context
         self._pyvenv_cfg = configparser.ConfigParser()
@@ -343,6 +352,7 @@ class InnerPkgCfgReader:
     """
     Gets metadate from the original package.
     """
+
     def __init__(self, inner_pkg_cfg: Path):
         self._inner_pkg_cfg_file = inner_pkg_cfg
         self._inner_pkg_cfg = configparser.ConfigParser()
@@ -365,6 +375,7 @@ class InnerPkgInstaller:
     """
     Installs original package in venv.
     """
+
     def __init__(self, venv_path: Path, orig_pkg_dist: Path):
         self._venv_path = venv_path
         self._orig_pkg_dist = orig_pkg_dist

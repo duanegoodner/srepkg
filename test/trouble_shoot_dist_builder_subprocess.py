@@ -1,6 +1,7 @@
 import srepkg.dist_builder_sub_process as dbs
 import tempfile
 import shared_fixtures as sf
+from pathlib import Path
 
 
 if __name__ == "__main__":
@@ -10,5 +11,7 @@ if __name__ == "__main__":
 
     args = ("wheel", source_dir, output_dir.name)
 
-    dbs.main(args)
+    dist_path = dbs.main(args)
+    assert dist_path.exists()
+    assert dist_path.name.endswith(".whl")
 

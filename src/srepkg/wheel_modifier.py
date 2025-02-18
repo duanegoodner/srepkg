@@ -48,9 +48,9 @@ class WheelDistInfo:
         }
 
         if len(dist_info_dirs) == 0:
-            raise ValueError("No dist-info directory")
+            raise FileNotFoundError("No dist-info directory")
         if len(dist_info_dirs) > 1:
-            raise ValueError("Multiple dist-info directories found")
+            raise FileExistsError("Multiple dist-info directories found")
 
         return next(iter(dist_info_dirs))
 
@@ -150,10 +150,9 @@ class WheelEntryPointsModifier:
             build_number=None,
         )
         new_wheel_path = next(Path(rebuild_dir.name).glob("*.whl"), None)
-        if not new_wheel_path:
-            raise FileNotFoundError("Failed to create new wheel file")
 
-        # overwrite old wheel with new
+        # overwrite old wheel with new; will have exception here if
+        # new wheel was not created
         shutil.move(str(new_wheel_path), str(self.wheel_dist_info.wheel_path))
 
         # clean up
