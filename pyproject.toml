@@ -90,7 +90,8 @@ branch = true
 [tool.coverage.report]
 exclude_lines = [
     "if __name__ == \"__main__\":",
-    "@(abc\\.)?abstractmethod"
+    "@(abc\\.)?abstractmethod",
+    "@contextmanager"
 ]
 [tool.coverage.xml]
 output = "coverage.xml"

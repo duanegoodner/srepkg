@@ -40,9 +40,10 @@ class _DistBuilder:
         return Path(dist_path_str)
 
 
-def main(*args):
+def main(*args) -> Path:
     dist_builder = _DistBuilderArgParser().get_args(*args)
     dist_path = dist_builder.build_dist()
+    return dist_path
 
 
 if __name__ == "__main__":

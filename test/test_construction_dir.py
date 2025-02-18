@@ -6,6 +6,7 @@ import srepkg.construction_dir as cdn
 import srepkg.error_handling.custom_exceptions as ce
 import srepkg.repackager_interfaces as rep_int
 import srepkg.service_builder as sb
+import tempfile
 from test.shared_fixtures import sample_pkgs, tmp_construction_dir
 
 
@@ -119,6 +120,20 @@ class TestConstructionDirSettle:
     def test_custom_cd_settle(self, tmp_path):
         custom_construction_dir = cdn.CustomConstructionDir(tmp_path)
         custom_construction_dir.settle()
+
+
+def test_with_hyphen_in_entry_point_name(tmp_construction_dir, sample_pkgs):
+    construction_dir_command = Path(tempfile.TemporaryDirectory().name)
+    construction_dir = cdn.CustomConstructionDir(
+        construction_dir_command=construction_dir_command,
+        srepkg_name_command=sample_pkgs.testprojhyphenentry_whl,
+    )
+    rebuild_dir = tempfile.TemporaryDirectory()
+    shutil.copy(
+        src=Path(sample_pkgs.testprojhyphenentry_whl),
+        dst=construction_dir.orig_pkg_dists / Path(sample_pkgs.testprojhyphenentry_whl).name
+    )
+    construction_dir._ensure_valid_console_script_names()
 
 
 # This test has long runtime but may be good edge-case check

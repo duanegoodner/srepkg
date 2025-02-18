@@ -11,6 +11,16 @@ class AllExamplePackages:
     src_dir = Path(__file__).parent.absolute() / "package_test_cases"
     tproj_non_pure_py: str = str(src_dir / "mock_non_pure_python_pkg")
     testproj: str = str(src_dir / "testproj")
+    testprojhypenentry: str = str(src_dir / "testprojhypenentry")
+    testprojhyphenentry_whl: str = str(
+        src_dir / "testprojhyphenentry-0.0.0-py3-none-any.whl"
+    )
+    testprojnoentry_whl: str = str(
+        src_dir / "testprojnoentry-0.0.0-py3-none-any.whl"
+    )
+    testprojnoconsolescript_section_whl: str = str(
+        src_dir / "testprojnoconsolescripts-0.0.0-py3-none-any.whl"
+    )
     testproj_whl: str = str(src_dir / "testproj-0.0.0-py3-none-any.whl")
     testproj_targz: str = str(src_dir / "testproj-0.0.0.tar.gz")
     testproj_zip: str = str(src_dir / "testproj-0.0.0.zip")
@@ -28,7 +38,16 @@ class AllExamplePackages:
     wheel_inspect_whl: str = str(
         src_dir / "wheel_inspect-1.7.1-py3-none-any.whl"
     )
+    wheel_missing_dist_info: str = str(
+        src_dir / "packagemissingdistinfo-0.1-py3-none-any.whl"
+    )
+    wheel_multi_dist_info: str = str(
+        src_dir / "packagemultidistinfo-0.1-py3-none-any.whl"
+    )
     cowsay_py_pi: str = "cowsay"
+    innder_pkg_testproj_setup_cfg: str = str(
+        src_dir / "inner_pkg_testproj_setup.cfg"
+    )
 
 
 @pytest.fixture

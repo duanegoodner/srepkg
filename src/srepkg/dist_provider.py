@@ -56,7 +56,7 @@ class DistProviderFromGitRepo(DistProviderFromSrc):
         self._git_ref = git_ref
         self._version_command = version_command
 
-    def _checkout_commit_ref(self):
+    def checkout_commit_ref(self):
         if self._git_ref:
             with yu.yaspin_log_updater(
                 msg=f"Checking out {self._git_ref}",
@@ -72,7 +72,7 @@ class DistProviderFromGitRepo(DistProviderFromSrc):
                 ).run()
 
     def run(self):
-        self._checkout_commit_ref()
+        self.checkout_commit_ref()
         super().run()
 
 
