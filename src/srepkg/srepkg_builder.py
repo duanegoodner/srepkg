@@ -72,10 +72,11 @@ class SrepkgSdistWriter(SrepkgDistWriter):
             if path not in self.exclude_paths
         ]
 
-    def write_to_zip(self, zip_name: str):
-        with ZipFile(zip_name, "w", ZIP_DEFLATED) as zf:
-            for file in self.files_to_copy:
-                zf.write(file, file.relative_to(self.src_path.parent))
+    # Not needed; using .tar.gz for sdist
+    # def write_to_zip(self, zip_name: str):
+    #     with ZipFile(zip_name, "w", ZIP_DEFLATED) as zf:
+    #         for file in self.files_to_copy:
+    #             zf.write(file, file.relative_to(self.src_path.parent))
 
     def write_to_tar_gz(self, tar_gz_path: Path):
         with tarfile.open(tar_gz_path, "w:gz") as tar:
