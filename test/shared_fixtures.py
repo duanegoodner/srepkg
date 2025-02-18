@@ -13,6 +13,7 @@ class AllExamplePackages:
     testproj: str = str(src_dir / "testproj")
     testprojhypenentry: str = str(src_dir / "testprojhypenentry")
     testprojhyphenentry_whl: str = str(src_dir / "testprojhyphenentry-0.0.0-py3-none-any.whl")
+    testprojnoentry_whl: str = str(src_dir / "testprojnoentry-0.0.0-py3-none-any.whl")
     testproj_whl: str = str(src_dir / "testproj-0.0.0-py3-none-any.whl")
     testproj_targz: str = str(src_dir / "testproj-0.0.0.tar.gz")
     testproj_zip: str = str(src_dir / "testproj-0.0.0.zip")
