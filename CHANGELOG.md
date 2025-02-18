@@ -10,6 +10,21 @@
 
 ### Removed
 
+
+## [0.1.9]
+
+### Added
+
+### Fixed
+
+- Description section in README and docs/
+
+### Changed
+
+- CI testing saves pytest logfile on fail
+
+### Removed
+
 ## [0.1.8] - 2024-02-18
 
 ### Added
@@ -144,7 +159,8 @@
 
 
 
-[unreleased]: https://github.com/duanegoodner/srepkg/compare/0.1.8...HEAD
+[unreleased]: https://github.com/duanegoodner/srepkg/compare/0.1.9...HEAD
+[0.1.9]: https://github.com/duanegoodner/srepkg/compare/0.1.8...0.1.9
 [0.1.8]: https://github.com/duanegoodner/srepkg/compare/0.1.7...0.1.8
 [0.1.7]: https://github.com/duanegoodner/srepkg/compare/0.1.6...0.1.7
 [0.1.6]: https://github.com/duanegoodner/srepkg/compare/0.1.5...0.1.6
