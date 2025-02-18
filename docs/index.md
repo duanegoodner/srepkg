@@ -17,7 +17,7 @@ When a package wrapped in an isolation layer by ***srepkg*** is installed in an 
 
 - The original package plus its dependencies are installed in a new, automatically created virtual environment.
 - A dependency-free "access" package installed in the pre-existing environment contains a controller module capable of making calls to the Python interpreter in the newly created environment.
-- This package structure ensures that none of the original package's dependencies conflict with packages in the pre-existing environment but still exposes the original package’s CL to the pre-existing environment. 
+- This enivronment and package structure exposes the original package’s CL to the pre-existing environmen while ensuring that none of the original package's dependencies conflict with packages in the pre-existing environment.
 
 ## 🎯 Use Cases
 
