@@ -11,6 +11,8 @@ class AllExamplePackages:
     src_dir = Path(__file__).parent.absolute() / "package_test_cases"
     tproj_non_pure_py: str = str(src_dir / "mock_non_pure_python_pkg")
     testproj: str = str(src_dir / "testproj")
+    testprojhypenentry: str = str(src_dir / "testprojhypenentry")
+    testprojhyphenentry_whl: str = str(src_dir / "testprojhyphenentry-0.0.0-py3-none-any.whl")
     testproj_whl: str = str(src_dir / "testproj-0.0.0-py3-none-any.whl")
     testproj_targz: str = str(src_dir / "testproj-0.0.0.tar.gz")
     testproj_zip: str = str(src_dir / "testproj-0.0.0.zip")
