@@ -45,6 +45,9 @@ class AllExamplePackages:
         src_dir / "packagemultidistinfo-0.1-py3-none-any.whl"
     )
     cowsay_py_pi: str = "cowsay"
+    innder_pkg_testproj_setup_cfg: str = str(
+        src_dir / "inner_pkg_testproj_setup.cfg"
+    )
 
 
 @pytest.fixture
