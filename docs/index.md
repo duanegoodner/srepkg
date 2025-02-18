@@ -1,4 +1,4 @@
-# Welcome to the **Solo Repackage** (`srepkg`) Documentation Site
+# **Welcome to the Solo Repackage (*srepkg*) Documentation Site**
 
 
 ---

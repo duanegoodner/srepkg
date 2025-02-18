@@ -1,4 +1,4 @@
-# ⚖️ Comparing with a similar tool: [pipx](https://github.com/pypa/pipx)
+# **⚖️ Comparing with a similar tool: [pipx](https://github.com/pypa/pipx)**
 
 ***srepkg*** is in many ways similar to the widely used tool [***pipx***](https://github.com/pypa/pipx) which also allows users to install a Python package in an isolated environment and then access its command line tool(s) from another environment. Key differences between ***srepkg*** and ***pipx*** include:
 
